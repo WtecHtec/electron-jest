@@ -17,7 +17,11 @@ declare namespace NodeJS {
      */
     DIST: string
     /** /dist/ or /public/ */
-    VITE_PUBLIC: string
+    VITE_PUBLIC: string,
+    /** 开发/打包 */
+    MODE: string,
+    /** chrome 路径 */
+    CHROME_DIST: string,
   }
 }
 
