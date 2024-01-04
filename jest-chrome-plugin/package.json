@@ -8,8 +8,7 @@
     "build": "vite build -c vite.popup.config.js && vite build -c vite.content.config.js && vite build -c vite.background.config.js && node build.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview -c vite.popup.config.js",
-    "crx": "crx3",
-    "build:crx": "node build_crx.js"
+    "crx": "crx3"
   },
   "dependencies": {
     "antd": "^5.8.3",
