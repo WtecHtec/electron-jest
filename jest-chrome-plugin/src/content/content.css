@@ -10,3 +10,96 @@
   cursor: pointer;
 }
         
+.dom-inspector {
+  position: fixed;
+  pointer-events: none;
+  transform-origin: 0 0;
+}
+
+.dom-inspector > div {
+  position: absolute;
+  pointer-events: none;
+}
+
+.dom-inspector-wrapper .tips {
+  max-width: 70%;
+  background-color: #333740;
+  font-size: 0;
+  line-height: 18px;
+  padding: 3px 10px;
+  position: fixed;
+  border-radius: 4px;
+  display: none;
+  pointer-events: none;
+}
+
+
+.dom-inspector-wrapper .tips .triangle {
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-top: 8px solid #333740;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid transparent;
+  left: 10px;
+  bottom: -16px;
+}
+
+.dom-inspector-wrapper .tips.reverse .triangle {
+  border-top: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #333740;
+  border-left: 8px solid transparent;
+  left: 10px;
+  top: -16px;
+}
+
+.dom-inspector-wrapper .tips.reverse-r .triangle {
+  left: auto;
+  right: 10px;
+}
+
+.dom-inspector-wrapper .tips > div {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 12px;
+  font-family: Consolas, Menlo, Monaco, Courier, monospace;
+  overflow: auto;
+}
+
+.dom-inspector-wrapper .tips .tag {
+  color: #e776e0;
+}
+
+.dom-inspector-wrapper .tips .id {
+  color: #eba062;
+}
+
+.dom-inspector-wrapper .tips .class {
+  color: #8dd2fb;
+}
+
+.dom-inspector-wrapper .tips .line {
+  color: #fff;
+}
+
+.dom-inspector-wrapper .tips .size {
+  color: #fff;
+}
+
+.dom-inspector-theme-default .margin {
+  background-color: rgb(246, 193, 139, 0.75);
+}
+
+.dom-inspector-theme-default .border {
+  background-color: rgba(250, 215, 138, 0.75);
+}
+
+.dom-inspector-theme-default .padding {
+  background-color: rgba(182, 200, 120, 0.75);
+}
+
+.dom-inspector-theme-default .content {
+  background-color: rgba(81, 101, 255, 0.75);
+}

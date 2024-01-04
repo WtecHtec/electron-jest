@@ -1,28 +1,8 @@
-import { useState } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
-import './content.css'
-import MainModal from '@/content/components/mainModal'
-
-function Content() {
-    const [mainModalVisiable, setMainModalVisiable] = useState(false)
-    return (
-        <div className="CRX-content">
-            <div
-                className="content-entry"
-                onClick={() => {
-                    setMainModalVisiable(true)
-                }}
-            >  </div>
-            {mainModalVisiable ? (
-                <MainModal
-                    onClose={() => {
-                        setMainModalVisiable(false)
-                    }}
-                />
-            ) : null}
-        </div>
-    )
-}
+import Content from './main'
+import $ from 'jquery';
+import { getMaxZIndex, createElement } from '../common/utils/dom';
 
 // 创建id为CRX-container的div
 const app = document.createElement('div')
@@ -41,4 +21,5 @@ try {
     insertScript.setAttribute('type', 'text/javascript')
     insertScript.src = window.chrome.runtime.getURL('insert.js')
     document.body.appendChild(insertScript)
+    $('body').css('cursor', 'pointer')
 } catch (err) {}
