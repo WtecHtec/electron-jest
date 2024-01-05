@@ -1,8 +1,14 @@
 
-import React, { useState, useEffect } from 'react'
-import { getMaxZIndex, createElement, addOverlay, getXpath, getTouchMouseTargetElement } from '../utils/dom';
+import React, { useState, useEffect, useRef } from 'react'
+import $ from 'jquery';
+
+
+import { getMaxZIndex, createElement, addOverlay, getTouchMouseTargetElement } from '../utils/dom';
+import { getXpath } from '../utils/xpath';
 import { throttle } from '../utils/utils';
+
 const EVENT = 'mousemove'
+const KEY_UP_EVENT = 'keyup'
 /** 最大 zindex  */
 const maxZIndex = getMaxZIndex() + 1
 // 操作maker(html 元素)
@@ -27,6 +33,10 @@ function _remove() {
     
 function useInspector() {
   const [xPath, setXPath] = useState('')
+
+  const optRef = useRef({
+    status: true,
+  })
   useEffect(() => {
     // 在 html 中加入而非 body，从而消除对 dom 的影响 及 mutationObserver 的频繁触发
     document.body && document.body.appendChild(optOverlay);
@@ -36,9 +46,10 @@ function useInspector() {
     // 缓存 操作元素
     let _cachedTarget = null
     // 当前元素 xpath
-    let currentXpath = ''
+    // let currentXpath = ''
     function _onMove(e) {
-      console.log('_onMove', e)
+      // console.log('_onMove', e)
+      if (!optRef.current.status) return
       const target = getTouchMouseTargetElement(e)
       if (target && optOverlay && optOverlay.contains(target)) return;
       currentTarget = target;
@@ -58,11 +69,28 @@ function useInspector() {
       capture: true,
       passive: true,
     });
+
+    function _onKeyUp(e) {
+      console.log(e)
+      if (e.keyCode === 81 && optRef.current.status) {
+        console.log('currentTarget---', currentTarget)
+        const currentXpath = getXpath(currentTarget, true)
+        optRef.current.status = false
+        setXPath(currentXpath)
+        console.log('_onKeyUp----')
+        // setStatus(false)
+       
+      }
+    }
+    const _throttleOnKeyUp = throttle(_onKeyUp, 300)
+    document.body.addEventListener(KEY_UP_EVENT, _throttleOnKeyUp)
+
     return () => {
       document.body.removeEventListener(EVENT, _throttleOnMove)
+      document.body.removeEventListener(KEY_UP_EVENT, _throttleOnKeyUp)
     }
   }, [])
-  return [xPath]
+  return [xPath, optRef, optRef.current.status]
 }
 
 export default useInspector
