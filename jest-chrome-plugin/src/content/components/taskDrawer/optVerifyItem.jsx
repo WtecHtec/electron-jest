@@ -3,7 +3,7 @@ import { Tooltip, Space, Divider, Input, Select } from 'antd'
 const { TextArea } = Input;
 const { Option } = Select;
 const  OptVerifyItem = forwardRef((props, ref) => {
-  const [verifyData, setVerifyData] = useState({ rename: '', tipType: 'tip_alert' })
+  const [verifyData, setVerifyData] = useState({ rename: '', tipType: 'tip_alert', verifyValue: '' })
   useImperativeHandle(ref, () => {
     return {
       verifyData
@@ -22,6 +22,12 @@ const  OptVerifyItem = forwardRef((props, ref) => {
       tipType: value,
     })
   }
+  const onVerifyValueChange = (e) => {
+    setInputData({
+      ...verifyData,
+      verifyValue: e.target.value
+    })
+  }
   return <>
     <Divider dashed></Divider>
     <Space.Compact  block style={{ alignItems: 'center'}}>
@@ -35,7 +41,7 @@ const  OptVerifyItem = forwardRef((props, ref) => {
       <Tooltip placement="top" title={<span>该操作会根据当前元素text内容与检验内容比较</span>}>
         <span style={{ flexShrink: 0 }}>检验内容：</span>
       </Tooltip>
-      <TextArea rows={4}/>
+      <TextArea rows={4} value={verifyData.verifyValue} onChange={onVerifyValueChange}/>
     </Space.Compact>
     <Divider dashed></Divider>
     <Space.Compact  block style={{ alignItems: 'center'}}>

@@ -49,6 +49,11 @@ const runNodeOpt = async (browser, task, page) => {
   return []
 }
 
+const runNodeEnd = async (browser, task, page) => { 
+  await browser.close();
+  return []
+}
+
 const runOptClick = async (browser, optsetting, page) => { 
   const { xpath, waitTime, clickData } = optsetting
   const clickElement = await page.waitForXPath(xpath)
@@ -57,6 +62,7 @@ const runOptClick = async (browser, optsetting, page) => {
   if (waitTime > 0) {
     await page.waitForTimeout(waitTime)
   }
+  await page.waitForNavigation()
   const { isCurrentPage } = clickData
   let newPage = page
   if (isCurrentPage !== 1) {
@@ -68,13 +74,44 @@ const runOptClick = async (browser, optsetting, page) => {
   }
   return [newPage]
 }
+const runOptInput = async (browser, optsetting, page) => {  
+  const { xpath, waitTime, inputData } = optsetting
+  const clickElement = await page.waitForXPath(xpath)
+  await clickElement.focus()
+  if (waitTime > 0) {
+    await page.waitForTimeout(waitTime)
+  }
+  const { inputValue } = inputData
+  await clickElement.type(String(inputValue), {delay: 500})
+  return []
+}
+
+const runOptVerify = async (browser, optsetting, page) => {  
+  const { xpath, waitTime, verifyData } = optsetting
+  const clickElement = await page.waitForXPath(xpath)
+  if (waitTime > 0) {
+    await page.waitForTimeout(waitTime)
+  }
+  const { verifyValue } = verifyData
+  const text = await page.evaluate(node => node.innerText, clickElement)
+  if (text === verifyValue) {
+    console.log('测试通过')
+  } else {
+    console.log('测试不通过')
+    await page.addScriptTag({ content: `alert(测试不通过)()`})
+  }
+  return []
+}
 
 const RUN_NODE_TYPE = {
   'start': runNodeStart,
-  'opt': runNodeOpt
+  'opt': runNodeOpt,
+  // 'end': runNodeEnd
 }
 const RUN_OPT_TYPE = {
-  'opt_click': runOptClick
+  'opt_click': runOptClick,
+  'opt_input': runOptInput,
+  'opt_verify': runOptVerify,
 }
 async function runTask() {
   const browser = await getBrowser()
