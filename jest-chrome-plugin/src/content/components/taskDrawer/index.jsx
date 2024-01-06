@@ -14,7 +14,7 @@ function TaskDrawer({ onClose, open, xpath }) {
   const [waitTime, setWaitTime] = useState(0)
   const optRef = useRef(null)
 
-  const handleOptTypeChange = (value) => {
+  const handleOptTypeSelect = (value) => {
     setOptType(value)
   };
 
@@ -34,7 +34,7 @@ function TaskDrawer({ onClose, open, xpath }) {
             <Tooltip placement="top" title={<span>元素操作行为,如:点击、输入等</span>}>
               <span>类型：</span>
             </Tooltip>
-            <Select defaultValue="opt_click" style={{ flex: 1}} value={optType} onSelect={  handleOptTypeChange  } >
+            <Select defaultValue="opt_click" style={{ flex: 1}} value={optType} onSelect={  handleOptTypeSelect  } >
               <Option value="opt_click">点击</Option>
               <Option value="opt_input">输入</Option>
               <Option value="opt_verify">校验</Option>
@@ -52,13 +52,13 @@ function TaskDrawer({ onClose, open, xpath }) {
             optType === 'opt_click' && <OptClickItem ref={optRef}></OptClickItem>
           }
           {
-            optType === 'opt_input' && <OptInputItem></OptInputItem>
+            optType === 'opt_input' && <OptInputItem ref={optRef}></OptInputItem>
           }
           {
-            optType === 'opt_verify' && <OptVerifyItem></OptVerifyItem>
+            optType === 'opt_verify' && <OptVerifyItem ref={optRef}></OptVerifyItem>
           }
           {
-            optType === 'opt_pick' && <OptPickItem></OptPickItem>
+            optType === 'opt_pick' && <OptPickItem ref={optRef}></OptPickItem>
           }
           <Divider dashed></Divider>
           <Space.Compact  block style={{ justifyContent: 'center'}}>

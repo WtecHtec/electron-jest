@@ -1,15 +1,34 @@
+import {  forwardRef, useImperativeHandle, useState } from 'react'
 import { Tooltip, Space, Divider, Input, Select } from 'antd'
 const { TextArea } = Input;
 const { Option } = Select;
-function OptVerifyItem() {
+const  OptVerifyItem = forwardRef((props, ref) => {
+  const [verifyData, setVerifyData] = useState({ rename: '', tipType: 'tip_alert' })
+  useImperativeHandle(ref, () => {
+    return {
+      verifyData
+    }
+  })
+  const onRenameChange = (e) => {
+    setVerifyData({
+      ...verifyData,
+      rename: e.target.value,
+    })
+  }
 
+  const onTipTypeSelect = (value) => {
+    setVerifyData({
+      ...verifyData,
+      tipType: value,
+    })
+  }
   return <>
-  <Divider dashed></Divider>
+    <Divider dashed></Divider>
     <Space.Compact  block style={{ alignItems: 'center'}}>
       <Tooltip placement="top" title={<span>设置校验名称,方便查找</span>}>
         <span style={{ flexShrink: 0 }}>校验名称:</span>
       </Tooltip>
-      <Input style={{ flex: 1}} />
+      <Input style={{ flex: 1}} onChange={onRenameChange}  value={verifyData.rename}/>
     </Space.Compact>
     <Divider dashed></Divider>
     <Space.Compact  block style={{ alignItems: 'center'}}>
@@ -23,11 +42,11 @@ function OptVerifyItem() {
       <Tooltip placement="top" title={<span>检验失败后,如何提示</span>}>
         <span style={{ flexShrink: 0 }}>提示方式:</span>
       </Tooltip>
-      <Select defaultValue="tip_alert" style={{ flex: 1}}  >
+      <Select defaultValue="tip_alert" style={{ flex: 1}} onSelect={onTipTypeSelect} >
         <Option value="tip_alert">弹窗</Option>
       </Select>
     </Space.Compact>
   </>
-}
+})
 
 export default OptVerifyItem

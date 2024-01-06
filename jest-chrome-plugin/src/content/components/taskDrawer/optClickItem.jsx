@@ -13,7 +13,7 @@ const OptClickItem = forwardRef((props, ref) => {
   });
 
   const handelCurrentPage = (e) => {
-    setClickAttr({
+    setClickData({
       ...clickData,
       isCurrentPage: e.target.value
     })
