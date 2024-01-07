@@ -57,3 +57,5 @@ build
 
 package-lock.json
 yarn.lock
+
+chrome_mac64
