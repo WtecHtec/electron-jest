@@ -1,5 +1,5 @@
 
-import { forwardRef, useImperativeHandle, useState } from 'react'
+import { forwardRef, useImperativeHandle, useState, useEffect } from 'react'
 import { Tooltip, Space, Divider, Select, Input, InputNumber, Button } from 'antd'
 import $ from 'jquery';
 
@@ -24,6 +24,11 @@ const OptPickItem = forwardRef((props, ref) => {
 			pickData
 		}
 	})
+
+  useEffect(() => {
+    setCheckResult([])
+  }, [xpath])
+  
 
 	const onPickTypeSelect = (value) => {
 		setPickData({
@@ -57,6 +62,7 @@ const OptPickItem = forwardRef((props, ref) => {
       try {
         const fixXpath = xpath.split(levelXpath)[1]
         levelXpath = levelXpath.replace(REG_EXP, REPLACE_TEXT)
+        console.log('levelXpath, fixXpath', levelXpath, fixXpath)
         const result =  getPickDataByLoop(levelXpath, fixXpath, 5, pickData.pickType)
         setCheckResult(result)
         setPickData({
@@ -130,12 +136,12 @@ const OptPickItem = forwardRef((props, ref) => {
           <Button onClick={onCheckEl}>检测</Button>
         </Space.Compact>
         <Divider dashed></Divider>
-        <h2>检测结果:</h2> 
+        <h2 style={{ color: '#333333'}}>检测结果:</h2> 
         {
-          checkResult.length > 0 ? checkResult.map(item => <>
+          checkResult.length > 0 ? checkResult.map((item, index) => <div key={index}>
             <Divider dashed></Divider>
-            <p>{item}</p>
-          </>) : <h4 style={{ color: '#FA5151'}}>没有检测到数据！【点击检测】</h4>
+            <p style={{ color:'#333333'}}>{item}</p>
+          </div>) : <h4 style={{ color: '#FA5151'}}>没有检测到数据！【点击检测】</h4>
         }
       </>
     }
