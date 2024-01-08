@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import Content from './main'
 import $ from 'jquery';
-import { getMaxZIndex, createElement } from '../common/utils/dom';
+// import { getMaxZIndex, createElement } from '../common/utils/dom';
 
 // 创建id为CRX-container的div
 const app = document.createElement('div')

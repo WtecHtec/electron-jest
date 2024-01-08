@@ -73,3 +73,16 @@ export function getXpath(ele, allId = false) {
   }
   return `/${path.reverse().join('/')}`;
 }
+
+
+export function getXpathByParentLevel(xpath, level) {
+  let currentEl = document.evaluate(xpath, document).iterateNext()
+  let index = level
+  while(index && isDOM(currentEl)) {
+    currentEl = currentEl.parentNode
+    index = index - 1
+  }
+  if (!isDOM(currentEl)) return null
+  console.log('getXpathByParentLevel', currentEl)
+  return getXpath(currentEl, true)
+}

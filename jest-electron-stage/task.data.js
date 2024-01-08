@@ -76,6 +76,18 @@ module.exports = [
 			}
 		}
 	},
+  {
+    nodeType: 'logic',
+    logicsetting: {
+      logicType: 'logic_loop',
+      loopBody: [
+
+      ],
+      loopType: 'frequency',
+      frequency: 1,
+      loopCondition: []
+    }
+  },
 	{
 		nodeType: 'end',
 	},
