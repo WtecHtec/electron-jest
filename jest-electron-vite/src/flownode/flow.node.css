@@ -1,9 +1,26 @@
 .img-svg {
-  width: 40px;
-  height: 40px;
-  box-sizing: content-box;
+	width: 40px;
+	height: 40px;
+	box-sizing: content-box;
 }
+
 .img-svg.selected {
-  border: 1px solid #40a9ff;
-  border-radius: 4px;
+	border: 1px solid #40a9ff;
+	border-radius: 4px;
+}
+
+.card-img {
+	width: 20px;
+	height: 20px;
+}
+
+.card-img.selected {
+	border: 1px solid #40a9ff;
+	border-radius: 4px;
+}
+
+.wrap-txt {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
