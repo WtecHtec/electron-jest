@@ -1,0 +1,9 @@
+.img-svg {
+  width: 40px;
+  height: 40px;
+  box-sizing: content-box;
+}
+.img-svg.selected {
+  border: 1px solid #40a9ff;
+  border-radius: 4px;
+}

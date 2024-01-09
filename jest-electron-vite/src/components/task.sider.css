@@ -1,0 +1,31 @@
+.space-block {
+  padding: 2px;
+  border: 1px solid #40a9ff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 4px;
+  cursor: pointer;
+}
+.space-block:first-child {
+  margin-top: 0;
+}
+.space-block.disable {
+  background: #f2f2f2;
+  border: 1px solid #f2f2f2;
+}
+
+.space-block-img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.space-block-txt {
+  color: #333333;
+  font-size: 18px;
+  font-weight: 500;
+}
+

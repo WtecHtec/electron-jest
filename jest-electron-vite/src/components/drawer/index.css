@@ -1,0 +1,8 @@
+.dr-left {
+  flex-shrink: 0;
+}
+
+.dr-txt {
+  word-break:break-all;
+  margin-left: 8px;
+}
