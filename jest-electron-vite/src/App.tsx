@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 
 import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 
@@ -9,31 +9,40 @@ import viteLogo from '/electron-vite.animate.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-  const handleCount = () => {
-    setCount((count) => count + 1)
-    window.ipcRenderer.send('main-process-pup', 'console.log(message)')
-  }
+  useEffect(() => {
+    const onMessage =  (_event, message) => {
+      console.log(message)
+    }
+    window.ipcRenderer.on('main-process-message', onMessage)
+    return () => {
+      window.ipcRenderer.off('main-process-message', onMessage)
+    }
+  }, [])
+  // const [count, setCount] = useState(0)
+  // const handleCount = () => {
+  //   setCount((count) => count + 1)
+  //   window.ipcRenderer.send('main-process-pup', 'console.log(message)')
+  // }
 
-  const handleConnect = () => {
-    console.log(' 连接 ---- ')
-    const socket = new WebSocket('ws://localhost:8899');
-    socket.addEventListener('open', () => {
-      console.log('Connected to WebSocket server');
-    });
+  // const handleConnect = () => {
+  //   console.log(' 连接 ---- ')
+  //   const socket = new WebSocket('ws://localhost:8899');
+  //   socket.addEventListener('open', () => {
+  //     console.log('Connected to WebSocket server');
+  //   });
 
-    socket.addEventListener('message', (event) => {
-      console.log('Received:', event.data);
-    });
+  //   socket.addEventListener('message', (event) => {
+  //     console.log('Received:', event.data);
+  //   });
 
-    socket.addEventListener('close', () => {
-      console.log('Disconnected from WebSocket server');
-    });
-  }
+  //   socket.addEventListener('close', () => {
+  //     console.log('Disconnected from WebSocket server');
+  //   });
+  // }
 
-  const handleIM = () => {
-    window.ipcRenderer.send('main-process-im', 'console.log(message)')
-  }
+  // const handleIM = () => {
+  //   window.ipcRenderer.send('main-process-im', 'console.log(message)')
+  // }
   return (
     <>
       <Router>
@@ -44,7 +53,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-      <div className="card">
+      {/* <div className="card">
         <button onClick={handleCount }>
           count is {count}
         </button>
@@ -60,7 +69,7 @@ function App() {
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
-      </p>
+      </p> */}
     </>
   )
 }

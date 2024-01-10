@@ -20,11 +20,11 @@ class WsServer {
     this.server?.on('connection', (socket) => {
       console.log('Client connected');
       // 向客户端发送消息
-      socket.send('Hello from WebSocket server!');
+      socket.send('jest_pro');
       this.connectNum = this.connectNum  + 1
       // 监听客户端发送的消息
       socket.on('message', (message) => {
-        console.log('Received:', message);
+        // console.log('Received:', message);
         if (typeof onMessage === 'function') {
           onMessage(socket, message)
         }

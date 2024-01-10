@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import ReactFlow, {
   addEdge,
   MiniMap,
@@ -34,6 +34,16 @@ const TaskFlow = (porps) => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [nodeDrawer, setNodeDrawer] = useState({ title: 'Task Item', open: false, node: {}})
 
+  useEffect(() => {
+    console.log('task-flow-data----' )
+    const _onMessage = (_event, message) => {
+      console.log('task-flow-data----',  message)
+    }
+    window.ipcRenderer.on('task-flow-data', _onMessage)
+    return () => {
+      window.ipcRenderer.off('task-flow-data', _onMessage)
+    }
+  }, [])
 
   const onConnect = useCallback((params) => {
     const edges = reactFlowInstance.getEdges()

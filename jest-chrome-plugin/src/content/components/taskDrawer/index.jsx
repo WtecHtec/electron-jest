@@ -1,15 +1,33 @@
 import { memo, useState, useRef } from 'react'
-import { Tooltip, Drawer, Space, Select, Divider, InputNumber, Button } from 'antd'
+import { Tooltip, Drawer, Space, Select, Divider, InputNumber, Button, message  } from 'antd'
+
+
+import useThrottle from '../../../common/hooks/useThrottle'
+import WsClient from '../../ws.client'
 
 import OptClickItem from './optClickItem'
 import OptInputItem from './optInputItem'
 import OptVerifyItem from './optVerifyItem'
 import OptPickItem from './optPickItem'
 
+
 const { Option } = Select;
 
+const getNodeData = (optType, xpath, waitTime, other = {}) =>  {
+    return JSON.stringify({
+      type: optType,
+      data: { 
+        optsetting: {
+          xpath,
+          waitTime,
+          optType,
+          ...other,
+        }
+      }
+    })
+  }
 function TaskDrawer({ onClose, open, xpath }) {
-
+  const [messageApi, contextHolder] = message.useMessage();
 	const [optType, setOptType] = useState('opt_click')
 	const [waitTime, setWaitTime] = useState(0)
 	const optRef = useRef(null)
@@ -22,11 +40,22 @@ function TaskDrawer({ onClose, open, xpath }) {
 		setWaitTime(value)
 	};
 
-	const handleFinish = () => {
-		console.log('handleFinish----', optRef)
-	}
+	const handleFinish = useThrottle(() => {
+		console.log('handleFinish----', wsclient.getStatus() )
+    const wsclient = WsClient.getInstance()
+    if (wsclient.getStatus()) {
+      const other = optRef.current
+      wsclient.send( getNodeData(optType, xpath, waitTime,  { ...other }))
+    } else {
+      messageApi.open({
+        type: 'error',
+        content: '连接不上ws服务',
+      });
+    }
+	}, 1000, [])
 
 	return <>
+    { contextHolder}
 		<Drawer title="任务设计" placement="right" width={500} onClose={onClose} open={open} maskClosable={false} keyboard={false}>
 			<div>当前xpath: <span style={{ color: '#666666' }}> {xpath} </span> </div>
 			<Divider dashed></Divider>

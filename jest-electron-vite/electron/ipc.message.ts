@@ -24,7 +24,7 @@ const handelSelectFolder =() =>{
 }
 
 
-const handelRunSetting = () => {
+const handelRunSetting = (win) => {
   ipcMain.handle('start-task-setting', async (event, url) => {
     const wsServer = WsServer.getInstance()
     // console.log('start-task-setting====', url)
@@ -32,11 +32,11 @@ const handelRunSetting = () => {
     if (wsServer.connectNum !== 0) {
       return [false, wsServer.connectNum]
     };
-    return [await startServer(wsServer, taslPuppeteer, url), 0]
+    return [await startServer(wsServer, taslPuppeteer, url, win), 0]
   })
 }
 
-function startServer(wsServer, taslPuppeteer, url) {
+function startServer(wsServer, taslPuppeteer, url, win) {
   return new Promise(resovle => {
     wsServer.startWs(() => {
       console.log('启动成功')
@@ -51,17 +51,18 @@ function startServer(wsServer, taslPuppeteer, url) {
         resovle(false)
       }
     }, (socket, message) => {
-      console.log('socket, message', socket, message)
+      console.log('socket, message', message.toString())
+      win?.webContents.send('task-flow-data', message.toString())
     })
   })
 }
 
 
 
-function IpcManagement() {
+function IpcManagement(win) {
   handelCloseTaskSetting()
   handelSelectFolder()
-  handelRunSetting()
+  handelRunSetting(win)
 }
 
 export default IpcManagement

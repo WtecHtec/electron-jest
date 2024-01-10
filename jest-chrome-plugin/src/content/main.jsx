@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Tooltip, } from 'antd'
 import './content.css'
 
+import WsClient from './ws.client'
 
 import TipsModal from '@/content/components/tipsModal'
 import useInspector from '../common/hooks/useInspector'
@@ -13,7 +14,11 @@ function Main() {
     const [open, setOpen] = useState(false);
     const text = <span> 有惊喜！！ </span>
 
-    
+    useEffect(() => {
+      // 初始化连接ws
+      WsClient.getInstance()
+    }, [])
+
     useEffect(() => {
       console.log('useEffect----', optRef.current.status, xPath, status)
       if (!optRef.current.status && !status && xPath) {
