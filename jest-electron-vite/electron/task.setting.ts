@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 import path from 'node:path'
 
-async function runPuppeteer() {
+async function runPuppeteer(url) {
   // const hiddenWindow = new BrowserWindow({
   //   show: true, // 隐藏窗口
   //   webPreferences: {
@@ -50,17 +50,16 @@ async function runPuppeteer() {
     ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
     // args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
     defaultViewport: { // 为每个页面设置一个默认视口大小
-        width: 1920,
-        height: 1080
+      width: 1920,
+      height: 1080
     }
 	});
-  const url = 'https://juejin.cn/'
   const page = await browser.newPage()
   await page.goto(url, {
 		waitUntil: 'domcontentloaded',
 	});
+}
 
-   const title = await page.title();
-  console.log(`Title of ${url}: ${title}`);
-
+export {
+  runPuppeteer,
 }

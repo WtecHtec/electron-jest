@@ -44,7 +44,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-      {/* <div className="card">
+      <div className="card">
         <button onClick={handleCount }>
           count is {count}
         </button>
@@ -60,7 +60,7 @@ function App() {
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
-      </p> */}
+      </p>
     </>
   )
 }

@@ -83,7 +83,7 @@ export default memo(( props ) => {
     setOpen(true)
   }
   
-  const handleOk = () => {
+  const handleOk = async () => {
     if (!taskUrl) { 
       messageApi.open({
         type: 'warning',
@@ -92,8 +92,22 @@ export default memo(( props ) => {
       return
     }
     if (/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\*\+,;=.]+$/.test(taskUrl)) {
-      navigate(`/setting?taskurl=${taskUrl}`)
-      setOpen(false)
+      // window.ipcRenderer.send('start-task-setting', taskUrl)
+      const [status, num ] = await  window.ipcRenderer.invoke('start-task-setting', taskUrl);
+      if ( status ) {
+        navigate(`/setting?taskurl=${taskUrl}`)
+        setOpen(false)
+      } else if (!status &&  num) {
+        messageApi.open({
+          type: 'warning',
+          content: '只能启动一个服务',
+        });
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: '服务启动失败',
+        });
+      }
     } else {
       messageApi.open({
         type: 'error',

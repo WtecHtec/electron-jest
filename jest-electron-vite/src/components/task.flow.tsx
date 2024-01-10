@@ -137,9 +137,11 @@ const TaskFlow = (porps) => {
     console.log(nodes)
   }
   const goBackRouter = () => {
+    
     setIsModalOpen(true)
   }
   const handleOk = () => {
+    window.ipcRenderer.send('close-task-setting')
     setIsModalOpen(false)
     navigate('/')
   }

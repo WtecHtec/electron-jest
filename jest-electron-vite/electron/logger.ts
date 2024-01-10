@@ -29,6 +29,6 @@ const globalLogger = createLogger({
     ],
 });
 
-module.exports = {
-  globalLogger: globalLogger,
+export {
+  globalLogger,
 };

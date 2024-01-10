@@ -4,7 +4,6 @@ const { app } = require('electron');
 
 class Sqlite {
   db: any
-  instance: any
   constructor() {
     // 创建一个 SQLite 数据库文件
     const dbPath = path.join(app.getPath('userData'), 'jest.pro.db');
