@@ -5,8 +5,11 @@ import { Drawer, Button, Space, Divider } from 'antd';
 
 
 import ItemDrawer from './item.drawer';
+import ExportDrawer from './export.drawer';
+import LoopDrawer from './loop.drawer';
 
 import { END_DATAS, START_DATAS, CLICK_DATAS, PICK_DATAS, INPUT_DATAS, VERIFY_DATAS } from './item.config';
+
 
 import './index.css'
 
@@ -36,11 +39,13 @@ export default memo((porps) => {
 
 	const DrawerContent = () => {
 		if (ITEM_DATA_MAP[node.type]) return <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
-		return <></>
+		if (node.type === 'logic_export') return <ExportDrawer node={node}></ExportDrawer>
+    if (node.type === 'logic_loop') return <LoopDrawer node={node}></LoopDrawer>
+    return <></>
 	}
 	return (
 		<>
-			<Drawer title={porps.title} placement="right" onClose={onClose} open={open}>
+			<Drawer title={porps.title} placement="right" onClose={onClose} open={open} maskClosable={false} keyboard={false}>
 				<DrawerContent></DrawerContent>
 				<p>
 					{!DEL_EXCLUDE.includes(node.type) && <Button type="primary" danger>

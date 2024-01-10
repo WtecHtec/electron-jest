@@ -93,7 +93,7 @@ module.exports = [
       logicType: 'logic_export',
       waitTime: 0,
       dataType: 'text',
-      exportType: 'json',
+      fileType: 'json',
       savaPath: 'D:\\Wtechtec\\electron-jest\\jest-electron-stage\\',
       rename: '测试保存'
     }

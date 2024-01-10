@@ -10,6 +10,7 @@ import PickSvg from '../assets/pick.svg'
 import VerifySvg from '../assets/verify.svg'
 import EndSvg from '../assets/end.svg'
 import LoopSvg from '../assets/loop.svg'
+import ExportSvg from '../assets/export.svg'
 
 const NODE_DATAS = [
   {
@@ -26,6 +27,26 @@ const NODE_DATAS = [
         disable: false,
         txt: '结束',
         nodeType: 'end',
+        data: {}
+      },
+      {
+        imgSrc: ExportSvg,
+        disable: false,
+        txt: '导出',
+        nodeType: 'logic_export',
+        data: {
+          type: 'logic_export',
+          data: {
+            logicsetting: {
+              logicType: 'logic_export',
+              waitTime: 0,
+              dataType: 'text',
+              exportType: 'json',
+              savaPath: '',
+              rename: ''
+            }
+          }
+        }
       },
     ]
   },
@@ -66,14 +87,26 @@ const NODE_DATAS = [
         disable: false,
         txt: '循环',
         nodeType: 'logic_loop',
+        data: {
+          type: 'logic_loop',
+          data: {
+            logicsetting: {
+              logicType: 'logic_loop',
+              waitTime: 0,
+              loopBody: [],
+              loopType: 'frequency',
+              frequency: 5,
+            }
+          }
+        }
       },
     ]
   },
   
 ]
 export default memo(() => {
-  const onDragStart = (event, nodeType) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
+  const onDragStart = (event, data) => {
+    event.dataTransfer.setData('application/reactflow', data);
     event.dataTransfer.effectAllowed = 'move';
   };
   return <>
@@ -87,12 +120,15 @@ export default memo(() => {
         {
           key: index,
           label: label,
-          children: children.map(({ imgSrc, disable, txt, nodeType }, kIndex) => <>
-            <div key={kIndex} className={`space-block ${ disable && 'disable'}`} onDragStart={(event) => !disable && onDragStart(event, nodeType)} draggable>
-              <img className="space-block-img" src={imgSrc}></img>
-              <div className="space-block-txt">{txt}</div>
-            </div>
-          </>),
+          children: children.map(( item, kIndex) => {
+            const { imgSrc, disable, txt, nodeType } = item
+            return <>
+              <div key={kIndex} className={`space-block ${ disable && 'disable'}`} onDragStart={(event) => !disable && onDragStart(event,  { nodeType,  item })} draggable>
+                <img className="space-block-img" src={imgSrc}></img>
+                <div className="space-block-txt">{txt}</div>
+              </div>
+            </>
+          } ),
         },
       ]}
     />

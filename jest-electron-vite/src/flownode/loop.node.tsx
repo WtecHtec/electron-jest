@@ -25,8 +25,8 @@ export default memo(({ isConnectable = true, selected }) => {
 					size="small"
 					title={<img src={LoopSvg} className={`card-img  ${selected && 'selected'}`} />}
 				>
-					<p>👉：循环流程;</p>
-					<p>👇:循环结束下一步;</p>
+					<p>👉：循环流程</p>
+					<p>👇:循环结束下一步</p>
 					{/* <span>下一步</span> */}
 				</Card>
 			</div>

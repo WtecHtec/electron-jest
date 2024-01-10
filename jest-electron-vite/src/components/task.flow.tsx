@@ -87,6 +87,7 @@ const TaskFlow = (porps) => {
   }, [])
   const getFlowDesc = () => {
     console.log(JSON.stringify(edges) )
+    console.log(nodes)
   }
   return (
     <div className="reactflow-wrapper" ref={reactFlowWrapper}>

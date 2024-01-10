@@ -203,9 +203,9 @@ const runLogicExport = async (arg) => {
 
 const runExportText = async (arg) => {  
   const { logicsetting } = arg
-  const { exportType } = logicsetting
-  if (typeof EXPORT_FILE_TYPE[exportType] === 'function') {
-    return await EXPORT_FILE_TYPE[exportType]({ ...arg, logicsetting})
+  const { fileType } = logicsetting
+  if (typeof EXPORT_FILE_TYPE[fileType] === 'function') {
+    return await EXPORT_FILE_TYPE[fileType]({ ...arg, logicsetting})
   }
   return {}
 }

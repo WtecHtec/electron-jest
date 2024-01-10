@@ -13,7 +13,10 @@ export const nodes = [
 		id: '2',
 		type: 'logic_loop',
 		data: {
-
+      logicsetting: { 
+        loopType: 'frequency',
+        frequency: 5,
+      }
 		},
 		position: { x: 100, y: 100 },
 	},
@@ -87,9 +90,8 @@ export const nodes = [
 				logicType: 'logic_export',
 				waitTime: 0,
 				dataType: 'text',
-				exportType: 'json',
+				fileType: 'json',
 				savaPath: 'D:\\Wtechtec\\electron-jest\\jest-electron-stage\\',
-				rename: '测试保存'
 			}
 		},
 		position: { x: 400, y: 450 },

@@ -6,7 +6,6 @@ import StartSvg from '../assets/start.svg'
 import './flow.node.css'
 
 export default memo(({ isConnectable, selected, data }) => {
-	console.log('data', data)
 	return (
 		<>
 			<div>
