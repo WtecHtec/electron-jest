@@ -21,6 +21,10 @@
 }
 
 .layout-header {
-  background-color: #ffffff;
-  text-align: right;
+	background-color: #ffffff;
+	text-align: right;
+}
+
+.mr-12 {
+	margin-right: 12px;
 }
