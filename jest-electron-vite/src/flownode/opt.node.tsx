@@ -39,14 +39,14 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 			<Handle
 				type="target"
 				position="top"
-				style={{ backgroundColor: '#576B95' }}
+				style={{ zIndex: 9999, backgroundColor: '#576B95' }}
 				isConnectable={isConnectable}
 			/>
 			{/* <img src={SVG_TYPE[imgType]} className={`img-svg  ${selected && 'selected'}`} /> */}
 			<Card
 				size="small"
 				title={<img src={SVG_TYPE[imgType]} className={`card-img  ${selected && 'selected'}`} />}
-				style={{ maxWidth: 300, minWidth: 140 }}
+				style={{ maxWidth: 300, minWidth: 260 }}
 			>
 				{
 					typeof showLabel[imgType] === 'function' ? showLabel[imgType]() : <p className="wrap-txt">{showLabel[imgType]}</p>

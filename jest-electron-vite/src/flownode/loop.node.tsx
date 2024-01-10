@@ -14,7 +14,7 @@ export default memo(({ isConnectable = true, selected }) => {
 			<Handle
 				type="target"
 				position="top"
-				style={{ backgroundColor: '#576B95' }}
+				style={{zIndex: 9999,  backgroundColor: '#576B95' }}
 				isConnectable={isConnectable}
 			/>
 			{/* <img src={LoopSvg} className={`img-svg  ${selected && 'selected'}`} />

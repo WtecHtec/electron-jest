@@ -8,7 +8,7 @@ import ReactFlow, {
   useEdgesState,
   ReactFlowProvider,
 } from 'react-flow-renderer';
-import { Drawer, Button, Space, Divider } from 'antd';
+import { Drawer, Button, Space, Divider, message } from 'antd';
 
 import NodeDrawer from './drawer';
 
@@ -18,16 +18,45 @@ import OptNode from '../flownode/opt.node';
 import EndNode from '../flownode/end.node';
 
 import './task.flow.css'
+import { getMutliLevelProperty } from '../util';
+
+
 
 
 const TaskFlow = (porps) => {
+
+  const [messageApi, contextHolder] = message.useMessage();
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(porps.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(porps.edges || []);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [nodeDrawer, setNodeDrawer] = useState({ title: 'Task Item', open: false, node: {}})
 
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
+
+  const onConnect = useCallback((params) => {
+    const edges = reactFlowInstance.getEdges()
+   
+    console.log('params===', params, edges)
+   
+    const { source, target, sourceHandle, targetHandle } = params
+    if (edges.find(item => item.source === source && item.sourceHandle  === sourceHandle ) 
+      || edges.find(item => item.target === target && item.targetHandle  === targetHandle)) {
+      messageApi.open({
+        type: 'warning',
+        content: '只允许一个流程',
+      });
+      return;
+    }
+  
+    if (source === target) {
+      messageApi.open({
+        type: 'error',
+        content: '不能连接自身！！！',
+      });
+      return
+    }
+    setEdges((eds) => addEdge(params, eds))
+  }, [reactFlowInstance]);
 
   const nodeTypes = useMemo(() => ({ 
     start: StartNode,
@@ -52,20 +81,36 @@ const TaskFlow = (porps) => {
     (event) => {
       event.preventDefault();
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const type = event.dataTransfer.getData('application/reactflow');
+      let dragData = event.dataTransfer.getData('application/reactflow');
       // check if the dropped element is valid
-      if (typeof type === 'undefined' || !type) {
+      if (typeof dragData === 'undefined' || !dragData) {
         return;
       }
+
+      dragData = JSON.parse(dragData)
+
+      const { nodeType } = dragData
+      const nodes = reactFlowInstance.getNodes()
+      if (nodes.find((item) => item.type === 'end') && nodeType === 'end') {
+        messageApi.open({
+          type: 'warning',
+          content: '只允许有一个结束流程',
+        });
+        return
+      }
+      const dataConfig = getMutliLevelProperty(dragData, 'item.data.data', {})
       const position = reactFlowInstance.project({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });
+      console.log(dragData, dataConfig)
       const newNode = {
         id: getId(),
-        type,
+        type: nodeType,
         position,
-        data: { label: `${type} node` },
+        data: { 
+          ...dataConfig,
+        },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -83,51 +128,54 @@ const TaskFlow = (porps) => {
   }, [])
 
   const onEdgeContextMenu = useCallback((event, edge) => {
-    setEdges((els) => els.filter(el => el.id != edge.id))
+    setEdges((els) => els.filter(el => el.id != edge.id ))
   }, [])
   const getFlowDesc = () => {
     console.log(JSON.stringify(edges) )
     console.log(nodes)
   }
   return (
-    <div className="reactflow-wrapper" ref={reactFlowWrapper}>
-      <div className="tools">
-        <Button className="tools-btn" onClick={()=> {}}>完成设计</Button>
-        <Button className="tools-btn" onClick={ getFlowDesc }>流程描述</Button>
+    <>
+      {contextHolder}
+      <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+        <div className="tools">
+          <Button className="tools-btn" onClick={()=> {}}>完成设计</Button>
+          <Button className="tools-btn" onClick={ getFlowDesc }>流程描述</Button>
+        </div>
+        <ReactFlowProvider>
+          <ReactFlow
+            nodeTypes={nodeTypes}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onInit={setReactFlowInstance}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            onNodeClick={onNodeClick}
+            onEdgeContextMenu={onEdgeContextMenu}
+            fitView
+            attributionPosition="top-right"
+            deleteKeyCode={null}
+            selectionKeyCode={null}
+            multiSelectionKeyCode={null}
+          >
+            <MiniMap
+              nodeBorderRadius={5}
+            />
+            <Controls />
+            <Background color="#aaa" gap={16} />
+          </ReactFlow>
+        </ReactFlowProvider>
+        <NodeDrawer title={nodeDrawer.title} open={nodeDrawer.open} node={nodeDrawer.node} onClose={ () => {
+          setNodeDrawer({
+            ...nodeDrawer,
+            open: false,
+          })
+        }}></NodeDrawer>
       </div>
-      <ReactFlowProvider>
-        <ReactFlow
-          nodeTypes={nodeTypes}
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onInit={setReactFlowInstance}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          onNodeClick={onNodeClick}
-          onEdgeContextMenu={onEdgeContextMenu}
-          fitView
-          attributionPosition="top-right"
-          deleteKeyCode={null}
-          selectionKeyCode={null}
-          multiSelectionKeyCode={null}
-        >
-          <MiniMap
-            nodeBorderRadius={5}
-          />
-          <Controls />
-          <Background color="#aaa" gap={16} />
-        </ReactFlow>
-      </ReactFlowProvider>
-      <NodeDrawer title={nodeDrawer.title} open={nodeDrawer.open} node={nodeDrawer.node} onClose={ () => {
-        setNodeDrawer({
-          ...nodeDrawer,
-          open: false,
-        })
-      }}></NodeDrawer>
-    </div>
+    </>
   );
 };
 

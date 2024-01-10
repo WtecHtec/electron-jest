@@ -106,7 +106,7 @@ const NODE_DATAS = [
 ]
 export default memo(() => {
   const onDragStart = (event, data) => {
-    event.dataTransfer.setData('application/reactflow', data);
+    event.dataTransfer.setData('application/reactflow', JSON.stringify(data));
     event.dataTransfer.effectAllowed = 'move';
   };
   return <>
