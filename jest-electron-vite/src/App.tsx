@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
-import TaskSetting from './components/task.setting'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 
+import TaskSetting from './components/task.setting'
+import Home from './components/home';
 import reactLogo from './assets/react.svg'
 import viteLogo from '/electron-vite.animate.svg'
 import './App.css'
@@ -34,10 +36,14 @@ function App() {
   }
   return (
     <>
-    <div style={{ height: '100vh', width: '100%'}}>
-      <TaskSetting></TaskSetting>
-    </div>
-      
+      <Router>
+        <div style={{ height: '100vh', width: '100%'}}>
+          <Routes>
+            <Route exact path="/" element= { <Home />}></Route>
+            <Route path="/setting" element={   <TaskSetting></TaskSetting> }></Route>
+          </Routes>
+        </div>
+      </Router>
       {/* <div className="card">
         <button onClick={handleCount }>
           count is {count}

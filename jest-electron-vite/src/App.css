@@ -19,3 +19,8 @@
 	width: 20px;
 	height: 20px;
 }
+
+.layout-header {
+  background-color: #ffffff;
+  text-align: right;
+}

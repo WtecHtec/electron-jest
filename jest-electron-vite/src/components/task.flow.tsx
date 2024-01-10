@@ -8,7 +8,8 @@ import ReactFlow, {
   useEdgesState,
   ReactFlowProvider,
 } from 'react-flow-renderer';
-import { Drawer, Button, Space, Divider, message } from 'antd';
+import { Drawer, Button, Space, Divider, message, Modal  } from 'antd';
+import { useNavigate  } from "react-router-dom";
 
 import NodeDrawer from './drawer';
 
@@ -24,7 +25,8 @@ import { getMutliLevelProperty } from '../util';
 
 
 const TaskFlow = (porps) => {
-
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [messageApi, contextHolder] = message.useMessage();
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(porps.nodes || []);
@@ -134,6 +136,13 @@ const TaskFlow = (porps) => {
     console.log(JSON.stringify(edges) )
     console.log(nodes)
   }
+  const goBackRouter = () => {
+    setIsModalOpen(true)
+  }
+  const handleOk = () => {
+    setIsModalOpen(false)
+    navigate('/')
+  }
   return (
     <>
       {contextHolder}
@@ -141,6 +150,7 @@ const TaskFlow = (porps) => {
         <div className="tools">
           <Button className="tools-btn" onClick={()=> {}}>完成设计</Button>
           <Button className="tools-btn" onClick={ getFlowDesc }>流程描述</Button>
+          <Button className="tools-btn" onClick={ goBackRouter }>返回首页</Button>
         </div>
         <ReactFlowProvider>
           <ReactFlow
@@ -174,6 +184,9 @@ const TaskFlow = (porps) => {
             open: false,
           })
         }}></NodeDrawer>
+        <Modal title="提示" open={isModalOpen} onOk={handleOk} cancelText="取消" okText="确定返回首页" onCancel={() => setIsModalOpen(false)}>
+          <p>返回首页,当前页面操作将不会保存！</p>
+        </Modal>
       </div>
     </>
   );

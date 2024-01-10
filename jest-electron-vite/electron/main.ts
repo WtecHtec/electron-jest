@@ -2,9 +2,10 @@ import { app, BrowserWindow } from 'electron'
 import initEnv from './process.env';
 import path from 'node:path'
 import IpcManagement from './ipc.message';
-
+import Sqlite from './data.sqlite'
 initEnv()
-
+Sqlite.getInstance()
+Sqlite.getInstance()
 // The built directory structure
 //
 // ├─┬─┬ dist
