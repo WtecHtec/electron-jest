@@ -2,9 +2,13 @@ const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
 
+const argv = require('minimist')(process.argv.slice(2),  {
+  string: ['filepath']
+});
+
 const RunEnv = require('./run.evn')
 
-const TaskData = require('./task.data')
+// const TaskData = require('./task.data')
 
 const ENV = 'mac'
 const DEV_CONFIG = {
@@ -216,7 +220,7 @@ const runExportToJson = async (arg) => {
   try {
     const data = env.getPickData()
     // console.log('data----', data)
-    fs.writeFileSync(`${savaPath}/${rename}.json`, JSON.stringify(data, null, 4));
+    fs.writeFileSync(`${savaPath || '.'}/${rename || new Date().getTime() }.json`, JSON.stringify(data, null, 4));
   } catch (error) {
     console.error(error);
   }
@@ -246,12 +250,11 @@ const onRunLoopFrequency =  async (arg) => {
   return {}
 }
 
-
 const RUN_NODE_TYPE = {
 	'start': runNodeStart,
 	'opt': runNodeOpt,
   'logic': runNodeLogic,
-	'end': runNodeEnd
+	'end': runNodeEnd,
 }
 
 const RUN_OPT_TYPE = {
@@ -261,16 +264,19 @@ const RUN_OPT_TYPE = {
 	'opt_pick': runOptPick
 }
 
+
+const RUN_LOGIC = {
+  'logic_loop': runLogicLoop,
+  'logic_export': runLogicExport
+}
+
+
 const RUN_PICK_TYPE = {
 	'pick_text': runPick,
 	'pick_src': runPick,
 	'pick_href': runPick
 }
 
-const RUN_LOGIC = {
-  'logic_loop': runLogicLoop,
-  'logic_export': runLogicExport
-}
 
 const LOOP_TYPE = {
   'frequency': onRunLoopFrequency
@@ -289,7 +295,9 @@ async function runTask(arg) {
 	let { browser, taskData, currentPage } = arg
 	let step = 0
 	let maxStep = taskData.length
+  console.log('maxStep---', maxStep)
 	while (step < maxStep && taskData[step]) {
+    console.log(step)
 		const { nodeType } = taskData[step]
 		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
 			const { page } = await RUN_NODE_TYPE[nodeType]({
@@ -305,9 +313,26 @@ async function runTask(arg) {
 }
 
 async function main() {
+  console.log('task run-----', )
 	const browser = await getBrowser()
   const env = new RunEnv()
-	await runTask({ browser, taskData: TaskData, env })
+  let taskData = []
+  console.log('argv----', argv)
+  // const mode = argv.mode || 'dev'
+  try {
+    const data = fs.readFileSync(argv.filepath, 'utf-8');
+    const dataconfig = JSON.parse(data);
+    taskData = JSON.parse(dataconfig.task)
+    if (Array.isArray(taskData)) {
+      console.log('taskData---', taskData)
+      await runTask({ browser, taskData, env })
+    } else {
+      console.error('读取或解析任务数据时发生错误:', taskData);
+    }
+  } catch (err) {
+    console.error('读取或解析任务数据时发生错误:', err);
+  }
+	
 }
 
 main()
