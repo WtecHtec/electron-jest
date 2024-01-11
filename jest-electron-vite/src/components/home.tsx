@@ -1,8 +1,9 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 
 import { Layout, Button, Divider, Table, Modal, Input, message } from 'antd';
 import { useNavigate } from "react-router-dom";
 const { Header, Content, Footer } = Layout
+const { TextArea } = Input;
 export default memo((props) => {
 	const columns = [
 		{
@@ -79,6 +80,18 @@ export default memo((props) => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const [open, setOpen] = useState(false)
 	const [taskUrl, setTaskUrl] = useState('https://juejin.cn/')
+  const [taskDesc, setTaskDesc] = useState('')
+
+
+  useEffect(() => {
+    const getData = async () => {
+      const [data] = await window.ipcRenderer.invoke('select-task-all');
+      console.log('data---', data)
+    }
+    getData()
+    return () => {}
+  }, [])
+
 	const onCreateTask = () => {
 		setOpen(true)
 	}
@@ -95,7 +108,7 @@ export default memo((props) => {
 			// window.ipcRenderer.send('start-task-setting', taskUrl)
 			const [status, num] = await window.ipcRenderer.invoke('start-task-setting', taskUrl);
 			if (status) {
-				navigate(`/setting?taskurl=${taskUrl}`)
+				navigate(`/setting?taskurl=${taskUrl}&taskdesc=${taskDesc}`)
 				setOpen(false)
 			} else if (!status && num) {
 				messageApi.open({
@@ -122,6 +135,9 @@ export default memo((props) => {
 	const onUrlChange = (e) => {
 		setTaskUrl(e.target.value)
 	}
+  const onDescChange = (e) => {
+    setTaskDesc(e.target.value)
+  }
 	const onClearCache = () => {
 		window.ipcRenderer.send('close-task-setting')
 	}
@@ -152,6 +168,7 @@ export default memo((props) => {
 				)}
 			>
 				<Input placeholder="页面URL" value={taskUrl} onChange={onUrlChange}></Input>
+        <TextArea placeholder="任务描述" value={taskDesc} onChange={onDescChange} style={{marginTop: 12}}></TextArea>
 			</Modal>
 		</>
 	);

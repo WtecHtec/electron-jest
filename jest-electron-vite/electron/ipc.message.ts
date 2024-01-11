@@ -4,7 +4,8 @@ import WsServer from './ws.server'
 import TaslPuppeteer from './task.puppeteer'
 import fs from 'fs'
 import path from 'node:path'
-const { execFile, spawn } = require('child_process');
+import { saveTask, getAllTask } from './task.dao'
+const { spawn } = require('child_process');
 
 const handleRunngin = () => {
   ipcMain.on('task-running', (event, data) => {
@@ -36,7 +37,6 @@ const handleRunngin = () => {
     // exe.on('close', (code) => {
     //   console.log(`子进程退出，退出码 ${code}`);
     // });
-
 	})
 }
 
@@ -103,13 +103,53 @@ function startServer(wsServer, taslPuppeteer, url, win) {
 	})
 }
 
+/**
+ *  taskdata = {
+ *   nodes: '[]',
+ *   edges: '[]',
+ *   task: '[]'
+ * }
+ */
+function handleSaveTask() {
+  ipcMain.on('task-save', (event, data) => { 
+    try {
+      const { id, taskdesc, taskdata } = JSON.parse(data)
+      try {
+        // 检查文件夹是否存在
+        const savepath = path.join(__dirname, `../tasks`)
+        if (!fs.existsSync(savepath)) {
+          // 如果不存在，则创建文件夹
+          fs.mkdirSync(savepath);
+        } else {
+          console.log('文件夹已存在');
+        }
+        const filepath = path.join(savepath, `./${id}.json`)
+        fs.writeFileSync(filepath, taskdata);
+        console.log("task data is saved.");
+        saveTask(id, filepath, taskdata)
+      } catch (error) {
+        console.error(error);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  })
+}
 
+
+function handleGetTask() {
+  ipcMain.handle('select-task-all', async () => {
+    return await getAllTask()
+  })
+}
 
 function IpcManagement(win) {
 	handelCloseTaskSetting()
 	handelSelectFolder()
 	handelRunSetting(win)
   handleRunngin()
+  handleSaveTask()
+  handleGetTask()
 }
 
 export default IpcManagement

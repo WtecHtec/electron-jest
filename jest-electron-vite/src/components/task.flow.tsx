@@ -9,7 +9,7 @@ import ReactFlow, {
 	ReactFlowProvider,
 } from 'react-flow-renderer';
 import { Drawer, Button, Space, Divider, message, Modal } from 'antd';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import NodeDrawer from './drawer';
 
@@ -36,6 +36,7 @@ const getId = () => Math.random().toString(36).slice(2)
 
 const TaskFlow = (porps) => {
 	const navigate = useNavigate();
+  const [params]= useSearchParams()
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [messageApi, contextHolder] = message.useMessage();
 	const reactFlowWrapper = useRef(null);
@@ -45,6 +46,7 @@ const TaskFlow = (porps) => {
 	const [nodeDrawer, setNodeDrawer] = useState({ title: 'Task Item', open: false, node: {} })
   const [reRun, setReRun] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
 
 	useEffect(() => {
 		console.log('task-flow-data----')
@@ -53,9 +55,10 @@ const TaskFlow = (porps) => {
 			try {
 				const newNode = JSON.parse(message)
 				console.log('newNode---', nodes)
+        const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
 				setNodes(nds => nds.concat([{
 					id: getId(),
-					position: { x: 400, y: 400 },
+					position: { x: reactFlowBounds.left, y: reactFlowBounds.top },
 					...newNode,
 				}]))
 			} catch (err) {
@@ -172,9 +175,9 @@ const TaskFlow = (porps) => {
 	}, [])
 
 	const handleRunning = () => {
-		console.log(JSON.stringify(edges))
-		console.log(nodes)
-    console.log(getTask(nodes, edges))
+		// console.log(JSON.stringify(edges))
+		// console.log(nodes)
+    // console.log(getTask(nodes, edges))
     if (checkExport(nodes)) {
       messageApi.open({
         type: 'warning',
@@ -187,7 +190,7 @@ const TaskFlow = (porps) => {
 
   const checkExport = (nodes) => {
     const fd = nodes.find(item => item.type === 'logic_export' && getMutliLevelProperty(item, 'data.logicsetting.savaPath', '') === '')
-    console.log('fd---', fd)
+    // console.log('fd---', fd)
     return !!fd
   }
 
@@ -290,12 +293,28 @@ const TaskFlow = (porps) => {
         return nd;
     }));
   }
+
+  const handlefinishSet = () => {
+      setIsSaveModalOpen(true)
+  }
+  const handleSaveOk = () => {
+    window.ipcRenderer.send('task-save', JSON.stringify({
+      id: getId(),
+      taskdesc: params.get('taskdesc'),
+      taskdata: JSON.stringify({
+        nodes: nodes,
+        edges: edges,
+        task: JSON.stringify(getTask(nodes, edges))
+      })
+    }))
+    setIsSaveModalOpen(false)
+  }
 	return (
 		<>
 			{contextHolder}
 			<div className="reactflow-wrapper" ref={reactFlowWrapper}>
 				<div className="tools">
-					<Button className="tools-btn" onClick={() => { }}>完成设计</Button>
+					<Button className="tools-btn" onClick={handlefinishSet}>保存任务</Button>
 					<Button className="tools-btn" onClick={handleRunning}>立即执行</Button>
           {
             reRun && <Button  className="tools-btn"  loading={loading} onClick={onReRun}>重启服务</Button>
@@ -331,6 +350,9 @@ const TaskFlow = (porps) => {
 				<NodeDrawer title={nodeDrawer.title} open={nodeDrawer.open} node={nodeDrawer.node} onClose={onClose} onDelete={ onDeleteNode }></NodeDrawer>
 				<Modal title="提示" open={isModalOpen} onOk={handleOk} cancelText="取消" okText="确定返回首页" onCancel={() => setIsModalOpen(false)}>
 					<p>返回首页,当前页面操作将不会保存！</p>
+				</Modal>
+        <Modal title="提示" open={isSaveModalOpen} onOk={handleSaveOk} cancelText="取消" okText="确定保存" onCancel={() => setIsSaveModalOpen(false)}>
+					<p>如果存在现有任务,该操作将会覆盖原有任务！</p>
 				</Modal>
 			</div>
 		</>

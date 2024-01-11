@@ -92,7 +92,7 @@ function TaskDrawer({ onClose, open, xpath }) {
 			}
 			<Divider dashed></Divider>
 			<Space.Compact block style={{ justifyContent: 'center' }}>
-				<Button type="primary" onClick={handleFinish}>完成设计</Button>
+				<Button type="primary" onClick={handleFinish}>保存逻辑</Button>
 			</Space.Compact>
 
 		</Drawer>
