@@ -4,6 +4,7 @@ class TaslPuppeteer {
 	browser: any
 	async runPuppeteer(url) {
 		const buildCrx = path.join(__dirname, '../chrome_win64/chrome_extension/XPathHelper')
+    const jestProCrx = path.join(__dirname, '../chrome_win64/chrome_extension/JestPro')
 		console.log('buildCrx---', buildCrx)
 		const config = {
 			headless: false, // 关闭无头模式
@@ -19,8 +20,8 @@ class TaslPuppeteer {
 				// '--start-maximized',
 				'--disable-dev-shm-usage',
 				'--no-sandbox',
-				`--disable-extensions-except=${buildCrx},`,
-				`--load-extension=${buildCrx},`,
+				`--disable-extensions-except=${buildCrx},${jestProCrx}`,
+				`--load-extension=${buildCrx},${jestProCrx}`,
 			],
 			ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
 			// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
@@ -34,6 +35,10 @@ class TaslPuppeteer {
 		}
 		const browser = await puppeteer.launch(config);
 		this.browser = browser
+    browser.on('disconnected', (fn) => {
+      console.log('brower disconnected')
+      this._disconnected()
+    });
 		const page = await browser.newPage()
 		await page.goto(url, {
 			waitUntil: 'domcontentloaded',
@@ -42,6 +47,9 @@ class TaslPuppeteer {
 	closeBrowser() {
 		this.browser && this.browser.close()
 	}
+  _disconnected() {
+   
+  }
 	static getInstance() {
 		if (!TaslPuppeteer.instance) {
 			TaslPuppeteer.instance = new TaslPuppeteer()

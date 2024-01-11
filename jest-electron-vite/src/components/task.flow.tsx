@@ -33,6 +33,8 @@ const TaskFlow = (porps) => {
 	const [edges, setEdges, onEdgesChange] = useEdgesState(porps.edges || []);
 	const [reactFlowInstance, setReactFlowInstance] = useState(null);
 	const [nodeDrawer, setNodeDrawer] = useState({ title: 'Task Item', open: false, node: {} })
+  const [reRun, setReRun] = useState(false)
+  const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
 		console.log('task-flow-data----')
@@ -50,11 +52,16 @@ const TaskFlow = (porps) => {
 				console.log(err)
 			}
 		}
+    const _onStatus = (_event, value) => { 
+      setReRun(value)
+    }
 		window.ipcRenderer.on('task-flow-data', _onMessage)
+    window.ipcRenderer.on('browser-close', _onStatus)
 		return () => {
 			console.log('ipcRenderer off')
 			window.ipcRenderer.removeListener('task-flow-data', _onMessage)
-			window.ipcRenderer.removeAllListeners('task-flow-data')
+      window.ipcRenderer.removeListener('browser-close', _onStatus)
+			window.ipcRenderer.removeAllListeners('task-flow-data', 'browser-close')
 		}
 	}, [])
 
@@ -166,6 +173,28 @@ const TaskFlow = (porps) => {
 		setIsModalOpen(false)
 		navigate('/')
 	}
+  const onReRun = async () => {
+    setLoading(true)
+    const item = nodes.find(item => item.type === 'start' )
+    const [status, num] = await window.ipcRenderer.invoke('start-task-setting', item?.data.url);
+    setLoading(false)
+    if (status) {
+      messageApi.open({
+        type: 'success',
+        content: '重启成功',
+      });
+    } else if (!status && num) {
+      messageApi.open({
+        type: 'warning',
+        content: '只能启动一个服务',
+      });
+    } else {
+      messageApi.open({
+        type: 'error',
+        content: '服务启动失败',
+      });
+    }
+  }
 	return (
 		<>
 			{contextHolder}
@@ -173,6 +202,9 @@ const TaskFlow = (porps) => {
 				<div className="tools">
 					<Button className="tools-btn" onClick={() => { }}>完成设计</Button>
 					<Button className="tools-btn" onClick={getFlowDesc}>流程描述</Button>
+          {
+            reRun && <Button  className="tools-btn"  loading={loading} onClick={onReRun}>重启服务</Button>
+          }
 					<Button className="tools-btn" onClick={goBackRouter}>返回首页</Button>
 				</div>
 				<ReactFlowProvider>

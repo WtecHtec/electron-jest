@@ -36,8 +36,8 @@ class WsServer {
 			// 监听客户端断开连接
 			socket.on('close', () => {
 				console.log('Client disconnected');
-				globalLogger.info('客户端断开连接,ws服务关闭.')
-				this.closeServer()
+				globalLogger.info('客户端断开连接.')
+				// this.closeServer()
 			});
 		});
 

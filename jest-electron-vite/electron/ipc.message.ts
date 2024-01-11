@@ -44,9 +44,17 @@ function startServer(wsServer, taslPuppeteer, url, win) {
 			try {
 				await taslPuppeteer.runPuppeteer(url)
 				globalLogger.info('浏览器启动成功')
+        win?.webContents.send('browser-close', false)
+        taslPuppeteer._disconnected = () => {
+          console.log('browser close')
+          win?.webContents.send('browser-close', true)
+          globalLogger.info('浏览器已关闭')
+          wsServer.closeServer()
+        }
 				resovle(true)
 			} catch (error) {
 				globalLogger.info('浏览器启动失败, ws服务关闭')
+        win?.webContents.send('browser-close', true)
 				wsServer.closeServer()
 				resovle(false)
 			}
