@@ -78,7 +78,7 @@ export default memo((props) => {
 	const navigate = useNavigate();
 	const [messageApi, contextHolder] = message.useMessage();
 	const [open, setOpen] = useState(false)
-	const [taskUrl, setTaskUrl] = useState('')
+	const [taskUrl, setTaskUrl] = useState('https://juejin.cn/')
 	const onCreateTask = () => {
 		setOpen(true)
 	}

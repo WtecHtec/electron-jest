@@ -3,7 +3,7 @@ import {  Space, Divider, Select, Button } from 'antd';
 import { getMutliLevelProperty } from '../../util';
 const { Option } = Select;
 export default memo(({ node }) => {
-  console.log('node===', node)
+  // console.log('node===', node)
   const [savaPath, setSavePath] = useState(getMutliLevelProperty(node, 'data.logicsetting.savaPath', ''))
   const onDataTypeSelect = (value) => {
     try {
@@ -38,7 +38,7 @@ export default memo(({ node }) => {
     <Space.Compact  block style={{ alignItems: 'center',   }}>
       <span className="dr-left">数据类型:</span> 
       <span className="dr-txt"> 
-        <Select defaultValue="text" style={{ flex: 1 }} onSelect={onDataTypeSelect}  >
+        <Select defaultValue="text" style={{ width: 200 }} onSelect={onDataTypeSelect}  >
           <Option value="text">文本</Option>
           <Option value="image" disabled>图片</Option>
         </Select>

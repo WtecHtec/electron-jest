@@ -3,7 +3,7 @@ import {  Space, Divider, Select, InputNumber } from 'antd';
 import { getMutliLevelProperty } from '../../util';
 const { Option } = Select;
 export default memo(({ node }) => {
-  console.log('node===', node)
+  // console.log('node===', node)
   const [frequency, setFrequency] = useState(1)
 
   const onLoopTypeSelect =  (value) => {

@@ -2,6 +2,44 @@ import { ipcMain, dialog } from 'electron'
 import { globalLogger } from './logger'
 import WsServer from './ws.server'
 import TaslPuppeteer from './task.puppeteer'
+import fs from 'fs'
+import path from 'node:path'
+const { execFile, spawn } = require('child_process');
+
+const handleRunngin = () => {
+  ipcMain.on('task-running', (event, data) => {
+    console.log('task-running----')
+    try {
+      const filepath = path.join(__dirname, '../task.cache.json')
+      fs.writeFileSync(filepath, JSON.stringify({
+        task: data
+      }));
+      console.log("JSON data is saved.");
+      const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
+      const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, './task.run-win.exe ')} --filepath ${filepath}` : '-e notepad.exe';
+      spawn(terminal, [command])
+    } catch (error) {
+      console.error(error);
+    }
+    // const exe = spawn(terminal, [command]);
+    // // 监听 exe 的输出
+    // exe.stdout.on('data', (data) => {
+    //   console.log(`输出: ${data}`);
+    // });
+
+    // // 监听 exe 的错误输出
+    // exe.stderr.on('data', (data) => {
+    //   console.error(`错误: ${data}`);
+    // });
+
+    // // 监听 exe 的关闭事件
+    // exe.on('close', (code) => {
+    //   console.log(`子进程退出，退出码 ${code}`);
+    // });
+
+	})
+}
+
 const handelCloseTaskSetting = () => {
 	ipcMain.on('close-task-setting', () => {
 		const wsServer = WsServer.getInstance()
@@ -71,6 +109,7 @@ function IpcManagement(win) {
 	handelCloseTaskSetting()
 	handelSelectFolder()
 	handelRunSetting(win)
+  handleRunngin()
 }
 
 export default IpcManagement

@@ -41,7 +41,7 @@ const NODE_DATAS = [
               logicType: 'logic_export',
               waitTime: 0,
               dataType: 'text',
-              exportType: 'json',
+              fileType: 'json',
               savaPath: '',
               rename: ''
             }

@@ -21,6 +21,16 @@ import EndNode from '../flownode/end.node';
 import './task.flow.css'
 import { getMutliLevelProperty } from '../util';
 
+const FLOW_TASK_MAP = {
+  logic_loop: 'logic',
+  logic_export: 'logic',
+  opt_click: 'opt',
+  opt_input: 'opt',
+  opt_verify: 'opt',
+  opt_pick: 'opt',
+  start: 'start',
+  end: 'end',
+}
 
 const getId = () => Math.random().toString(36).slice(2)
 
@@ -165,8 +175,21 @@ const TaskFlow = (porps) => {
 		console.log(JSON.stringify(edges))
 		console.log(nodes)
     console.log(getTask(nodes, edges))
+    if (checkExport(nodes)) {
+      messageApi.open({
+        type: 'warning',
+        content: '导出流程选择导出位置！！',
+      });
+      return
+    }
+    window.ipcRenderer.send('task-running', JSON.stringify(getTask(nodes, edges)))
   }
 
+  const checkExport = (nodes) => {
+    const fd = nodes.find(item => item.type === 'logic_export' && getMutliLevelProperty(item, 'data.logicsetting.savaPath', '') === '')
+    console.log('fd---', fd)
+    return !!fd
+  }
 
   const getTask = (nodes, edges, node = null) => {
     const cache = {}
@@ -177,7 +200,7 @@ const TaskFlow = (porps) => {
     
     while(current) {
       result.push( {
-        nodeType: current.type,
+        nodeType: FLOW_TASK_MAP[current.type],
         ...current.data
       } )
       const edge = edges.find(edg => {
@@ -204,7 +227,7 @@ const TaskFlow = (porps) => {
         if (loopBody) {
           const node =  nodes.find(item => item.id === loopBody.target)
           if (node) {
-            current.data['loopBody'] = [ ...getTask(nodes, edges, node)]
+            current.data.logicsetting['loopBody'] = [ ...getTask(nodes, edges, node)]
           }
         }
       }
@@ -244,6 +267,29 @@ const TaskFlow = (porps) => {
       });
     }
   }
+  const onDeleteNode = (node) => {
+    setEdges((els) => els.filter(el => el.source != node.id && el.target != node.id))
+    setNodes((nds) => nds.filter(nd => nd.id !== node.id))
+    setNodeDrawer({
+      ...nodeDrawer,
+      open: false,
+    })
+  }
+  const onClose = (node) => {
+    setNodeDrawer({
+      ...nodeDrawer,
+      open: false,
+    })
+    setNodes((nds) =>
+      nds.map((nd) => {
+        if (node.id === nd.id) {
+          // it's important that you create a new object here
+          // in order to notify react flow about the change
+          nd.data =  {...node.data}
+        }
+        return nd;
+    }));
+  }
 	return (
 		<>
 			{contextHolder}
@@ -282,12 +328,7 @@ const TaskFlow = (porps) => {
 						<Background color="#aaa" gap={16} />
 					</ReactFlow>
 				</ReactFlowProvider>
-				<NodeDrawer title={nodeDrawer.title} open={nodeDrawer.open} node={nodeDrawer.node} onClose={() => {
-					setNodeDrawer({
-						...nodeDrawer,
-						open: false,
-					})
-				}}></NodeDrawer>
+				<NodeDrawer title={nodeDrawer.title} open={nodeDrawer.open} node={nodeDrawer.node} onClose={onClose} onDelete={ onDeleteNode }></NodeDrawer>
 				<Modal title="提示" open={isModalOpen} onOk={handleOk} cancelText="取消" okText="确定返回首页" onCancel={() => setIsModalOpen(false)}>
 					<p>返回首页,当前页面操作将不会保存！</p>
 				</Modal>

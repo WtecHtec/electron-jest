@@ -34,8 +34,12 @@ export default memo((porps) => {
 
 	const onClose = () => {
 		setOpen(false);
-		(typeof porps.onClose === 'function' && porps.onClose())
+		(typeof porps.onClose === 'function' && porps.onClose(node))
 	};
+
+  const onDeleteNode = () => {
+    (typeof porps.onDelete === 'function' && porps.onDelete(node))
+  }
 
 	const DrawerContent = () => {
 		if (ITEM_DATA_MAP[node.type]) return <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
@@ -48,7 +52,7 @@ export default memo((porps) => {
 			<Drawer title={porps.title} placement="right" onClose={onClose} open={open} maskClosable={false} keyboard={false}>
 				<DrawerContent></DrawerContent>
 				<p>
-					{!DEL_EXCLUDE.includes(node.type) && <Button type="primary" danger>
+					{!DEL_EXCLUDE.includes(node.type) && <Button type="primary" danger onClick={onDeleteNode}>
 						删除流程
 					</Button>}
 				</p>
