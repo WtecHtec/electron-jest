@@ -160,10 +160,59 @@ const TaskFlow = (porps) => {
 	const onEdgeContextMenu = useCallback((event, edge) => {
 		setEdges((els) => els.filter(el => el.id != edge.id))
 	}, [])
-	const getFlowDesc = () => {
+
+	const handleRunning = () => {
 		console.log(JSON.stringify(edges))
 		console.log(nodes)
-	}
+    console.log(getTask(nodes, edges))
+  }
+
+
+  const getTask = (nodes, edges, node = null) => {
+    const cache = {}
+    let cacheKey = ''
+    let current = node || nodes.find(item => item.type === 'start')
+    const result: any[] = []
+    if (!current) return result
+    
+    while(current) {
+      result.push( {
+        nodeType: current.type,
+        ...current.data
+      } )
+      const edge = edges.find(edg => {
+        if ( current.type === 'logic_loop') {
+          return edg.source === current.id && edg.sourceHandle === 'next'
+        }
+        return edg.source === current.id
+      })
+      if (!edge) {
+        return result
+      }
+      let { id, source, target,  sourceHandle, targetHandle, }  =  edge
+      cacheKey = `${id}-${source}-${target}-${sourceHandle}-${targetHandle}`
+      if (cache[cacheKey]) {
+        console.log(' 有环 ')
+        current = null
+        return []
+      }
+      cache[cacheKey] = 1
+      current = nodes.find(item => item.id === target)
+      if (current && current.type === 'logic_loop') {
+        // 循环流程 loopBody
+        const loopBody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'loopbody' )
+        if (loopBody) {
+          const node =  nodes.find(item => item.id === loopBody.target)
+          if (node) {
+            current.data['loopBody'] = [ ...getTask(nodes, edges, node)]
+          }
+        }
+      }
+    }
+    return result
+  }
+
+
 	const goBackRouter = () => {
 
 		setIsModalOpen(true)
@@ -201,7 +250,7 @@ const TaskFlow = (porps) => {
 			<div className="reactflow-wrapper" ref={reactFlowWrapper}>
 				<div className="tools">
 					<Button className="tools-btn" onClick={() => { }}>完成设计</Button>
-					<Button className="tools-btn" onClick={getFlowDesc}>流程描述</Button>
+					<Button className="tools-btn" onClick={handleRunning}>立即执行</Button>
           {
             reRun && <Button  className="tools-btn"  loading={loading} onClick={onReRun}>重启服务</Button>
           }
