@@ -165,7 +165,7 @@ const runPick = async (arg) => {
   //   pickDesc,
   //   value: text,
   // })
-
+  console.log(`${pickDesc}:${text}`)
   env && (typeof env.pickData === 'function') && env.pickData({
     pickDesc,
     value: text,
@@ -220,7 +220,9 @@ const runExportToJson = async (arg) => {
   try {
     const data = env.getPickData()
     // console.log('data----', data)
-    fs.writeFileSync(`${savaPath || '.'}/${rename || new Date().getTime() }.json`, JSON.stringify(data, null, 4));
+    const newSavaPath = savaPath ?  `${savaPath}/${rename || new Date().getTime() }.json` : path.join(__dirname, `${rename || new Date().getTime() }.json`)
+    fs.writeFileSync(newSavaPath, JSON.stringify(data, null, 4));
+    console.log(`导出成功,路径：${newSavaPath}`)
   } catch (error) {
     console.error(error);
   }
@@ -295,9 +297,9 @@ async function runTask(arg) {
 	let { browser, taskData, currentPage } = arg
 	let step = 0
 	let maxStep = taskData.length
-  console.log('maxStep---', maxStep)
+  // console.log('maxStep---', maxStep)
 	while (step < maxStep && taskData[step]) {
-    console.log(step)
+    // console.log(step)
 		const { nodeType } = taskData[step]
 		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
 			const { page } = await RUN_NODE_TYPE[nodeType]({
@@ -317,14 +319,14 @@ async function main() {
 	const browser = await getBrowser()
   const env = new RunEnv()
   let taskData = []
-  console.log('argv----', argv)
+  // console.log('argv----', argv)
   // const mode = argv.mode || 'dev'
   try {
     const data = fs.readFileSync(argv.filepath, 'utf-8');
     const dataconfig = JSON.parse(data);
     taskData = JSON.parse(dataconfig.task)
     if (Array.isArray(taskData)) {
-      console.log('taskData---', taskData)
+      // console.log('taskData---', taskData)
       await runTask({ browser, taskData, env })
     } else {
       console.error('读取或解析任务数据时发生错误:', taskData);
