@@ -8,14 +8,16 @@ import { saveTask, getAllTask } from './task.dao'
 const { spawn } = require('child_process');
 
 const handleRunngin = () => {
-  ipcMain.on('task-running', (event, data) => {
+  ipcMain.on('task-running', (event, { filepath, data }) => {
     console.log('task-running----')
     try {
-      const filepath = path.join(__dirname, '../task.cache.json')
-      fs.writeFileSync(filepath, JSON.stringify({
-        task: data
-      }));
-      console.log("JSON data is saved.");
+      if (!filepath) {
+        filepath = path.join(__dirname, '../task.cache.json')
+        fs.writeFileSync(filepath, JSON.stringify({
+          task: data
+        }));
+        console.log("JSON data is saved.");
+      }
       const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
       const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, './task.run-win.exe ')} --filepath ${filepath}` : '-e notepad.exe';
       spawn(terminal, [command])
@@ -113,7 +115,7 @@ function startServer(wsServer, taslPuppeteer, url, win) {
 function handleSaveTask() {
   ipcMain.on('task-save', (event, data) => { 
     try {
-      const { id, taskdesc, taskdata } = JSON.parse(data)
+      const { id, taskdesc, taskdata, isupdate, taskurl } = JSON.parse(data)
       try {
         // 检查文件夹是否存在
         const savepath = path.join(__dirname, `../tasks`)
@@ -125,8 +127,8 @@ function handleSaveTask() {
         }
         const filepath = path.join(savepath, `./${id}.json`)
         fs.writeFileSync(filepath, taskdata);
-        console.log("task data is saved.");
-        saveTask(id, filepath, taskdata)
+        // console.log("task data is saved.", id, taskdesc);
+        !isupdate && saveTask(id, filepath, taskdesc, taskurl)
       } catch (error) {
         console.error(error);
       }
@@ -143,6 +145,20 @@ function handleGetTask() {
   })
 }
 
+function handleGetTaskDetail() {
+  ipcMain.handle('task-detail', async ( event, filepath) => {
+    try {
+      const data = fs.readFileSync(filepath, 'utf-8');
+      const jsonData = JSON.parse(data);
+      // console.log('JSON 数据:', jsonData);
+      return jsonData
+    } catch (err) {
+      console.error('读取或解析 JSON 数据时发生错误:', err);
+      return {}
+    }
+  })
+}
+
 function IpcManagement(win) {
 	handelCloseTaskSetting()
 	handelSelectFolder()
@@ -150,6 +166,7 @@ function IpcManagement(win) {
   handleRunngin()
   handleSaveTask()
   handleGetTask()
+  handleGetTaskDetail()
 }
 
 export default IpcManagement

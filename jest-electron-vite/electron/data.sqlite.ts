@@ -9,7 +9,7 @@ class Sqlite {
     const dbPath = path.join(app.getPath('userData'), 'jest.pro.db');
     this.db = new sqlite3.Database(dbPath);
     this.db.serialize(() => {
-      this.db.run('CREATE TABLE IF NOT EXISTS jest_task (id TEXT, filepath TEXT,  taskdesc TEXT )');
+      this.db.run('CREATE TABLE IF NOT EXISTS jest_task (id TEXT, filepath TEXT,  taskdesc TEXT, taskurl TEXT )');
     });
     // db.serialize(() => {
     //   const stmt = db.prepare('INSERT INTO myTable VALUES (?, ?)');
@@ -46,7 +46,7 @@ class Sqlite {
   all(sql, params = '') {
     return new Promise((resolve, reject) => {
       this.db.all(sql, (err, data) => {
-        console.log('data---', sql, err, data)
+        // console.log('data---', sql, err, data)
         if (err) {
           reject(err);
         } else {

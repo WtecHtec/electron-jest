@@ -57,7 +57,7 @@ function TaskDrawer({ onClose, open, xpath }) {
 
 	return <>
 		{contextHolder}
-		<Drawer title="任务设计" placement="right" width={500} onClose={onClose} open={open} maskClosable={false} keyboard={false}>
+		<Drawer title="任务设计" placement="left" width={500} onClose={onClose} open={open} maskClosable={false} keyboard={false}>
 			<div>当前xpath: <span style={{ color: '#666666' }}> {xpath} </span> </div>
 			<Divider dashed></Divider>
 			<Space.Compact block style={{ alignItems: 'center' }}>

@@ -44,17 +44,22 @@ const TaskFlow = (porps) => {
 	const [edges, setEdges, onEdgesChange] = useEdgesState(porps.edges || []);
 	const [reactFlowInstance, setReactFlowInstance] = useState(null);
 	const [nodeDrawer, setNodeDrawer] = useState({ title: 'Task Item', open: false, node: {} })
-  const [reRun, setReRun] = useState(false)
+  const [reRun, setReRun] = useState(params.get('taskid') ? true : false)
   const [loading, setLoading] = useState(false)
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+
+  useEffect(() => {
+    setNodes(porps.nodes)
+    setEdges(porps.edges)
+  }, [porps.nodes])
 
 	useEffect(() => {
 		console.log('task-flow-data----')
 		const _onMessage = (_event, message) => {
-			console.log('task-flow-data----', message)
+			// console.log('task-flow-data----', message)
 			try {
 				const newNode = JSON.parse(message)
-				console.log('newNode---', nodes)
+				// console.log('newNode---', nodes)
         const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
 				setNodes(nds => nds.concat([{
 					id: getId(),
@@ -185,7 +190,9 @@ const TaskFlow = (porps) => {
       });
       return
     }
-    window.ipcRenderer.send('task-running', JSON.stringify(getTask(nodes, edges)))
+    window.ipcRenderer.send('task-running', {
+      data: JSON.stringify(getTask(nodes, edges)),
+    })
   }
 
   const checkExport = (nodes) => {
@@ -298,12 +305,18 @@ const TaskFlow = (porps) => {
       setIsSaveModalOpen(true)
   }
   const handleSaveOk = () => {
+    const item = nodes.find(item => item.type === 'start' )
+    if (!item) {
+      return
+    }
     window.ipcRenderer.send('task-save', JSON.stringify({
-      id: getId(),
+      id: params.get('taskid') || getId(),
       taskdesc: params.get('taskdesc'),
+      isupdate: !!params.get('taskid'),
+      taskurl: item.data.url,
       taskdata: JSON.stringify({
-        nodes: nodes,
-        edges: edges,
+        nodes: JSON.stringify(nodes),
+        edges: JSON.stringify(edges),
         task: JSON.stringify(getTask(nodes, edges))
       })
     }))
@@ -317,7 +330,7 @@ const TaskFlow = (porps) => {
 					<Button className="tools-btn" onClick={handlefinishSet}>保存任务</Button>
 					<Button className="tools-btn" onClick={handleRunning}>立即执行</Button>
           {
-            reRun && <Button  className="tools-btn"  loading={loading} onClick={onReRun}>重启服务</Button>
+            reRun && <Button  className="tools-btn"  loading={loading} onClick={onReRun}>开始设计</Button>
           }
 					<Button className="tools-btn" onClick={goBackRouter}>返回首页</Button>
 				</div>

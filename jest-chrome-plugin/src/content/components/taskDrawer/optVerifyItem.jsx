@@ -23,7 +23,7 @@ const OptVerifyItem = forwardRef((props, ref) => {
 		})
 	}
 	const onVerifyValueChange = (e) => {
-		setInputData({
+		setVerifyData({
 			...verifyData,
 			verifyValue: e.target.value
 		})

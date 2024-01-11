@@ -7,91 +7,57 @@ const { TextArea } = Input;
 export default memo((props) => {
 	const columns = [
 		{
-			title: 'Name',
-			dataIndex: 'name',
-			key: 'name',
+			title: 'ID',
+			dataIndex: 'id',
+			key: 'id',
 			render: (text) => <a>{text}</a>,
 		},
 		{
-			title: 'Age',
-			dataIndex: 'age',
-			key: 'age',
+			title: '任务描述',
+			dataIndex: 'taskdesc',
+			key: 'taskdesc',
 		},
 		{
-			title: 'Address',
-			dataIndex: 'address',
-			key: 'address',
-		},
-		{
-			title: 'Tags',
-			key: 'tags',
-			dataIndex: 'tags',
-			render: (_, { tags }) => (
-				<>
-					{tags.map((tag) => {
-						let color = tag.length > 5 ? 'geekblue' : 'green';
-						if (tag === 'loser') {
-							color = 'volcano';
-						}
-						return (
-							<div>
-								{tag.toUpperCase()}
-							</div>
-						);
-					})}
-				</>
-			),
-		},
-		{
-			title: 'Action',
+			title: '操作',
 			key: 'action',
 			render: (_, record) => (
 				<div>
-					<a>Invite {record.name}</a>
-					<a>Delete</a>
+					<Button type="link" onClick={ ()=> onRunTask(record)}>执行任务</Button>
+					<Button type="link" onClick={() =>  onUpdateTask(record)}>修改任务</Button>
 				</div>
 			),
 		},
 	];
-	const data = [
-		{
-			key: '1',
-			name: 'John Brown',
-			age: 32,
-			address: 'New York No. 1 Lake Park',
-			tags: ['nice', 'developer'],
-		},
-		{
-			key: '2',
-			name: 'Jim Green',
-			age: 42,
-			address: 'London No. 1 Lake Park',
-			tags: ['loser'],
-		},
-		{
-			key: '3',
-			name: 'Joe Black',
-			age: 32,
-			address: 'Sydney No. 1 Lake Park',
-			tags: ['cool', 'teacher'],
-		},
-	];
+
 	const navigate = useNavigate();
 	const [messageApi, contextHolder] = message.useMessage();
 	const [open, setOpen] = useState(false)
 	const [taskUrl, setTaskUrl] = useState('https://juejin.cn/')
   const [taskDesc, setTaskDesc] = useState('')
-
+  const [taskDatas, setTaskDatas] = useState<any>([])
 
   useEffect(() => {
     const getData = async () => {
-      const [data] = await window.ipcRenderer.invoke('select-task-all');
-      console.log('data---', data)
+      const data = await window.ipcRenderer.invoke('select-task-all');
+      // console.log('data---', data)
+      setTaskDatas([...data])
     }
     getData()
     return () => {}
   }, [])
 
+  const onUpdateTask = (value) => {
+    console.log(value)
+    const { taskurl, taskdesc, id, filepath } =value
+    navigate(`/setting?filepath=${filepath}&taskurl=${taskurl}&taskdesc=${taskdesc}&taskid=${id}`)
+  }
+
+  const onRunTask = (value) => {
+    const { filepath } =value
+    window.ipcRenderer.send('task-running', {
+      filepath,
+    })
+  }
 	const onCreateTask = () => {
 		setOpen(true)
 	}
@@ -151,7 +117,7 @@ export default memo((props) => {
 				</Header>
 				<Divider>任务列表</Divider>
 				<Content>
-					<Table columns={columns} dataSource={data} />
+					<Table columns={columns} dataSource={taskDatas} />
 				</Content>
 			</Layout>
 			<Modal
