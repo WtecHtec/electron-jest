@@ -33,7 +33,7 @@ function _remove() {
     
 function useInspector() {
   const [xPath, setXPath] = useState('')
-
+  const [ refresh, setRefresh] = useState(-1)
   const optRef = useRef({
     status: true,
   })
@@ -77,6 +77,7 @@ function useInspector() {
         const currentXpath = getXpath(currentTarget, true)
         optRef.current.status = false
         setXPath(currentXpath)
+        setRefresh(Math.random())
         console.log('_onKeyUp----')
         // setStatus(false)
        
@@ -90,7 +91,7 @@ function useInspector() {
       document.body.removeEventListener(KEY_UP_EVENT, _throttleOnKeyUp)
     }
   }, [])
-  return [xPath, optRef, optRef.current.status]
+  return [xPath, optRef, optRef.current.status, refresh]
 }
 
 export default useInspector
