@@ -12,14 +12,14 @@ const handleRunngin = () => {
     console.log('task-running----')
     try {
       if (!filepath) {
-        filepath = path.join(__dirname, '../task.cache.json')
+        filepath = path.join(__dirname, `${process.env.CHROME_DIST}task.cache.json`)
         fs.writeFileSync(filepath, JSON.stringify({
           task: data
         }));
         console.log("JSON data is saved.");
       }
       const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
-      const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, './task.run-win.exe ')} --filepath ${filepath} --mode win` : '-e notepad.exe';
+      const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, `${process.env.CHROME_DIST}task.run-win.exe `)} --filepath ${filepath}` : '-e notepad.exe';
       spawn(terminal, [command])
     } catch (error) {
       console.error(error);
@@ -118,7 +118,7 @@ function handleSaveTask() {
       const { id, taskdesc, taskdata, isupdate, taskurl } = JSON.parse(data)
       try {
         // 检查文件夹是否存在
-        const savepath = path.join(__dirname, `../tasks`)
+        const savepath = path.join(__dirname, `${process.env.CHROME_DIST}/tasks`)
         if (!fs.existsSync(savepath)) {
           // 如果不存在，则创建文件夹
           fs.mkdirSync(savepath);

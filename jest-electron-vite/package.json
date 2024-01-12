@@ -3,8 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "chcp 65001  && vite",
-    "build": "tsc && vite build && electron-builder",
+    "dev": "chcp 65001  && vite --mode dev",
+    "build": "tsc && vite build  --mode pro && electron-builder ",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },

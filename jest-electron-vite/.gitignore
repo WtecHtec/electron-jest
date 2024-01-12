@@ -26,3 +26,5 @@ release
 *.sw?
 chrome_win64
 tasks
+*.exe
+*.tar

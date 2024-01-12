@@ -103,19 +103,23 @@ const runOptClick = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, clickData } = optsetting
 	const clickElement = await page.waitForXPath(xpath)
+  // console.log('clickElement---', xpath, clickElement)
 	const oldPages = await browser.pages()
-	await clickElement.click();
+  await clickElement.click();
+  // console.log('click')
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime)
+		await page.waitForTimeout(waitTime * 1000)
 	}
-	await page.waitForNavigation()
+	// await page.waitForNavigation()
 	const { isCurrentPage } = clickData
 	let newPage = page
 	if (isCurrentPage !== 1) {
 		const pages = await browser.pages()
 		newPage = pages[pages.length - 1]
+    // console.log('pages----', pages, oldPages)
 		if (oldPages.length < pages.length) {
 			await newPage.bringToFront()
+      logger.info(`切换新页面tab`)
 		}
 	}
   logger.info(`点击 `)
@@ -127,7 +131,7 @@ const runOptInput = async (arg) => {
 	const clickElement = await page.waitForXPath(xpath)
 	await clickElement.focus()
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime)
+		await page.waitForTimeout(waitTime * 1000)
 	}
 	const { inputValue } = inputData
 	await clickElement.type(String(inputValue), { delay: 500 })
@@ -140,7 +144,7 @@ const runOptVerify = async (arg) => {
 	const { xpath, waitTime, verifyData } = optsetting
 	const clickElement = await page.waitForXPath(xpath)
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime)
+		await page.waitForTimeout(waitTime * 1000)
 	}
 	const { verifyValue, rename, tipType } = verifyData
 	const text = await page.evaluate(node => node.innerText, clickElement)
@@ -180,7 +184,7 @@ const runPick = async (arg) => {
   } 
 	const clickElement = await page.waitForXPath(xpath)
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime)
+		await page.waitForTimeout(waitTime * 1000)
 	}
   await page.addScriptTag({ 
     content: `const PICK_VALUE = {
@@ -210,7 +214,7 @@ const runNodeLogic = async (arg) => {
   const { logicsetting, waitTime } = task
   const { logicType } = logicsetting
   if (waitTime > 0) {
-		await page.waitForTimeout(waitTime)
+		await page.waitForTimeout(waitTime * 1000)
 	}
   // console.log('logicsetting---', logicsetting)
   if (typeof RUN_LOGIC[logicType] === 'function') {

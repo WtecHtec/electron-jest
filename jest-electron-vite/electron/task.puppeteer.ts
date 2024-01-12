@@ -3,8 +3,8 @@ import path from 'node:path'
 class TaslPuppeteer {
 	browser: any
 	async runPuppeteer(url) {
-		const buildCrx = path.join(__dirname, '../chrome_win64/chrome_extension/XPathHelper')
-    const jestProCrx = path.join(__dirname, '../chrome_win64/chrome_extension/JestPro')
+		const buildCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/XPathHelper`)
+    const jestProCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/JestPro`)
 		console.log('buildCrx---', buildCrx)
 		const config = {
 			headless: false, // 关闭无头模式
@@ -30,9 +30,9 @@ class TaslPuppeteer {
 				height: 1080
 			}
 		}
-		if (process.platform === 'win32') {
-			config['executablePath'] = path.join(__dirname, '../chrome_win64/chrome.exe')
-		}
+		// if (process.platform === 'win32') {
+		// 	config['executablePath'] = path.join(__dirname, '../chrome_win64/chrome.exe')
+		// }
 		const browser = await puppeteer.launch(config);
 		this.browser = browser
     browser.on('disconnected', (fn) => {
