@@ -91,8 +91,9 @@ const runNodeOpt = async (arg) => {
 
 const runNodeEnd = async (arg) => {
 	const { browser, task, page } = arg
+  await page.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
   await page.evaluate(() => {
-    window.alert('任务执行结束,详情可前往查看日志【jest-pro-**.log】！')
+    window.alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
   });
 	await browser.close();
   logger.info(`任务结束`)
@@ -332,7 +333,7 @@ const EXPORT_FILE_TYPE= {
 
 
 async function runTask(arg) {
-	let { browser, taskData, currentPage } = arg
+	let { browser, taskData, currentPage, logicType } = arg
 	let step = 0
 	let maxStep = taskData.length
   // console.log('maxStep---', maxStep)
@@ -350,6 +351,12 @@ async function runTask(arg) {
 		}
 		step = step + 1
 	}
+  if (!logicType && currentPage){
+    await currentPage.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
+    await currentPage.evaluate(() => {
+      window.alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
+    });
+  }
 }
 
 async function main() {
@@ -366,12 +373,13 @@ async function main() {
     if (Array.isArray(taskData)) {
       // console.log('taskData---', taskData)
       await runTask({ browser, taskData, env })
+      logger.info('任务结束',)
     } else {
-      console.error('读取或解析任务数据时发生错误: 数据类型错误',);
+      // console.error('读取或解析任务数据时发生错误: 数据类型错误',);
       logger.info('读取或解析任务数据时发生错误: 数据类型错误',)
     }
   } catch (err) {
-    console.error('读取或解析任务数据时发生错误 err:', err);
+    // console.error('读取或解析任务数据时发生错误 err:', err);
     logger.info('读取或解析任务数据时发生错误 err:', err)
   }
 	
