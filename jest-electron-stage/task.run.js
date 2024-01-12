@@ -3,16 +3,37 @@ const path = require('path')
 const fs = require('fs');
 
 const argv = require('minimist')(process.argv.slice(2),  {
-  string: ['filepath']
+  string: ['filepath'],
 });
-
+const winston = require('winston');
 const RunEnv = require('./run.evn')
+
+
+// 创建一个时间戳文件名
+const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+const logFilename = `./tasks-run-logs/jest-run-${timestamp}.log`;
+
+// 创建一个 winston 日志记录器
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} ${level.toUpperCase()}: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: logFilename }),
+  ],
+});
 
 // const TaskData = require('./task.data')
 
 const ENV = 'mac'
+
 const DEV_CONFIG = {
-	win: './chrome_win64/chrome.exe',
+	win: '',
 	mac: ''
 }
 // console.log(TaskData)
@@ -41,6 +62,7 @@ const getBrowser = async () => {
 	}
 	if (DEV_CONFIG[ENV]) {
 		config.executablePath = path.join(__dirname, DEV_CONFIG[ENV])
+    logger.info(config.executablePath)
 	}
 	const browser = await puppeteer.launch(config);
 	return browser
@@ -50,6 +72,7 @@ const runNodeStart = async (arg) => {
 	const { browser, task } = arg
 	const { url } = task
 	const page = await browser.newPage()
+  logger.info(`打开页面：${url}`)
 	await page.goto(url, {
 		waitUntil: 'domcontentloaded',
 	});
@@ -68,7 +91,11 @@ const runNodeOpt = async (arg) => {
 
 const runNodeEnd = async (arg) => {
 	const { browser, task, page } = arg
+  await page.evaluate(() => {
+    window.alert('任务执行结束,详情可前往查看日志【jest-pro-**.log】！')
+  });
 	await browser.close();
+  logger.info(`任务结束`)
 	return {}
 }
 
@@ -91,6 +118,7 @@ const runOptClick = async (arg) => {
 			await newPage.bringToFront()
 		}
 	}
+  logger.info(`点击 `)
 	return { page: newPage }
 }
 const runOptInput = async (arg) => {
@@ -103,6 +131,7 @@ const runOptInput = async (arg) => {
 	}
 	const { inputValue } = inputData
 	await clickElement.type(String(inputValue), { delay: 500 })
+  logger.info(`输入： ${inputValue} `)
 	return {}
 }
 
@@ -116,9 +145,11 @@ const runOptVerify = async (arg) => {
 	const { verifyValue, rename, tipType } = verifyData
 	const text = await page.evaluate(node => node.innerText, clickElement)
 	if (text === verifyValue) {
-		console.log(`${rename}:测试通过`)
+		console.log(`${rename}:通过`)
+    logger.info(`校验： ${rename} 【通过】`)
 	} else {
 		console.log(`${rename}:测试不通过`)
+    logger.info(`校验： ${rename} 【不通过】`)
 		if (tipType === 'tip_alert') {
 			await page.addScriptTag({ content: `const VERIFY_TIP = '${rename}:测试不通过'` })
 			await page.evaluate(() => {
@@ -166,6 +197,7 @@ const runPick = async (arg) => {
   //   value: text,
   // })
   console.log(`${pickDesc}:${text}`)
+  logger.info(`采集数据：${pickDesc}:${text}`)
   env && (typeof env.pickData === 'function') && env.pickData({
     pickDesc,
     value: text,
@@ -190,6 +222,7 @@ const runNodeLogic = async (arg) => {
 const runLogicLoop = async (arg) => {  
   const { logicsetting } = arg
   const { loopType } = logicsetting
+  logger.info(`执行循环`)
   if (typeof LOOP_TYPE[loopType] === 'function') {
     return await LOOP_TYPE[loopType]({ ...arg, logicsetting})
   }
@@ -223,6 +256,7 @@ const runExportToJson = async (arg) => {
     const newSavaPath = savaPath ?  `${savaPath}/${rename || new Date().getTime() }.json` : path.join(__dirname, `${rename || new Date().getTime() }.json`)
     fs.writeFileSync(newSavaPath, JSON.stringify(data, null, 4));
     console.log(`导出成功,路径：${newSavaPath}`)
+    logger.info(`导出成功,路径：${newSavaPath}`)
   } catch (error) {
     console.error(error);
   }
@@ -329,10 +363,12 @@ async function main() {
       // console.log('taskData---', taskData)
       await runTask({ browser, taskData, env })
     } else {
-      console.error('读取或解析任务数据时发生错误:', taskData);
+      console.error('读取或解析任务数据时发生错误: 数据类型错误',);
+      logger.info('读取或解析任务数据时发生错误: 数据类型错误',)
     }
   } catch (err) {
-    console.error('读取或解析任务数据时发生错误:', err);
+    console.error('读取或解析任务数据时发生错误 err:', err);
+    logger.info('读取或解析任务数据时发生错误 err:', err)
   }
 	
 }

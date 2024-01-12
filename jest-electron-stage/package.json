@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "minimist": "^1.2.8",
-    "puppeteer": "^21.7.0"
+    "puppeteer": "^21.7.0",
+    "winston": "^3.11.0"
   }
 }

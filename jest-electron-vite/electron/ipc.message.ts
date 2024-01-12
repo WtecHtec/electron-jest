@@ -19,7 +19,7 @@ const handleRunngin = () => {
         console.log("JSON data is saved.");
       }
       const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
-      const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, './task.run-win.exe ')} --filepath ${filepath}` : '-e notepad.exe';
+      const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, './task.run-win.exe ')} --filepath ${filepath} --mode win` : '-e notepad.exe';
       spawn(terminal, [command])
     } catch (error) {
       console.error(error);
