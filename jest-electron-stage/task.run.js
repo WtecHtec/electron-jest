@@ -104,7 +104,7 @@ const runOptClick = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, clickData } = optsetting
   console.log('xpath---', xpath,)
-	const clickElement = await page.waitForXPath(xpath)
+	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
   console.log('clickElement---', clickElement ) 
 	const oldPages = await browser.pages()
   await clickElement.click();
@@ -134,7 +134,7 @@ const runOptClick = async (arg) => {
 const runOptInput = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, inputData } = optsetting
-	const clickElement = await page.waitForXPath(xpath)
+	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
 	await clickElement.focus()
 	if (waitTime > 0) {
 		await page.waitForTimeout(waitTime * 1000)
@@ -148,7 +148,7 @@ const runOptInput = async (arg) => {
 const runOptVerify = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, verifyData } = optsetting
-	const clickElement = await page.waitForXPath(xpath)
+	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
 	if (waitTime > 0) {
 		await page.waitForTimeout(waitTime * 1000)
 	}
@@ -182,7 +182,7 @@ const runOptPick = async (arg) => {
 
 const runOptHover =  async (arg) => { 
   const { xpath, waitTime, } = optsetting
-	const clickElement = await page.waitForXPath(xpath)
+	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
 	await clickElement.hover()
 	if (waitTime > 0) {
 		await page.waitForTimeout(waitTime * 1000)
@@ -198,7 +198,7 @@ const runPick = async (arg) => {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
   } 
-	const clickElement = await page.waitForXPath(xpath)
+	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
 	if (waitTime > 0) {
 		await page.waitForTimeout(waitTime * 1000)
 	}
