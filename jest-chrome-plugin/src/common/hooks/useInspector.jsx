@@ -13,11 +13,12 @@ const KEY_UP_EVENT = 'keyup'
 const maxZIndex = getMaxZIndex() + 1
 // 操作maker(html 元素)
 const optOverlay = createElement('div', {
-  id: 'dom-inspector-root',
+  id: 'dom-inspector-root-jest-pro-overlay',
   style: `z-index: ${maxZIndex};`,
 });
 // 创建辅助元素，用于判断圈选器元素是否被缩放
 const assistEle = createElement('div', {
+  id: 'dom-inspector-root-jest-pro-scale',
   style: `pointer-events: none;
   visibility: hidden;
   width: 100px;

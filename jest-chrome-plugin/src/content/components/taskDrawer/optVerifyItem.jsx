@@ -3,18 +3,19 @@ import { Tooltip, Space, Divider, Input, Select } from 'antd'
 const { TextArea } = Input;
 const { Option } = Select;
 const OptVerifyItem = forwardRef((props, ref) => {
-	const [verifyData, setVerifyData] = useState({ rename: '', tipType: 'tip_alert', verifyValue: '' })
+	const [verifyData, setVerifyData] = useState({ tipType: 'tip_alert', verifyValue: '' })
 	useImperativeHandle(ref, () => {
 		return {
 			verifyData
 		}
 	})
-	const onRenameChange = (e) => {
-		setVerifyData({
-			...verifyData,
-			rename: e.target.value,
-		})
-	}
+
+	// const onRenameChange = (e) => {
+	// 	setVerifyData({
+	// 		...verifyData,
+	// 		rename: e.target.value,
+	// 	})
+	// }
 
 	const onTipTypeSelect = (value) => {
 		setVerifyData({
@@ -29,13 +30,13 @@ const OptVerifyItem = forwardRef((props, ref) => {
 		})
 	}
 	return <>
-		<Divider dashed></Divider>
+		{/* <Divider dashed></Divider>
 		<Space.Compact block style={{ alignItems: 'center' }}>
 			<Tooltip placement="top" title={<span>设置校验名称,方便查找</span>}>
 				<span style={{ flexShrink: 0 }}>校验名称:</span>
 			</Tooltip>
 			<Input style={{ flex: 1 }} onChange={onRenameChange} value={verifyData.rename} />
-		</Space.Compact>
+		</Space.Compact> */}
 		<Divider dashed></Divider>
 		<Space.Compact block style={{ alignItems: 'center' }}>
 			<Tooltip placement="top" title={<span>该操作会根据当前元素text内容与检验内容比较</span>}>

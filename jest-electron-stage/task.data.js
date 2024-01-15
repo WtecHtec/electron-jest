@@ -98,6 +98,35 @@ module.exports = [
       rename: '测试保存'
     }
   },
+  {
+    nodeType: 'logic',
+    logicsetting: {
+      logicType: 'logic_back',
+      waitTime: 0,
+    }
+  },
+  {
+    nodeType: 'logic',
+    logicsetting: {
+      logicType: 'logic_reload',
+      waitTime: 0,
+    }
+  },
+  {
+    nodeType: 'logic',
+    logicsetting: {
+      logicType: 'logic_close',
+      waitTime: 0,
+    }
+  },
+  {
+		nodeType: 'opt',
+		optsetting: {
+			optType: 'opt_hover',
+			xpath: '/html/body/div[1]/div[1]/div[@id="juejin"]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/ul[1]/li[1]/div[1]/a[1]/object[1]/div[1]/div[1]/div[2]/a[1]/div[1]',
+			waitTime: 0,
+		}
+	},
 	// {
 	// 	nodeType: 'end',
 	// },

@@ -6,12 +6,12 @@ import $ from 'jquery';
 
 // 创建id为CRX-container的div
 const app = document.createElement('div')
-app.id = 'CRX-container'
+app.id = 'dom-inspector-root-jest-pro-crx-container'
 // 将刚创建的div插入body最后
 document.body.appendChild(app)
 // 将ReactDOM插入刚创建的div
 const crxContainer = ReactDOM.createRoot(
-    document.getElementById('CRX-container')
+    document.getElementById('dom-inspector-root-jest-pro-crx-container')
 )
 crxContainer.render(<Content />)
 

@@ -23,11 +23,29 @@ function getTagName(ele) {
   return tag;
 };
 
+/** 判断当前div是否属于插件 */
+function checkElByPlugin(ele) {
+  const ids = ['dom-inspector-root-jest-pro-scale', 'dom-inspector-root-jest-pro-overlay', 'dom-inspector-root-jest-pro-crx-content', 'dom-inspector-root-jest-pro-crx-container']
+  try {
+    if (ids.includes(ele.id)) return true
+    const drawerEl = document.getElementById('dom-inspector-root-jest-pro-drawer')
+    const modalEl = document.getElementById('dom-inspector-root-jest-pro-tips-modal')
+    const tipEl = document.getElementById('dom-inspector-root-jest-pro-crx-tip')
+    const tipSpanEl = document.getElementById('dom-inspector-root-jest-pro-tip-span')
+    return ele.contains(drawerEl) || ele.contains(modalEl) || ele.contains(tipEl) || ele.contains(tipSpanEl);
+  } catch (error) {
+    return false
+  }
+}
+
 /** 获取tag 在第几个位置 */
 function findIndex(ele, currentTag) {
   let nth = 0;
   while (ele) {
-      if (ele.nodeName.toLowerCase() === currentTag) nth += 1;
+      if (ele.nodeName.toLowerCase() === currentTag ) nth += 1;
+      if (ele.nodeName.toLowerCase() === currentTag && !['html', 'body'].includes(currentTag) && checkElByPlugin(ele)) {
+        nth -= 1;
+      }
       ele = ele.previousElementSibling;
   }
   return nth;

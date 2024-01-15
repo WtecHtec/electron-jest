@@ -31,9 +31,21 @@ const BASE_CONFIG = [
 			return getMutliLevelProperty(node, 'data.optsetting.xpath', '')
 		}
 	},
+  {
+		label: '操作描述:',
+		sublabel: true,
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.rename', '')
+		}
+	},
 	{
 		label: '等待响应时间(秒):',
 		sublabel: true,
+    edit: true,
+    valType: 'number',
+    valChange: (e, node) => {
+      node.data.optsetting.waitTime = e
+    },
 		subformat: (node) => {
 			return getMutliLevelProperty(node, 'data.optsetting.waitTime', '')
 		}
@@ -63,6 +75,11 @@ export const INPUT_DATAS = [
 	{
 		label: '输入数据:',
 		sublabel: true,
+    edit: true,
+    valType: 'text',
+    valChange: (e, node) => {
+      node.data.optsetting.inputData.inputValue = e
+    },
 		subformat: (node) => {
 			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputValue', '')
 		}
@@ -75,13 +92,13 @@ export const VERIFY_DATAS = [
 		sublabel: '校验数据',
 	},
 	...BASE_CONFIG,
-	{
-		label: '校验描述:',
-		sublabel: true,
-		subformat: (node) => {
-			return getMutliLevelProperty(node, 'data.optsetting.verifyData.rename', '')
-		}
-	},
+	// {
+	// 	label: '校验描述:',
+	// 	sublabel: true,
+	// 	subformat: (node) => {
+	// 		return getMutliLevelProperty(node, 'data.optsetting.verifyData.rename', '')
+	// 	}
+	// },
 	{
 		label: '校验数据:',
 		sublabel: true,
@@ -103,13 +120,13 @@ export const PICK_DATAS = [
 		sublabel: '采集数据',
 	},
 	...BASE_CONFIG,
-	{
-		label: '描述:',
-		sublabel: true,
-		subformat: (node) => {
-			return getMutliLevelProperty(node, 'data.optsetting.pickData.pickDesc', '')
-		}
-	},
+	// {
+	// 	label: '描述:',
+	// 	sublabel: true,
+	// 	subformat: (node) => {
+	// 		return getMutliLevelProperty(node, 'data.optsetting.pickData.pickDesc', '')
+	// 	}
+	// },
 	{
 		label: '内容类型:',
 		sublabel: true,
@@ -124,4 +141,13 @@ export const PICK_DATAS = [
 			return getMutliLevelProperty(node, 'data.optsetting.pickData.pickMethod', '')
 		}
 	},
+]
+
+
+export const HOVER_DATAS = [
+  {
+		label: '处理事件:',
+		sublabel: '鼠标悬停',
+	},
+  ...BASE_CONFIG,
 ]

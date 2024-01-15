@@ -7,8 +7,9 @@ import { Drawer, Button, Space, Divider } from 'antd';
 import ItemDrawer from './item.drawer';
 import ExportDrawer from './export.drawer';
 import LoopDrawer from './loop.drawer';
+import LogicBaseDrawer from './logic.base.drawer';
 
-import { END_DATAS, START_DATAS, CLICK_DATAS, PICK_DATAS, INPUT_DATAS, VERIFY_DATAS } from './item.config';
+import { END_DATAS, START_DATAS, CLICK_DATAS, PICK_DATAS, INPUT_DATAS, VERIFY_DATAS, HOVER_DATAS } from './item.config';
 
 
 import './index.css'
@@ -22,6 +23,7 @@ const ITEM_DATA_MAP = {
 	opt_pick: PICK_DATAS,
 	opt_input: INPUT_DATAS,
 	opt_verify: VERIFY_DATAS,
+  opt_hover: HOVER_DATAS,
 }
 export default memo((porps) => {
 	const { node } = porps
@@ -45,6 +47,7 @@ export default memo((porps) => {
 		if (ITEM_DATA_MAP[node.type]) return <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
 		if (node.type === 'logic_export') return <ExportDrawer node={node}></ExportDrawer>
     if (node.type === 'logic_loop') return <LoopDrawer node={node}></LoopDrawer>
+    if (['logic_close','logic_back','logic_reload','logic_pdf',].includes(node.type)) return <LogicBaseDrawer node={node}></LogicBaseDrawer>
     return <></>
 	}
 	return (

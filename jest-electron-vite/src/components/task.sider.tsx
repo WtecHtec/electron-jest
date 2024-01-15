@@ -11,6 +11,11 @@ import VerifySvg from '../assets/verify.svg'
 import EndSvg from '../assets/end.svg'
 import LoopSvg from '../assets/loop.svg'
 import ExportSvg from '../assets/export.svg'
+import HoverSvg from '../assets/hover.svg'
+import BackSvg from '../assets/back.svg'
+import CloseSvg from '../assets/close.svg'
+import PdfSvg from '../assets/pdf.svg'
+import ReloadSvg from '../assets/reload.svg'
 
 const NODE_DATAS = [
   {
@@ -48,6 +53,23 @@ const NODE_DATAS = [
           }
         }
       },
+      {
+        imgSrc: PdfSvg,
+        disable: false,
+        txt: '当前页面导出pdf',
+        nodeType: 'logic_pdf',
+        data: {
+          type: 'logic_pdf',
+          data: {
+            logicsetting: {
+              logicType: 'logic_pdf',
+              waitTime: 0,
+              savaPath: '',
+              rename: ''
+            }
+          }
+        }
+      },
     ]
   },
   {
@@ -77,6 +99,12 @@ const NODE_DATAS = [
         txt: '校验',
         nodeType: 'opt_verify',
       },
+      {
+        imgSrc: HoverSvg,
+        disable: true,
+        txt: '鼠标悬停',
+        nodeType: 'opt_hover',
+      },
     ]
   },
   {
@@ -96,6 +124,51 @@ const NODE_DATAS = [
               loopBody: [],
               loopType: 'frequency',
               frequency: 5,
+            }
+          }
+        }
+      },
+      {
+        imgSrc: BackSvg,
+        disable: false,
+        txt: '返回上一页',
+        nodeType: 'logic_back',
+        data: {
+          type: 'logic_back',
+          data: {
+            logicsetting: {
+              logicType: 'logic_back',
+              waitTime: 1,
+            }
+          }
+        }
+      },
+      {
+        imgSrc: ReloadSvg,
+        disable: false,
+        txt: '刷新当前页',
+        nodeType: 'logic_reload',
+        data: {
+          type: 'logic_reload',
+          data: {
+            logicsetting: {
+              logicType: 'logic_reload',
+              waitTime: 1,
+            }
+          }
+        }
+      },
+      {
+        imgSrc: CloseSvg,
+        disable: false,
+        txt: '关闭当前页',
+        nodeType: 'logic_close',
+        data: {
+          type: 'logic_close',
+          data: {
+            logicsetting: {
+              logicType: 'logic_close',
+              waitTime: 1,
             }
           }
         }

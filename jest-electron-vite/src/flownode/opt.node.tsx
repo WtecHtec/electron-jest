@@ -10,6 +10,12 @@ import InputkSvg from '../assets/input.svg'
 import PickSvg from '../assets/pick.svg'
 import VerifySvg from '../assets/verify.svg'
 import ExportSvg from '../assets/export.svg'
+import HoverSvg from '../assets/hover.svg'
+import BackSvg from '../assets/back.svg'
+import CloseSvg from '../assets/close.svg'
+import PdfSvg from '../assets/pdf.svg'
+import ReloadSvg from '../assets/reload.svg'
+
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
 	const SVG_TYPE = {
@@ -17,21 +23,43 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 		opt_input: InputkSvg,
 		opt_pick: PickSvg,
 		opt_verify: VerifySvg,
+    opt_hover: HoverSvg,
+
 		logic_export: ExportSvg,
+    logic_pdf: PdfSvg,
+    logic_close: CloseSvg,
+    logic_reload: ReloadSvg,
+    logic_back: BackSvg,
 	}
 
 	const showLabel = {
-		opt_click: `点击：${getMutliLevelProperty(data, 'optsetting.xpath', '')}`,
+		opt_click: () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
+      <p className="wrap-txt"> 点击：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
+    </>,
 		opt_input: () => <>
+    <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
 			<p className="wrap-txt"> 向 {getMutliLevelProperty(data, 'optsetting.xpath', '')} </p>
 			<p className="wrap-txt"> 输入：{getMutliLevelProperty(data, 'optsetting.inputData.inputValue', '')}</p>
 		</>,
 		opt_verify: () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
 			<p className="wrap-txt"> 校验 {getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
 			<p className="wrap-txt"> 是否等于： {getMutliLevelProperty(data, 'optsetting.verifyData.verifyValue', '')}</p>
 		</>,
-		opt_pick: `采集：${getMutliLevelProperty(data, 'optsetting.xpath', '')}`,
-		logic_export: `导出数据到：${getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`
+		opt_pick:  () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
+      <p className="wrap-txt"> 采集：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
+    </>, 
+		logic_export: `导出数据到：${getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
+    opt_hover: () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
+      <p className="wrap-txt"> 鼠标悬停：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
+    </>,
+    logic_pdf: `导出pdf到：${getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
+    logic_close: `关闭页面`,
+    logic_back: '后退',
+    logic_reload: '刷新'
 	}
 
 	return (

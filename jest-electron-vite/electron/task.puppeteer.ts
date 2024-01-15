@@ -3,9 +3,9 @@ import path from 'node:path'
 class TaslPuppeteer {
 	browser: any
 	async runPuppeteer(url) {
-		const buildCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/XPathHelper`)
+		// const buildCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/XPathHelper`)
     const jestProCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/JestPro`)
-		console.log('buildCrx---', buildCrx)
+		// console.log('buildCrx---', buildCrx)
 		const config = {
 			headless: false, // 关闭无头模式
 			// timeout: 0,
@@ -20,8 +20,8 @@ class TaslPuppeteer {
 				// '--start-maximized',
 				'--disable-dev-shm-usage',
 				'--no-sandbox',
-				`--disable-extensions-except=${buildCrx},${jestProCrx}`,
-				`--load-extension=${buildCrx},${jestProCrx}`,
+				`--disable-extensions-except=${jestProCrx}`,
+				`--load-extension=${jestProCrx}`,
 			],
 			ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
 			// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件

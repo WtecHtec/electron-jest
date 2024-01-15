@@ -16,7 +16,7 @@ const PICK_TYPE = {
   'pick_href': (el)=> el.attr('href'),
 }
 const OptPickItem = forwardRef((props, ref) => {
-	const [pickData, setPickData] = useState({ pickType: 'pick_text', pickDesc: '', pickMethod: 'itself', pickLevel: 0 })
+	const [pickData, setPickData] = useState({ pickType: 'pick_text', pickMethod: 'itself', pickLevel: 0 })
   const [checkResult, setCheckResult] = useState([])
   const { xpath } = props
 	useImperativeHandle(ref, () => {
@@ -36,12 +36,12 @@ const OptPickItem = forwardRef((props, ref) => {
 			pickType: value,
 		})
 	}
-	const onPickDescChange = (e) => {
-		setPickData({
-			...pickData,
-			pickDesc: e.target.value,
-		})
-	}
+	// const onPickDescChange = (e) => {
+	// 	setPickData({
+	// 		...pickData,
+	// 		pickDesc: e.target.value,
+	// 	})
+	// }
   const onPickMethodSelect = (value) => {
     setPickData({
 			...pickData,
@@ -95,13 +95,13 @@ const OptPickItem = forwardRef((props, ref) => {
   }
 
 	return <>
-		<Divider dashed></Divider>
+		{/* <Divider dashed></Divider>
 		<Space.Compact block style={{ alignItems: 'center' }}>
 			<Tooltip placement="top" title={<span>设置描述,方便查找</span>}>
 				<span style={{ flexShrink: 0 }}>采集描述:</span>
 			</Tooltip>
 			<Input style={{ flex: 1 }} onChange={onPickDescChange} value={pickData.pickDesc} />
-		</Space.Compact>
+		</Space.Compact> */}
 		<Divider dashed></Divider>
 		<Space.Compact block style={{ alignItems: 'center' }}>
 			<Tooltip placement="top" title={<span>采集元素内容,如:text采集容器纯文本</span>}>

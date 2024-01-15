@@ -19,7 +19,7 @@ function MainModal(props) {
             }}
             width={600}
         >
-          <div className="main-content-con">
+          <div className="main-content-con" id="dom-inspector-root-jest-pro-tips-modal">
             <Space size={[0, 8]}  align="start">
               <Tag color="success">Tip:1</Tag>
               <span> 按"Q"选择操作元素,如果没有响应,先"点击"一下页面！ </span> 

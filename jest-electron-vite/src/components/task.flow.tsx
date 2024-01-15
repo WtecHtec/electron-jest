@@ -24,10 +24,15 @@ import { getMutliLevelProperty } from '../util';
 const FLOW_TASK_MAP = {
   logic_loop: 'logic',
   logic_export: 'logic',
+  logic_close: 'logic',
+  logic_pdf: 'logic',
+  logic_back: 'logic',
+  logic_reload: 'logic',
   opt_click: 'opt',
   opt_input: 'opt',
   opt_verify: 'opt',
   opt_pick: 'opt',
+  opt_hover: 'opt',
   start: 'start',
   end: 'end',
 }
@@ -115,7 +120,12 @@ const TaskFlow = (porps) => {
 		opt_input: (porps) => <OptNode imgType="opt_input" {...porps} />,
 		opt_pick: (porps) => <OptNode imgType="opt_pick" {...porps} />,
 		opt_verify: (porps) => <OptNode imgType="opt_verify" {...porps} />,
+    opt_hover: (porps) => <OptNode imgType="opt_hover" {...porps} />,
 		logic_export: (porps) => <OptNode imgType="logic_export" {...porps} />,
+    logic_pdf: (porps) => <OptNode imgType="logic_pdf" {...porps} />,
+    logic_close: (porps) => <OptNode imgType="logic_close" {...porps} />,
+    logic_back: (porps) => <OptNode imgType="logic_back" {...porps} />,
+    logic_reload: (porps) => <OptNode imgType="logic_reload" {...porps} />,
 		end: EndNode
 	}), []);
 

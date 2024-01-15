@@ -38,20 +38,20 @@ const DEV_CONFIG = {
 }
 // console.log(TaskData)
 const getBrowser = async () => {
+  // const buildCrx = path.join(__dirname, `/chrome_win64/chrome_extension/XPathHelper`)
+  // const jestProCrx = path.join(__dirname, `/chrome_win64/chrome_extension/JestPro`)
+  // console.log(buildCrx)
 	const config = {
 		headless: false, // 关闭无头模式
+    // ignoreDefaultArgs: ['--disable-extensions'],
 		// timeout: 0,
 		args: [
-			'--disable-gpu',
-			'--disable-dev-shm-usage',
-			'--disable-setuid-sandbox',
-			'--no-first-run',
-			'--no-sandbox',
-			'--no-zygote',
-			'--single-process', '--no-sandbox', '--disable-setuid-sandbox',
-			'--start-maximized',
-			'--disable-dev-shm-usage',
-			'--no-sandbox',
+      '--disable-extensions', 
+      '--disable-plugins',
+      '--disable-dev-shm-usage',
+      '--no-sandbox',
+      // `--disable-extensions-except=${buildCrx},${jestProCrx}`,
+			// `--load-extension=${buildCrx},${jestProCrx}`,
 		],
 		ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
 		// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
@@ -103,8 +103,9 @@ const runNodeEnd = async (arg) => {
 const runOptClick = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, clickData } = optsetting
+  console.log('xpath---', xpath,)
 	const clickElement = await page.waitForXPath(xpath)
-  // console.log('clickElement---', xpath, clickElement)
+  console.log('clickElement---', clickElement ) 
 	const oldPages = await browser.pages()
   await clickElement.click();
   // console.log('click')
@@ -113,18 +114,22 @@ const runOptClick = async (arg) => {
 	}
 	// await page.waitForNavigation()
 	const { isCurrentPage } = clickData
-	let newPage = page
+	
+  logger.info(`点击 `)
 	if (isCurrentPage !== 1) {
+    let newPage = page
 		const pages = await browser.pages()
 		newPage = pages[pages.length - 1]
     // console.log('pages----', pages, oldPages)
 		if (oldPages.length < pages.length) {
 			await newPage.bringToFront()
       logger.info(`切换新页面tab`)
-		}
+		} else {
+      logger.info(`切换新页面`)
+    }
+    return { page: newPage }
 	}
-  logger.info(`点击 `)
-	return { page: newPage }
+	return {  }
 }
 const runOptInput = async (arg) => {
 	const { browser, optsetting, page } = arg
@@ -175,10 +180,20 @@ const runOptPick = async (arg) => {
 	return {}
 }
 
+const runOptHover =  async (arg) => { 
+  const { xpath, waitTime, } = optsetting
+	const clickElement = await page.waitForXPath(xpath)
+	await clickElement.hover()
+	if (waitTime > 0) {
+		await page.waitForTimeout(waitTime * 1000)
+	}
+  return {}
+}
+
 const runPick = async (arg) => {
 	const { browser, optsetting, page, logicType, frequency, env, } = arg
 	let { xpath, waitTime, pickData } = optsetting
-	const { pickDesc, pickType, pickMethod, levelXpath, fixXpath  } = pickData
+	const { rename, pickType, pickMethod, levelXpath, fixXpath  } = pickData
   if (logicType === 'loop' && pickMethod === 'list') {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
@@ -196,15 +211,11 @@ const runPick = async (arg) => {
     const pickType = '${pickType}'`,
   })
 	const text = await page.evaluate(node => { return node[PICK_VALUE[pickType] || 'innerText'] }, clickElement)
- 
-  // loopEnv && (typeof loopEnv.pickData === 'function') && loopEnv.pickData({
-  //   pickDesc,
-  //   value: text,
-  // })
-  console.log(`${pickDesc}:${text}`)
-  logger.info(`采集数据：${pickDesc}:${text}`)
+
+  console.log(`${rename}:${text}`)
+  logger.info(`采集数据：${rename}:${text}`)
   env && (typeof env.pickData === 'function') && env.pickData({
-    pickDesc,
+    rename,
     value: text,
   })
 	return {}
@@ -241,6 +252,51 @@ const runLogicExport = async (arg) => {
     return await EXPORT_DATA_TYPE[dataType]({ ...arg, logicsetting})
   }
   return {}
+}
+
+const runLogicBack =  async (arg) => {  
+  const { page, logicsetting, browser } = arg
+  await page.goBack()
+  const { waitTime } = logicsetting 
+  if (waitTime > 0) {
+		await page.waitForTimeout(waitTime * 1000)
+	}
+  const pages = await browser.pages()
+  const newPage = pages.length > 0 ? pages[pages.length - 1] : null
+  return { page: newPage }
+}
+
+const runLogicReload = async (arg) => {  
+  const { page, logicsetting } = arg
+  await page.reload()
+  const { waitTime } = logicsetting 
+  if (waitTime > 0) {
+		await page.waitForTimeout(waitTime * 1000)
+	}
+  return {}
+}
+
+const runLogicClose = async (arg) => {
+  const { page, logicsetting, browser } = arg
+  await page.close()
+  const { waitTime } = logicsetting 
+  if (waitTime > 0) {
+		await page.waitForTimeout(waitTime * 1000)
+	}
+  const pages = await browser.pages()
+  const newPage = pages.length > 0 ? pages[pages.length - 1] : null
+  return { page: newPage }
+}
+
+const runLogicPDF = async (arg) => { 
+  const { logicsetting, env } = arg
+  const { savaPath, rename } = logicsetting
+  await page.pdf({ 
+    path: path.join(savaPath,   `${ rename || `page-pdf-${new Date().getTime()}`}.pdf`), 
+    format: 'A4'
+  });
+  console.log(`导出成功,pdf路径：${savaPath}`)
+  logger.info(`导出成功,pdf路径：${savaPath}`)
 }
 
 const runExportText = async (arg) => {  
@@ -302,13 +358,18 @@ const RUN_OPT_TYPE = {
 	'opt_click': runOptClick,
 	'opt_input': runOptInput,
 	'opt_verify': runOptVerify,
-	'opt_pick': runOptPick
+	'opt_pick': runOptPick,
+  'opt_hover': runOptHover,
 }
 
 
 const RUN_LOGIC = {
   'logic_loop': runLogicLoop,
-  'logic_export': runLogicExport
+  'logic_export': runLogicExport,
+  'logic_back': runLogicBack,
+  'logic_reload': runLogicReload,
+  'logic_close': runLogicClose,
+  'logic_pdf': runLogicPDF
 }
 
 

@@ -12,7 +12,7 @@ function Main() {
 	const [xPath, optRef, status] = useInspector()
 	console.log('xPath----', xPath, optRef, status)
 	const [open, setOpen] = useState(false);
-	const text = <span> 有惊喜！！ </span>
+	const text = <span id="dom-inspector-root-jest-pro-tip-span"> 有惊喜！！ </span>
 
 	useEffect(() => {
 		// 初始化连接ws
@@ -32,9 +32,10 @@ function Main() {
 	};
 
 	return (
-		<div className="CRX-content">
-			<Tooltip placement="top" title={text} defaultOpen>
+		<div className="CRX-content" id="dom-inspector-root-jest-pro-crx-content">
+			<Tooltip placement="top" title={text} defaultOpen >
 				<div
+          id="dom-inspector-root-jest-pro-crx-tip"
 					className="content-entry"
 					onClick={() => {
 						setMainModalVisiable(true)
@@ -49,7 +50,7 @@ function Main() {
 					}}
 				/>
 			) : null}
-			<TaskDrawer onClose={onClose} open={open} xpath={xPath}></TaskDrawer>
+			<TaskDrawer  onClose={onClose} open={open} xpath={xPath}></TaskDrawer>
 		</div>
 	)
 }
