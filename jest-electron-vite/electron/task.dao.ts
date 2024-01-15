@@ -11,3 +11,7 @@ export const getAllTask = async () => {
     return []
   }
 }
+
+export const deleteTask = (id) => {
+  Sqlite.getInstance().run(`DELETE FROM jest_task WHERE id = '${id}';`)
+}

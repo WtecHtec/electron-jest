@@ -4,7 +4,7 @@ import WsServer from './ws.server'
 import TaslPuppeteer from './task.puppeteer'
 import fs from 'fs'
 import path from 'node:path'
-import { saveTask, getAllTask } from './task.dao'
+import { saveTask, getAllTask, deleteTask } from './task.dao'
 const { spawn } = require('child_process');
 
 const handleRunngin = () => {
@@ -145,6 +145,13 @@ function handleGetTask() {
   })
 }
 
+function hendleDelTask() {
+  ipcMain.handle('del-task-id', async (event, id) => {
+     await deleteTask(id)
+     return true
+  })
+}
+
 function handleGetTaskDetail() {
   ipcMain.handle('task-detail', async ( event, filepath) => {
     try {
@@ -167,6 +174,7 @@ function IpcManagement(win) {
   handleSaveTask()
   handleGetTask()
   handleGetTaskDetail()
+  hendleDelTask()
 }
 
 export default IpcManagement

@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect } from 'react';
 
-import { Layout, Button, Divider, Table, Modal, Input, message } from 'antd';
+import { Layout, Button, Divider, Table, Modal, Input, message, Popconfirm } from 'antd';
 import { useNavigate } from "react-router-dom";
 const { Header, Content, Footer } = Layout
 const { TextArea } = Input;
@@ -24,6 +24,10 @@ export default memo((props) => {
 				<div>
 					<Button type="link" onClick={ ()=> onRunTask(record)}>执行任务</Button>
 					<Button type="link" onClick={() =>  onUpdateTask(record)}>修改任务</Button>
+          {/* <Button type="link" onClick={() =>  onDelTask(record)}>删除任务</Button> */}
+          <Popconfirm title="是否确定删除?" onConfirm={() => onDelTask(record)}>
+            <a>删除任务</a>
+          </Popconfirm>
 				</div>
 			),
 		},
@@ -50,6 +54,15 @@ export default memo((props) => {
     console.log(value)
     const { taskurl, taskdesc, id, filepath } =value
     navigate(`/setting?filepath=${filepath}&taskurl=${taskurl}&taskdesc=${taskdesc}&taskid=${id}`)
+  }
+
+  const onDelTask = async (value) => {
+    const { id } = value
+    console.log(id)
+    await window.ipcRenderer.invoke('del-task-id', id);
+    const data = await window.ipcRenderer.invoke('select-task-all');
+    // console.log('data---', data)
+    setTaskDatas([...data])
   }
 
   const onRunTask = (value) => {
