@@ -15,6 +15,7 @@ import BackSvg from '../assets/back.svg'
 import CloseSvg from '../assets/close.svg'
 import PdfSvg from '../assets/pdf.svg'
 import ReloadSvg from '../assets/reload.svg'
+import SelfdiySvg from '../assets/selfdiy.svg'
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -30,6 +31,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_close: CloseSvg,
     logic_reload: ReloadSvg,
     logic_back: BackSvg,
+    logic_func: SelfdiySvg,
 	}
 
 	const showLabel = {
@@ -59,7 +61,11 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_pdf: `导出pdf到：${getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
     logic_close: `关闭页面`,
     logic_back: '后退',
-    logic_reload: '刷新'
+    logic_reload: '刷新',
+    logic_func: () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
+      <p className="wrap-txt"> 自定义事件</p>
+    </>,
 	}
 
 	return (

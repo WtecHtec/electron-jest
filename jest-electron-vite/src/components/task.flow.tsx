@@ -126,6 +126,7 @@ const TaskFlow = (porps) => {
     logic_close: (porps) => <OptNode imgType="logic_close" {...porps} />,
     logic_back: (porps) => <OptNode imgType="logic_back" {...porps} />,
     logic_reload: (porps) => <OptNode imgType="logic_reload" {...porps} />,
+    logic_func: (porps) => <OptNode imgType="logic_func" {...porps} />,
 		end: EndNode
 	}), []);
 

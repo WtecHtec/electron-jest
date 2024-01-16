@@ -16,6 +16,8 @@ import BackSvg from '../assets/back.svg'
 import CloseSvg from '../assets/close.svg'
 import PdfSvg from '../assets/pdf.svg'
 import ReloadSvg from '../assets/reload.svg'
+import SelfdiySvg from '../assets/selfdiy.svg'
+
 
 const NODE_DATAS = [
   {
@@ -124,6 +126,23 @@ const NODE_DATAS = [
               loopBody: [],
               loopType: 'frequency',
               frequency: 5,
+              selfFuncCode: '',
+            }
+          }
+        }
+      }, 
+      {
+        imgSrc: SelfdiySvg,
+        disable: false,
+        txt: '自定义事件',
+        nodeType: 'logic_func',
+        data: {
+          type: 'logic_func',
+          data: {
+            logicsetting: {
+              logicType: 'logic_func',
+              selfFuncCode: '',
+              rename: '',
             }
           }
         }

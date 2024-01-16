@@ -83,8 +83,9 @@ module.exports = [
           }
         },
       ],
-      loopType: 'frequency',
+      loopType: 'frequency', // selffunc
       frequency: 5,
+      selfFuncCode: ''
     }
   },
   {
@@ -127,6 +128,14 @@ module.exports = [
 			waitTime: 0,
 		}
 	},
+  {
+    nodeType: 'logic',
+    logicsetting: {
+      logicType: 'logic_func',
+      selfFuncCode: '',
+      rename: '测试保存'
+    }
+  },
 	// {
 	// 	nodeType: 'end',
 	// },

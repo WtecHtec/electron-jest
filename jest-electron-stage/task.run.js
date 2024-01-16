@@ -299,6 +299,23 @@ const runLogicPDF = async (arg) => {
   logger.info(`导出成功,pdf路径：${savaPath}`)
 }
 
+const runLogicFunc = async (arg) => {
+  const { logicsetting, env } = arg
+  const { selfFuncCode, rename } = logicsetting
+  logger.info(`自定义事件: ${rename}`)
+  if (selfFuncCode) {
+    let selfFunc = null
+    try {
+      selfFunc = new Function ('arg', selfFuncCode)
+    } catch (error) {
+      logger.error(`自定义事件: ${rename}解析错误`)
+    }
+    if (typeof selfFunc === 'function') {
+      return await selfFunc(arg)
+    }
+  }
+}
+
 const runExportText = async (arg) => {  
   const { logicsetting } = arg
   const { fileType } = logicsetting
@@ -347,6 +364,28 @@ const onRunLoopFrequency =  async (arg) => {
   return {}
 }
 
+const onRunLoopSelfFunc = async (arg) => {
+  const { logicsetting, page, env } = arg
+  let { selfFuncCode, loopBody } = logicsetting
+  if (selfFuncCode) {
+    let loopCondition = null
+    try {
+      loopCondition = new Function ('arg', selfFuncCode)
+    } catch (error) {
+      logger.error('循环自定义事件解析错误')
+    }
+    if (typeof loopCondition === 'function') {
+      let loopEnv = null
+      while(loopCondition(arg)) {
+        loopEnv = new RunEnv()
+        await runTask({ ...arg, taskData: loopBody, currentPage: page, frequency: index, env: loopEnv, logicType: 'loop', })
+        env.pickData(loopEnv.getPickData())
+      }
+    }
+  } 
+  return {}
+}
+
 const RUN_NODE_TYPE = {
 	'start': runNodeStart,
 	'opt': runNodeOpt,
@@ -369,7 +408,8 @@ const RUN_LOGIC = {
   'logic_back': runLogicBack,
   'logic_reload': runLogicReload,
   'logic_close': runLogicClose,
-  'logic_pdf': runLogicPDF
+  'logic_pdf': runLogicPDF,
+  'logic_func': runLogicFunc,
 }
 
 
@@ -381,7 +421,8 @@ const RUN_PICK_TYPE = {
 
 
 const LOOP_TYPE = {
-  'frequency': onRunLoopFrequency
+  'frequency': onRunLoopFrequency,
+  'selffunc': onRunLoopSelfFunc,
 }
 
 const EXPORT_DATA_TYPE = {
@@ -407,7 +448,7 @@ async function runTask(arg) {
 				browser,
 				task: taskData[step],
 				page: currentPage,
-			})
+			}) || {};
 			if (page) currentPage = page;
 		}
 		step = step + 1
@@ -437,11 +478,11 @@ async function main() {
       logger.info('任务结束',)
     } else {
       // console.error('读取或解析任务数据时发生错误: 数据类型错误',);
-      logger.info('读取或解析任务数据时发生错误: 数据类型错误',)
+      logger.error('读取或解析任务数据时发生错误: 数据类型错误',)
     }
   } catch (err) {
     // console.error('读取或解析任务数据时发生错误 err:', err);
-    logger.info('读取或解析任务数据时发生错误 err:', err)
+    logger.error('程序执行异常:', err)
   }
 	
 }

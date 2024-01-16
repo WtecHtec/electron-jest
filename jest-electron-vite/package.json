@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.1",
+    "@uiw/react-codemirror": "^4.21.21",
     "antd": "^5.12.8",
     "express": "^4.18.2",
     "puppeteer": "^21.6.1",

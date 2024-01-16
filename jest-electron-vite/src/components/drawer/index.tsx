@@ -1,4 +1,4 @@
-import React, { useState, memo, useEffect } from 'react';
+import React, { useState, memo, useEffect, useMemo } from 'react';
 import { Drawer, Button, Space, Divider } from 'antd';
 
 
@@ -31,7 +31,7 @@ export default memo((porps) => {
 	const [open, setOpen] = useState(porps.open);
 
 	useEffect(() => {
-		setOpen(porps.open);
+		porps.open && setOpen(porps.open);
 	}, [porps.open])
 
 	const onClose = () => {
@@ -43,17 +43,18 @@ export default memo((porps) => {
     (typeof porps.onDelete === 'function' && porps.onDelete(node))
   }
 
-	const DrawerContent = () => {
+	const DrawerContent =  () => {
 		if (ITEM_DATA_MAP[node.type]) return <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
 		if (node.type === 'logic_export') return <ExportDrawer node={node}></ExportDrawer>
     if (node.type === 'logic_loop') return <LoopDrawer node={node}></LoopDrawer>
-    if (['logic_close','logic_back','logic_reload','logic_pdf',].includes(node.type)) return <LogicBaseDrawer node={node}></LogicBaseDrawer>
+    if (['logic_close','logic_back','logic_reload','logic_pdf', 'logic_func'].includes(node.type)) return <LogicBaseDrawer node={node}></LogicBaseDrawer>
     return <></>
 	}
 	return (
 		<>
 			<Drawer title={porps.title} placement="right" onClose={onClose} open={open} maskClosable={false} keyboard={false}>
 				<DrawerContent></DrawerContent>
+   
 				<p>
 					{!DEL_EXCLUDE.includes(node.type) && <Button type="primary" danger onClick={onDeleteNode}>
 						删除流程
