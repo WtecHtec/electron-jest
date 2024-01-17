@@ -17,7 +17,7 @@ import CloseSvg from '../assets/close.svg'
 import PdfSvg from '../assets/pdf.svg'
 import ReloadSvg from '../assets/reload.svg'
 import SelfdiySvg from '../assets/selfdiy.svg'
-
+import NewSvg from '../assets/new.svg'
 
 const NODE_DATAS = [
   {
@@ -143,6 +143,21 @@ const NODE_DATAS = [
               logicType: 'logic_func',
               selfFuncCode: '',
               rename: '',
+            }
+          }
+        }
+      },
+      {
+        imgSrc: NewSvg,
+        disable: false,
+        txt: '获取最新页面',
+        nodeType: 'logic_new_page',
+        data: {
+          type: 'logic_new_page',
+          data: {
+            logicsetting: {
+              logicType: 'logic_new_page',
+              waitTime: 1,
             }
           }
         }

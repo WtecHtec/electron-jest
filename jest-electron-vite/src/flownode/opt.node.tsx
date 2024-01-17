@@ -16,6 +16,7 @@ import CloseSvg from '../assets/close.svg'
 import PdfSvg from '../assets/pdf.svg'
 import ReloadSvg from '../assets/reload.svg'
 import SelfdiySvg from '../assets/selfdiy.svg'
+import NewSvg from '../assets/new.svg'
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -32,6 +33,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_reload: ReloadSvg,
     logic_back: BackSvg,
     logic_func: SelfdiySvg,
+    logic_new_page: NewSvg,
 	}
 
 	const showLabel = {
@@ -66,6 +68,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
       <p className="wrap-txt"> 自定义事件</p>
     </>,
+    logic_new_page: '获取最新页面',
 	}
 
 	return (

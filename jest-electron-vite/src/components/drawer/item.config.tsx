@@ -151,3 +151,11 @@ export const HOVER_DATAS = [
 	},
   ...BASE_CONFIG,
 ]
+
+export const NEW_PAGE_DATAS = [
+  {
+		label: '处理事件:',
+		sublabel: '鼠标悬停',
+	},
+  ...BASE_CONFIG,
+]

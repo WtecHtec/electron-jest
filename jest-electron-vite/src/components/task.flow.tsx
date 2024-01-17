@@ -28,6 +28,8 @@ const FLOW_TASK_MAP = {
   logic_pdf: 'logic',
   logic_back: 'logic',
   logic_reload: 'logic',
+  logic_func: 'logic',
+  logic_new_page: 'logic',
   opt_click: 'opt',
   opt_input: 'opt',
   opt_verify: 'opt',
@@ -127,6 +129,7 @@ const TaskFlow = (porps) => {
     logic_back: (porps) => <OptNode imgType="logic_back" {...porps} />,
     logic_reload: (porps) => <OptNode imgType="logic_reload" {...porps} />,
     logic_func: (porps) => <OptNode imgType="logic_func" {...porps} />,
+    logic_new_page: (porps) => <OptNode imgType="logic_new_page" {...porps} />,
 		end: EndNode
 	}), []);
 

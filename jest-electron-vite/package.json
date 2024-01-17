@@ -20,6 +20,7 @@
     "react-flow-renderer": "^10.3.17",
     "react-router-dom": "^6.21.1",
     "rollup-plugin-copy": "^3.5.0",
+    "screenfull": "^6.0.2",
     "sqlite3": "^5.1.7",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",

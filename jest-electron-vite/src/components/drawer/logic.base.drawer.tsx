@@ -1,6 +1,7 @@
 import React, { memo, useState } from 'react';
 import {  Space, Divider, Select, InputNumber, Button, Input } from 'antd';
 import CodeMirror from '@uiw/react-codemirror';
+import CodeModal from '../code.modal';
 import { javascript } from '@codemirror/lang-javascript';
 
 import { getMutliLevelProperty } from '../../util';
@@ -10,7 +11,8 @@ const BASE_DESC = {
    'logic_back': [ '后退', '返回上一个页面后,自动切换最右边tab页面'],
    'logic_reload': [ '刷新', '刷新当前页面'],
    'logic_pdf': [ '导出PDF', '将当前页面导出为PDF'],
-   'logic_func': ['自定义事件', '通过代码实现处理逻辑']
+   'logic_func': ['自定义事件', '通过代码实现处理逻辑'],
+   'logic_new_page': ['获取最新页面', '获取最新页面']
 }
 
 const BASE_CODE = `
@@ -28,6 +30,7 @@ export default memo(({ node }) => {
   const [waitTime, setWaitTime] = useState(getMutliLevelProperty(node, 'data.logicsetting.waitTime', ''))
   const [rename, setReName] = useState(getMutliLevelProperty(node, 'data.logicsetting.rename', ''))
   const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode', BASE_CODE) || BASE_CODE)) 
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onWaitTimeChange = (value) => {
     setWaitTime(value)
@@ -47,14 +50,23 @@ export default memo(({ node }) => {
     }
   }
 
-  const onChangeFuncCode = (value) => {
-    setFuncCode(value)
+  // const onChangeFuncCode = (value) => {
+  //   setFuncCode(value)
+  //   try {
+  //     node.data.logicsetting.selfFuncCode = encodeURIComponent(value) 
+  //   } catch (error) {
+  //     console.error('onDataTypeSelect---', error)
+  //   }
+  // }  
+  const onCode = (code,) => {
+    setIsModalOpen(false)
     try {
-      node.data.logicsetting.selfFuncCode = encodeURIComponent(value) 
+      node.data.logicsetting.selfFuncCode = encodeURIComponent(code) 
+      setFuncCode(code)
     } catch (error) {
       console.error('onDataTypeSelect---', error)
     }
-  }  
+  }
 
   const onSavePathSelect = async () => {
     const folderPath = await  window.ipcRenderer.invoke('select-folder');
@@ -110,12 +122,16 @@ export default memo(({ node }) => {
         <CodeMirror
             value={funcCode}
             height="200px"
+            readOnly={true}
             extensions={[javascript()]}
-            onChange={(value) => { onChangeFuncCode(value) }}
+            // onChange={(value) => { onChangeFuncCode(value) }}
+            onClick={ () => {
+                setIsModalOpen(true)
+            } }
           />
         <Divider></Divider>
       </>
-
     }
+    <CodeModal onCode={ onCode } open={isModalOpen} code={funcCode}></CodeModal>
   </> 
 });

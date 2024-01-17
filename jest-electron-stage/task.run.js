@@ -36,6 +36,8 @@ const DEV_CONFIG = {
 	win: '',
 	mac: ''
 }
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+
 // console.log(TaskData)
 const getBrowser = async () => {
   // const buildCrx = path.join(__dirname, `/chrome_win64/chrome_extension/XPathHelper`)
@@ -93,7 +95,7 @@ const runNodeEnd = async (arg) => {
 	const { browser, task, page } = arg
   await page.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
   await page.evaluate(() => {
-    window.alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
+    alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
   });
 	await browser.close();
   logger.info(`任务结束`)
@@ -103,9 +105,9 @@ const runNodeEnd = async (arg) => {
 const runOptClick = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, clickData } = optsetting
-  console.log('xpath---', xpath,)
+  // console.log('xpath---', xpath,)
 	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
-  console.log('clickElement---', clickElement ) 
+  // console.log('clickElement---', clickElement ) 
 	const oldPages = await browser.pages()
   await clickElement.click();
   // console.log('click')
@@ -163,7 +165,7 @@ const runOptVerify = async (arg) => {
 		if (tipType === 'tip_alert') {
 			await page.addScriptTag({ content: `const VERIFY_TIP = '${rename}:测试不通过'` })
 			await page.evaluate(() => {
-				window.alert(VERIFY_TIP)
+				alert(VERIFY_TIP)
 			});
 		}
 	}
@@ -194,7 +196,7 @@ const runPick = async (arg) => {
 	const { browser, optsetting, page, logicType, frequency, env, } = arg
 	let { xpath, waitTime, pickData } = optsetting
 	const { rename, pickType, pickMethod, levelXpath, fixXpath  } = pickData
-  if (logicType === 'loop' && pickMethod === 'list') {
+  if (logicType === 'loop' && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
   } 
@@ -297,6 +299,7 @@ const runLogicPDF = async (arg) => {
   });
   console.log(`导出成功,pdf路径：${savaPath}`)
   logger.info(`导出成功,pdf路径：${savaPath}`)
+  return {}
 }
 
 const runLogicFunc = async (arg) => {
@@ -306,7 +309,7 @@ const runLogicFunc = async (arg) => {
   if (selfFuncCode) {
     let selfFunc = null
     try {
-      selfFunc = new Function ('arg', selfFuncCode)
+      selfFunc = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
     } catch (error) {
       logger.error(`自定义事件: ${rename}解析错误`)
     }
@@ -314,6 +317,19 @@ const runLogicFunc = async (arg) => {
       return await selfFunc(arg)
     }
   }
+  return {}
+}
+
+const runLogicNewPage = async (arg) => {
+  const { page, logicsetting, browser } = arg
+  const { waitTime } = logicsetting
+  logger.info('获取最新页面')
+  const pages = await browser.pages()
+  const newPage = pages.length > 0 ? pages[pages.length - 1] : null
+  if (waitTime > 0) {
+		await page.waitForTimeout(waitTime * 1000)
+	}
+  return { page: newPage }
 }
 
 const runExportText = async (arg) => {  
@@ -370,15 +386,17 @@ const onRunLoopSelfFunc = async (arg) => {
   if (selfFuncCode) {
     let loopCondition = null
     try {
-      loopCondition = new Function ('arg', selfFuncCode)
+      loopCondition = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
+      logger.info('解析循环自定义事件')
     } catch (error) {
       logger.error('循环自定义事件解析错误')
     }
     if (typeof loopCondition === 'function') {
       let loopEnv = null
-      while(loopCondition(arg)) {
+      while(await loopCondition(arg)) {
+        console.log('解析循环自定义事件')
         loopEnv = new RunEnv()
-        await runTask({ ...arg, taskData: loopBody, currentPage: page, frequency: index, env: loopEnv, logicType: 'loop', })
+        await runTask({ ...arg, taskData: loopBody, currentPage: page, env: loopEnv, logicType: 'loop', })
         env.pickData(loopEnv.getPickData())
       }
     }
@@ -410,6 +428,7 @@ const RUN_LOGIC = {
   'logic_close': runLogicClose,
   'logic_pdf': runLogicPDF,
   'logic_func': runLogicFunc,
+  'logic_new_page': runLogicNewPage
 }
 
 
@@ -455,8 +474,9 @@ async function runTask(arg) {
 	}
   if (!logicType && currentPage){
     await currentPage.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
+    // console.log('logicType---', logicType)
     await currentPage.evaluate(() => {
-      window.alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
+      alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
     });
   }
 }
