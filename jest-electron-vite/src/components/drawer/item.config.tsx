@@ -155,7 +155,72 @@ export const HOVER_DATAS = [
 export const NEW_PAGE_DATAS = [
   {
 		label: '处理事件:',
-		sublabel: '鼠标悬停',
+		sublabel: '获取新页面',
 	},
   ...BASE_CONFIG,
+]
+
+export const OPT_EXISTS_DATAS = [
+  {
+		label: '处理事件:',
+		sublabel: '检查元素是否存在',
+	},
+  ...BASE_CONFIG,
+  {
+		label: '检查方式:',
+		sublabel: true,
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.existsData.pickMethod', '')
+		}
+	},
+]
+
+export const LOGIC_CONDITION = [
+  {
+		label: '处理事件:',
+		sublabel: '条件判断',
+	},
+  {
+		label: '👈:',
+		sublabel: '判断条件,仅支持一个节点【自定义事件、校验、是否存在】',
+	},
+  {
+		label: '👉:',
+		sublabel: '结果为:假,执行右边流程',
+	},
+  {
+		label: '👇:',
+		sublabel: '结果为:真,执行下边流程',
+	},
+]
+
+export const LOGIC_LIST = [
+  {
+		label: '处理事件:',
+		sublabel: '任务队列',
+	},
+  {
+		label: '👉:',
+		sublabel: '任务队列流程,仅支持节点【单个任务队列】',
+	},
+  {
+		label: '👇:',
+		sublabel: '任务队列结束下一步',
+	},
+]
+
+
+export const LOGIC_LIST_ITEM = [
+  {
+		label: '处理事件:',
+		sublabel: '单个任务队列',
+	},
+  {
+		label: '👉:',
+		sublabel: '单个任务流程',
+	},
+  {
+		label: '👇:',
+		sublabel: '本次任务执行完, 下一个任务,仅支持节点【单个任务队列】',
+	},
 ]

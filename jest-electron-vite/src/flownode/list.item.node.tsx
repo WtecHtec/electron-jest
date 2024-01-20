@@ -5,12 +5,11 @@ import { Handle } from 'react-flow-renderer';
 
 import { Card } from 'antd'
 
-import LoopSvg from '../assets/loop.svg'
+import ListItemSvg from '../assets/list-item.svg'
 import './flow.node.css'
-import { getMutliLevelProperty } from '../util';
+
 
 export default memo(({ isConnectable = true, selected, data,  }) => {
-  const loopType = getMutliLevelProperty(data, 'logicsetting.loopType', '')
 	return (
 		<>
 			<Handle
@@ -25,26 +24,17 @@ export default memo(({ isConnectable = true, selected, data,  }) => {
 				<Card
 					style={{ minWidth: 260 }}
 					size="small"
-					title={<img src={LoopSvg} className={`card-img  ${selected && 'selected'}`} />}
+					title={<img src={ListItemSvg} className={`card-img  ${selected && 'selected'}`} />}
 				>
-          { loopType === 'cooditionnode' &&  <p>👈：判断条件,仅支持一个节点【自定义事件、校验、是否存在】</p>} 
-					<p>👉：循环流程</p>
-					<p>👇:循环结束下一步</p>
+					<p>👉：单个任务流程</p>
+					<p>👇: 本次任务执行完, 下一个任务,仅支持节点【单个任务队列】</p>
 					{/* <span>下一步</span> */}
 				</Card>
 			</div>
-      { loopType === 'cooditionnode' &&
-      <Handle
-				type="source"
-				position="left"
-				id="loopcondition"
-				style={{ backgroundColor: '#13227a', }}
-				isConnectable={isConnectable}
-			/>}
 			<Handle
 				type="source"
 				position="right"
-				id="loopbody"
+				id="taskbody"
 				style={{ backgroundColor: '#FA5151' }}
 				isConnectable={isConnectable}
 			/>

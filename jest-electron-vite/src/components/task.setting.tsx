@@ -38,7 +38,7 @@ function TaskSetting() {
   }, [])
   return (
     <Layout style={{height: '100%'}}>
-      <Sider width={280} style={{background: 'rbga(0,0,0,0.02)', padding: '12px'}}  theme="light">
+      <Sider width={280} style={{overflow: 'auto', background: 'rbga(0,0,0,0.02)', padding: '12px'}}  theme="light">
         <TaskSider></TaskSider>
       </Sider>
       <Content>

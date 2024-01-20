@@ -17,6 +17,8 @@ import PdfSvg from '../assets/pdf.svg'
 import ReloadSvg from '../assets/reload.svg'
 import SelfdiySvg from '../assets/selfdiy.svg'
 import NewSvg from '../assets/new.svg'
+import ExistsSvg from '../assets/exists.svg'
+
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -26,7 +28,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 		opt_pick: PickSvg,
 		opt_verify: VerifySvg,
     opt_hover: HoverSvg,
-
+    opt_exists: ExistsSvg,
 		logic_export: ExportSvg,
     logic_pdf: PdfSvg,
     logic_close: CloseSvg,
@@ -34,6 +36,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_back: BackSvg,
     logic_func: SelfdiySvg,
     logic_new_page: NewSvg,
+    
 	}
 
 	const showLabel = {
@@ -54,6 +57,10 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 		opt_pick:  () => <>
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
       <p className="wrap-txt"> 采集：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
+    </>, 
+    opt_exists:  () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
+      <p className="wrap-txt"> 检查元素(是否存在)：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
     </>, 
 		logic_export: `导出数据到：${getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
     opt_hover: () => <>

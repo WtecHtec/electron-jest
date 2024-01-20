@@ -18,7 +18,9 @@ import PdfSvg from '../assets/pdf.svg'
 import ReloadSvg from '../assets/reload.svg'
 import SelfdiySvg from '../assets/selfdiy.svg'
 import NewSvg from '../assets/new.svg'
-
+import ConditionSvg from '../assets/condition.svg'
+import ListItemSvg from '../assets/list-item.svg'
+import ListSvg from '../assets/list.svg'
 const NODE_DATAS = [
   {
     label: '常规',
@@ -123,10 +125,61 @@ const NODE_DATAS = [
             logicsetting: {
               logicType: 'logic_loop',
               waitTime: 0,
+              loopcondition: '',
               loopBody: [],
               loopType: 'frequency',
               frequency: 5,
               selfFuncCode: '',
+            }
+          }
+        }
+      }, 
+      {
+        imgSrc: ListSvg,
+        disable: false,
+        txt: '任务队列',
+        nodeType: 'logic_list',
+        data: {
+          type: 'logic_list',
+          data: {
+            logicsetting: {
+              logicType: 'logic_list',
+              waitTime: 0,
+              listBody: [],
+            }
+          }
+        }
+      },
+      {
+        imgSrc: ListItemSvg,
+        disable: false,
+        txt: '单个任务队列',
+        nodeType: 'logic_listitem',
+        data: {
+          type: 'logic_listitem',
+          data: {
+            logicsetting: {
+              logicType: 'logic_listitem',
+              waitTime: 0,
+              taskBody: [],
+            }
+          }
+        }
+      },
+      {
+        imgSrc: ConditionSvg,
+        disable: false,
+        txt: '条件判断',
+        nodeType: 'logic_condition',
+        data: {
+          type: 'logic_condition',
+          data: {
+            logicsetting: {
+              logicType: 'logic_condition',
+              waitTime: 0,
+              condition: [],
+              noBody: [],
+              yesBody: [],
             }
           }
         }

@@ -58,8 +58,8 @@ const getBrowser = async () => {
 		ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
 		// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
 		defaultViewport: { // 为每个页面设置一个默认视口大小
-			width: 1920,
-			height: 1080
+			width: 820,
+			height: 900
 		}
 	}
 	if (DEV_CONFIG[ENV]) {
@@ -159,6 +159,7 @@ const runOptVerify = async (arg) => {
 	if (text === verifyValue) {
 		console.log(`${rename}:通过`)
     logger.info(`校验： ${rename} 【通过】`)
+    return true
 	} else {
 		console.log(`${rename}:测试不通过`)
     logger.info(`校验： ${rename} 【不通过】`)
@@ -169,7 +170,7 @@ const runOptVerify = async (arg) => {
 			});
 		}
 	}
-	return {}
+	return false
 }
 
 const runOptPick = async (arg) => {
@@ -183,6 +184,7 @@ const runOptPick = async (arg) => {
 }
 
 const runOptHover =  async (arg) => { 
+  const {  optsetting, page,  } = arg
   const { xpath, waitTime, } = optsetting
 	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
 	await clickElement.hover()
@@ -191,12 +193,31 @@ const runOptHover =  async (arg) => {
 	}
   return {}
 }
-
+const runOptExists = async (arg) => {
+  const { optsetting, page, logicType, frequency} = arg
+  let { xpath, waitTime, existsData } = optsetting
+  const { rename, pickMethod, levelXpath, fixXpath  } = existsData
+  if (logicType === 'loop'  && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
+    xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
+    console.log('xpath---', xpath)
+  } 
+  try {
+    await page.waitForXPath(xpath, { timeout: 0})
+    console.log(`${rename}元素存在`)
+  } catch (error) {
+    console.log(`${rename}元素不存在`)
+    return false
+  }
+	if (waitTime > 0) {
+		await page.waitForTimeout(waitTime * 1000)
+	}
+  return true
+}
 const runPick = async (arg) => {
 	const { browser, optsetting, page, logicType, frequency, env, } = arg
 	let { xpath, waitTime, pickData } = optsetting
 	const { rename, pickType, pickMethod, levelXpath, fixXpath  } = pickData
-  if (logicType === 'loop' && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
+  if (logicType === 'loop'  && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
   } 
@@ -332,6 +353,25 @@ const runLogicNewPage = async (arg) => {
   return { page: newPage }
 }
 
+const runLogicCondition = async (arg) => {
+  const { page, logicsetting, } = arg
+  const {  condition, noBody, yesBody } = logicsetting 
+  if (Array.isArray(condition) && condition.length ) {
+    let condStatus =  await runTask({ ...arg, taskData: condition, currentPage: page, })
+    if (typeof condStatus !== 'boolean') {
+      console.log('解析条件件返回类型不是Boolean')
+      return {}
+    }
+    let taskData = []
+    if (condStatus === true && Array.isArray(yesBody) && yesBody.length  ) {
+      taskData = yesBody
+    } else if (condStatus === false && Array.isArray(noBody) && noBody.length) {
+      taskData = noBody
+    }
+    await runTask({ ...arg, taskData, currentPage: page,})
+  }
+  return {}
+}
 const runExportText = async (arg) => {  
   const { logicsetting } = arg
   const { fileType } = logicsetting
@@ -380,6 +420,30 @@ const onRunLoopFrequency =  async (arg) => {
   return {}
 }
 
+
+const onRunLoopByCondiNode = async (arg) => {
+  const { logicsetting, page, env } = arg
+  let { loopcondition, loopBody } = logicsetting
+  if (Array.isArray(loopcondition) && loopcondition.length ) {
+    let loopEnv = null
+    let loopStatus =  await runTask({ ...arg, taskData: loopcondition, currentPage: page, logicType: 'loopcondition', })
+    if (typeof loopStatus !== 'boolean') {
+      console.log('解析条件件返回类型不是Boolean')
+      return {}
+    }
+    let index = 1
+    while(loopStatus) {
+      console.log('解析循环自定义事件')
+      loopEnv = new RunEnv()
+      await runTask({ ...arg, taskData: loopBody, currentPage: page, env: loopEnv, logicType: 'loop', frequency: index, })
+      env.pickData(loopEnv.getPickData())
+      loopStatus = await runTask({ ...arg, taskData: loopcondition, currentPage: page, logicType: 'loopcondition',  })
+      index = index + 1
+    }
+    console.log('节点条件循环结束')
+  }
+}
+
 const onRunLoopSelfFunc = async (arg) => {
   const { logicsetting, page, env } = arg
   let { selfFuncCode, loopBody } = logicsetting
@@ -393,11 +457,17 @@ const onRunLoopSelfFunc = async (arg) => {
     }
     if (typeof loopCondition === 'function') {
       let loopEnv = null
-      while(await loopCondition(arg)) {
+      let loopStatus = await loopCondition(arg)
+      if (typeof loopStatus !== 'boolean') {
+        console.log('解析循环自定义事件返回类型不是Boolean')
+        return {}
+      }
+      while(loopStatus) {
         console.log('解析循环自定义事件')
         loopEnv = new RunEnv()
         await runTask({ ...arg, taskData: loopBody, currentPage: page, env: loopEnv, logicType: 'loop', })
         env.pickData(loopEnv.getPickData())
+        loopStatus = await loopCondition(arg)
       }
     }
   } 
@@ -417,6 +487,7 @@ const RUN_OPT_TYPE = {
 	'opt_verify': runOptVerify,
 	'opt_pick': runOptPick,
   'opt_hover': runOptHover,
+  'opt_exists': runOptExists,
 }
 
 
@@ -428,7 +499,8 @@ const RUN_LOGIC = {
   'logic_close': runLogicClose,
   'logic_pdf': runLogicPDF,
   'logic_func': runLogicFunc,
-  'logic_new_page': runLogicNewPage
+  'logic_new_page': runLogicNewPage,
+  'logic_condition': runLogicCondition,
 }
 
 
@@ -442,6 +514,7 @@ const RUN_PICK_TYPE = {
 const LOOP_TYPE = {
   'frequency': onRunLoopFrequency,
   'selffunc': onRunLoopSelfFunc,
+  'cooditionnode': onRunLoopByCondiNode,
 }
 
 const EXPORT_DATA_TYPE = {
@@ -457,18 +530,23 @@ async function runTask(arg) {
 	let { browser, taskData, currentPage, logicType } = arg
 	let step = 0
 	let maxStep = taskData.length
+  let resultData = {}  
   // console.log('maxStep---', maxStep)
 	while (step < maxStep && taskData[step]) {
     // console.log(step)
 		const { nodeType } = taskData[step]
 		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
-			const { page } = await RUN_NODE_TYPE[nodeType]({
+      const params = {
         ...arg,
 				browser,
 				task: taskData[step],
-				page: currentPage,
-			}) || {};
-			if (page) currentPage = page;
+			}
+    if (currentPage) params.page = currentPage;
+      resultData = await RUN_NODE_TYPE[nodeType](params);
+      if (typeof resultData === 'object' && Object.keys(resultData).length) {
+        const { page } = resultData
+        if (page) currentPage = page;
+      }
 		}
 		step = step + 1
 	}
@@ -479,6 +557,7 @@ async function runTask(arg) {
       alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
     });
   }
+  return resultData
 }
 
 async function main() {

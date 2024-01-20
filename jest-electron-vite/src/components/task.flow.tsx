@@ -17,6 +17,9 @@ import StartNode from '../flownode/start.node';
 import LoopNode from '../flownode/loop.node';
 import OptNode from '../flownode/opt.node';
 import EndNode from '../flownode/end.node';
+import ConditionNode from '../flownode/condition.node';
+import ListNode from '../flownode/list.node';
+import ListItemNode from '../flownode/list.item.node';
 
 import './task.flow.css'
 import { getMutliLevelProperty } from '../util';
@@ -30,11 +33,15 @@ const FLOW_TASK_MAP = {
   logic_reload: 'logic',
   logic_func: 'logic',
   logic_new_page: 'logic',
+  logic_condition: 'logic',
+  logic_list: 'logic',
+  logic_listitem: 'logic',
   opt_click: 'opt',
   opt_input: 'opt',
   opt_verify: 'opt',
   opt_pick: 'opt',
   opt_hover: 'opt',
+  opt_exists: 'opt',
   start: 'start',
   end: 'end',
 }
@@ -92,7 +99,7 @@ const TaskFlow = (porps) => {
 
 	const onConnect = useCallback((params) => {
 		const edges = reactFlowInstance.getEdges()
-
+    const nodes = reactFlowInstance.getNodes()
 		console.log('params===', params, edges)
 
 		const { source, target, sourceHandle, targetHandle } = params
@@ -112,17 +119,48 @@ const TaskFlow = (porps) => {
 			});
 			return
 		}
+    const fTarget = nodes.find(({id}) => id === target)
+    const fSource = nodes.find(({id}) => id === source)
+    if (sourceHandle === 'loopcondition') {
+      if (!['logic_func', 'opt_verify', 'opt_exists'].includes(fTarget.type)) {
+        messageApi.open({
+          type: 'error',
+          content: '不能连接该类型节点！！！',
+        });
+        return
+      }
+    } else if (sourceHandle === 'listbody') {
+      if (!['logic_listitem'].includes(fTarget.type)) {
+        messageApi.open({
+          type: 'error',
+          content: '不能连接该类型节点！！！',
+        });
+        return
+      }
+    } else if (fSource && fSource.type === 'logic_listitem' &&  sourceHandle === 'next'
+      && fTarget && fTarget.type !== 'logic_listitem') {
+        messageApi.open({
+          type: 'error',
+          content: '不能连接该类型节点！！！',
+        });
+        return
+    }
+
 		setEdges((eds) => addEdge(params, eds))
 	}, [reactFlowInstance]);
 
 	const nodeTypes = useMemo(() => ({
 		start: StartNode,
 		logic_loop: LoopNode,
+    logic_condition: ConditionNode,
+    logic_list:ListNode,
+    logic_listitem: ListItemNode,
 		opt_click: (porps) => <OptNode imgType="opt_click" {...porps} />,
 		opt_input: (porps) => <OptNode imgType="opt_input" {...porps} />,
 		opt_pick: (porps) => <OptNode imgType="opt_pick" {...porps} />,
 		opt_verify: (porps) => <OptNode imgType="opt_verify" {...porps} />,
     opt_hover: (porps) => <OptNode imgType="opt_hover" {...porps} />,
+    opt_exists: (porps) => <OptNode imgType="opt_exists" {...porps} />,
 		logic_export: (porps) => <OptNode imgType="logic_export" {...porps} />,
     logic_pdf: (porps) => <OptNode imgType="logic_pdf" {...porps} />,
     logic_close: (porps) => <OptNode imgType="logic_close" {...porps} />,
@@ -204,6 +242,22 @@ const TaskFlow = (porps) => {
       });
       return
     }
+
+    if (checkLoopByNode(nodes, edges)) {
+      messageApi.open({
+        type: 'warning',
+        content: '循环流程必须连接条件节点！！',
+      });
+      return
+    }
+    if (checkConditionByNode(nodes, edges)) {
+      messageApi.open({
+        type: 'warning',
+        content: '条件判断流程必须连接条件节点！！',
+      });
+      return
+    }
+    // console.log(getTask(nodes, edges))
     window.ipcRenderer.send('task-running', {
       data: JSON.stringify(getTask(nodes, edges)),
     })
@@ -215,6 +269,28 @@ const TaskFlow = (porps) => {
     return !!fd
   }
 
+  const checkLoopByNode = (nodes, edges) => {
+    const fd = nodes.find(item => 
+      item.type === 'logic_loop'
+      && getMutliLevelProperty(item, 'data.logicsetting.loopType', '') === 'cooditionnode')
+     if (fd) {
+      const fed = edges.find(({sourceHandle}) => sourceHandle === 'loopcondition')
+      return !fed
+    }
+     
+    return false
+  }
+
+  const checkConditionByNode = (nodes, edges) => {
+    const fd = nodes.find(item => 
+      item.type === 'logic_condition')
+     if (fd) {
+      const fed = edges.find(({sourceHandle}) => sourceHandle === 'conditionbody')
+      return !fed
+    }
+     
+    return false
+  }
   const getTask = (nodes, edges, node = null) => {
     const cache = {}
     let cacheKey = ''
@@ -230,10 +306,13 @@ const TaskFlow = (porps) => {
       const edge = edges.find(edg => {
         if ( current.type === 'logic_loop') {
           return edg.source === current.id && edg.sourceHandle === 'next'
+        } else if (current.type === 'logic_list') {
+          return edg.source === current.id && edg.sourceHandle === 'next'
         }
         return edg.source === current.id
       })
       if (!edge) {
+        console.log(current, )
         return result
       }
       let { id, source, target,  sourceHandle, targetHandle, }  =  edge
@@ -244,14 +323,74 @@ const TaskFlow = (porps) => {
         return []
       }
       cache[cacheKey] = 1
-      current = nodes.find(item => item.id === target)
+      if (current.type !== 'logic_condition') {
+        current = nodes.find(item => item.id === target)
+      }
       if (current && current.type === 'logic_loop') {
         // 循环流程 loopBody
         const loopBody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'loopbody' )
         if (loopBody) {
           const node =  nodes.find(item => item.id === loopBody.target)
           if (node) {
+            console.log('node---loop', node)
             current.data.logicsetting['loopBody'] = [ ...getTask(nodes, edges, node)]
+          }
+        }
+        // 循环条件
+        const loopType = getMutliLevelProperty(current, 'data.logicsetting.loopType', '') === 'cooditionnode'
+        // console.log('loopType--', loopType)
+        if (loopType) {
+          const loopcondition = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'loopcondition' )
+          if (loopcondition) {
+            const node =  nodes.find(item => item.id === loopcondition.target)
+            if (node) {
+              const tasks = getTask(nodes, edges, node)
+              current.data.logicsetting['loopcondition'] = tasks.length ? [ tasks[0] ] : ''
+            }
+          }
+        }
+        
+      } else if (current && current.type === 'logic_condition') {
+        // 判断条件
+        const loopcondition = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'conditionbody' )
+       console.log('loopcondition--', loopcondition)
+        if (loopcondition) {
+          const node =  nodes.find(item => item.id === loopcondition.target)
+          if (node) {
+            const tasks = getTask(nodes, edges, node)
+            current.data.logicsetting['condition'] = tasks.length ? [ tasks[0] ] : ''
+          }
+        }
+
+        // 假 流程 nobody 
+        const nobody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'nobody' )
+        if (nobody) {
+          const node =  nodes.find(item => item.id === nobody.target)
+          if (node) {
+            const tasks = getTask(nodes, edges, node)
+            current.data.logicsetting['noBody'] = [...tasks]
+          }
+        }
+
+        // 真 流程 yesbody 
+        const yesbody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'yesbody' )
+        if (yesbody) {
+          const node =  nodes.find(item => item.id === yesbody.target)
+          if (node) {
+            const tasks = getTask(nodes, edges, node)
+            current.data.logicsetting['yesBody'] = [...tasks]
+          }
+        }
+        current = null
+    
+      } else if (current && current.type === 'logic_list') {
+        // 任务队列 listBody
+        const listBody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'listbody' )
+        if (listBody) {
+          const node =  nodes.find(item => item.id === listBody.target)
+          if (node) {
+            console.log('node---loop', node)
+            current.data.logicsetting['listBody'] = [ ...getTask(nodes, edges, node)]
           }
         }
       }

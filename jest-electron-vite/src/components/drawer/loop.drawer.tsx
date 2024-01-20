@@ -69,6 +69,15 @@ export default memo(({ node }) => {
       <span className="dr-txt"> 循环</span> 
     </Space.Compact>
     <Divider></Divider>
+    { loopType === 'cooditionnode' && <>
+      <Space.Compact  block style={{ alignItems: 'center',   }}>
+      <span className="dr-left">👈：</span> 
+      <span className="dr-txt"> 
+        左边流程为循环执行条件,仅支持节点类型【自定义事件、校验、是否存在】,***并且只有一个节点
+      </span> 
+    </Space.Compact>
+    <Divider></Divider>
+    </>}
     <Space.Compact  block style={{ alignItems: 'center',   }}>
       <span className="dr-left">👉：</span> 
       <span className="dr-txt"> 
@@ -89,6 +98,7 @@ export default memo(({ node }) => {
         <Select defaultValue="frequency" value={loopType}  style={{ width: 200 }} onSelect={onLoopTypeSelect} >
           <Option value="frequency">次数</Option>
           <Option value="selffunc">自定义事件</Option>
+          <Option value="cooditionnode">节点</Option>
         </Select>
       </span> 
     </Space.Compact>
