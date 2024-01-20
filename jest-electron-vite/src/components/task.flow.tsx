@@ -304,15 +304,12 @@ const TaskFlow = (porps) => {
         ...current.data
       } )
       const edge = edges.find(edg => {
-        if ( current.type === 'logic_loop') {
-          return edg.source === current.id && edg.sourceHandle === 'next'
-        } else if (current.type === 'logic_list') {
+        if (['logic_loop', 'logic_list', 'logic_listitem'].includes( current.type) ) {
           return edg.source === current.id && edg.sourceHandle === 'next'
         }
         return edg.source === current.id
       })
       if (!edge) {
-        console.log(current, )
         return result
       }
       let { id, source, target,  sourceHandle, targetHandle, }  =  edge
@@ -332,7 +329,7 @@ const TaskFlow = (porps) => {
         if (loopBody) {
           const node =  nodes.find(item => item.id === loopBody.target)
           if (node) {
-            console.log('node---loop', node)
+            // console.log('node---loop', node)
             current.data.logicsetting['loopBody'] = [ ...getTask(nodes, edges, node)]
           }
         }
@@ -389,14 +386,25 @@ const TaskFlow = (porps) => {
         if (listBody) {
           const node =  nodes.find(item => item.id === listBody.target)
           if (node) {
-            console.log('node---loop', node)
+            // console.log('node---loop', node)
             current.data.logicsetting['listBody'] = [ ...getTask(nodes, edges, node, 'list')]
+          }
+        }
+      } else if (current && current.type === 'logic_listitem') {
+        // 任务队列 listBody
+        const taskBody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'taskbody' )
+        if (taskBody) {
+          const node =  nodes.find(item => item.id === taskBody.target)
+          if (node) {
+            // console.log('node---loop', node)
+            current.data.logicsetting['taskBody'] = [ ...getTask(nodes, edges, node, 'list')]
           }
         }
       }
     }
     return result
   }
+
 
 
 	const goBackRouter = () => {

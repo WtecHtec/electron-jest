@@ -17,18 +17,19 @@ class TaslPuppeteer {
 				// '--no-sandbox',
 				// '--no-zygote',
 				// '--single-process', '--no-sandbox','--disable-setuid-sandbox',
-				// '--start-maximized',
+				'--start-maximized',
 				'--disable-dev-shm-usage',
 				'--no-sandbox',
 				`--disable-extensions-except=${jestProCrx}`,
 				`--load-extension=${jestProCrx}`,
 			],
 			ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
+      defaultViewport: null,
 			// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
-			defaultViewport: { // 为每个页面设置一个默认视口大小
-				width: 1920,
-				height: 1080
-			}
+			// defaultViewport: { // 为每个页面设置一个默认视口大小
+			// 	width: 1920,
+			// 	height: 1080
+			// }
 		}
 		// if (process.platform === 'win32') {
 		// 	config['executablePath'] = path.join(__dirname, '../chrome_win64/chrome.exe')

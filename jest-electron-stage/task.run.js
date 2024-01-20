@@ -52,15 +52,17 @@ const getBrowser = async () => {
       '--disable-plugins',
       '--disable-dev-shm-usage',
       '--no-sandbox',
+      '--start-maximized',
       // `--disable-extensions-except=${buildCrx},${jestProCrx}`,
 			// `--load-extension=${buildCrx},${jestProCrx}`,
 		],
 		ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
+    defaultViewport: null,
 		// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
-		defaultViewport: { // 为每个页面设置一个默认视口大小
-			width: 820,
-			height: 900
-		}
+		// defaultViewport: { // 为每个页面设置一个默认视口大小
+		// 	width: 820,
+		// 	height: 900
+		// }
 	}
 	if (DEV_CONFIG[ENV]) {
 		config.executablePath = path.join(__dirname, DEV_CONFIG[ENV])
@@ -372,6 +374,29 @@ const runLogicCondition = async (arg) => {
   }
   return {}
 }
+
+const runLogicList = async  (arg) => {
+  const { page, logicsetting,  env } = arg
+  const { listBody } = logicsetting 
+  if (Array.isArray(listBody) && listBody.length) {
+    for (let i = 0; i < listBody.length; i++) {
+      const listEnv = new RunEnv()
+      await runTask({...arg, taskData: [listBody[i]], env: listEnv, logicType: 'list'})
+      env.pickData(listEnv.getPickData())
+    }
+  }
+  return {}
+}
+
+const runLogicListItem = async  (arg) => {
+  const { page, logicsetting, } = arg
+  const { taskBody } = logicsetting 
+  if (Array.isArray(taskBody) && taskBody.length) {
+     await runTask({...arg, taskData: taskBody, logicType: 'listitem'})
+  }
+  return {}
+}
+
 const runExportText = async (arg) => {  
   const { logicsetting } = arg
   const { fileType } = logicsetting
@@ -501,6 +526,8 @@ const RUN_LOGIC = {
   'logic_func': runLogicFunc,
   'logic_new_page': runLogicNewPage,
   'logic_condition': runLogicCondition,
+  'logic_list': runLogicList,
+  'logic_listitem': runLogicListItem,
 }
 
 
