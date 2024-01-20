@@ -291,7 +291,7 @@ const TaskFlow = (porps) => {
      
     return false
   }
-  const getTask = (nodes, edges, node = null) => {
+  const getTask = (nodes, edges, node = null, type= '') => {
     const cache = {}
     let cacheKey = ''
     let current = node || nodes.find(item => item.type === 'start')
@@ -390,7 +390,7 @@ const TaskFlow = (porps) => {
           const node =  nodes.find(item => item.id === listBody.target)
           if (node) {
             console.log('node---loop', node)
-            current.data.logicsetting['listBody'] = [ ...getTask(nodes, edges, node)]
+            current.data.logicsetting['listBody'] = [ ...getTask(nodes, edges, node, 'list')]
           }
         }
       }
