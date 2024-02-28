@@ -26,7 +26,7 @@ function useRecevents() {
               optType: 'opt_input',
               xpath,
               waitTime: 2,
-              rename: '输入：' + event.target.value,
+              rename: '输入：' + event.target.value.slice(0, 8),
               inputData: {
                 inputValue: event.target.value,
               }
@@ -66,7 +66,7 @@ function useRecevents() {
               optType: 'opt_click',
               xpath,
               waitTime: 2,
-              rename: '点击:' + event.target.innerText,
+              rename: '点击:' + event.target.innerText.slice(0, 8),
               clickData: {
                 isCurrentPage: 1,
               }
