@@ -24,7 +24,7 @@ function getTagName(ele) {
 };
 
 /** 判断当前div是否属于插件 */
-function checkElByPlugin(ele) {
+export function checkElByPlugin(ele) {
   const ids = ['dom-inspector-root-jest-pro-scale', 'dom-inspector-root-jest-pro-overlay', 'dom-inspector-root-jest-pro-crx-content', 'dom-inspector-root-jest-pro-crx-container']
   try {
     if (ids.includes(ele.id)) return true
@@ -32,7 +32,9 @@ function checkElByPlugin(ele) {
     const modalEl = document.getElementById('dom-inspector-root-jest-pro-tips-modal')
     const tipEl = document.getElementById('dom-inspector-root-jest-pro-crx-tip')
     const tipSpanEl = document.getElementById('dom-inspector-root-jest-pro-tip-span')
-    return ele.contains(drawerEl) || ele.contains(modalEl) || ele.contains(tipEl) || ele.contains(tipSpanEl);
+    const selectImgEl = document.getElementById('dom-inspector-root-jest-pro-crx-select-img')
+    const recImgEl = document.getElementById('dom-inspector-root-jest-pro-crx-rec-img')
+    return ele.contains(drawerEl) || ele.contains(modalEl) || ele.contains(tipEl) || ele.contains(tipSpanEl) || ele.contains(selectImgEl) || ele.contains(recImgEl);
   } catch (error) {
     return false
   }

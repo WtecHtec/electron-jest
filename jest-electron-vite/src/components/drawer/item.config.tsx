@@ -34,6 +34,11 @@ const BASE_CONFIG = [
   {
 		label: '操作描述:',
 		sublabel: true,
+    edit: true,
+    valType: 'text',
+    valChange: (e, node) => {
+      node.data.optsetting.rename = e.target.value
+    },
 		subformat: (node) => {
 			return getMutliLevelProperty(node, 'data.optsetting.rename', '')
 		}
@@ -60,8 +65,14 @@ export const CLICK_DATAS = [
 	{
 		label: '是否在新页面操作:',
 		sublabel: true,
+    edit: true,
+    valType: 'radio',
+    valChange: (e, node) => {
+      node.data.optsetting.clickData.isCurrentPage = e.target.value
+    },
 		subformat: (node) => {
-			return getMutliLevelProperty(node, 'data.optsetting.clickData.isCurrentPage', '') == 1 ? '否' : '是'
+			// return getMutliLevelProperty(node, 'data.optsetting.clickData.isCurrentPage', '') == 1 ? '否' : '是'
+      return getMutliLevelProperty(node, 'data.optsetting.clickData.isCurrentPage', '')
 		}
 	},
 ]
@@ -78,7 +89,7 @@ export const INPUT_DATAS = [
     edit: true,
     valType: 'text',
     valChange: (e, node) => {
-      node.data.optsetting.inputData.inputValue = e
+      node.data.optsetting.inputData.inputValue = e.target.value
     },
 		subformat: (node) => {
 			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputValue', '')

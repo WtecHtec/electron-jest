@@ -1,5 +1,5 @@
-import React, { memo } from 'react';
-import {  Space, Divider, InputNumber, Input } from 'antd';
+import React, { memo, useState } from 'react';
+import {  Space, Divider, InputNumber, Input, Radio } from 'antd';
 const { TextArea } = Input;
 export default memo(({ node, datas}) => {
   // const datas = [
@@ -15,8 +15,8 @@ export default memo(({ node, datas}) => {
   //     color: '#FA5151',
   //     subformat: () => {}
   //   }
-
   // ]
+  const [ refresh, setRefresh] = useState(-1)
   return <>
     {
       datas.map((item) => {
@@ -30,7 +30,17 @@ export default memo(({ node, datas}) => {
                   item.valType === 'number' && <InputNumber style={{ width: 200 }} min={1} defaultValue={ item.subformat(node, item) }  onChange={ (e) => item.valChange(e, node )} ></InputNumber>
                 }
                 {
-                  item.valType === 'text' && 	<TextArea rows={4} value={item.subformat(node, item)} onChange={(e) => item.valChange(e, node )} />
+                  item.valType === 'text' && 	<TextArea rows={4} defaultValue={item.subformat(node, item)} onChange={(e) => {
+                    // setRefresh(Math.random)
+                    // console.log('onchange----', e)
+                    item.valChange(e, node )
+                  }} />
+                } {
+                  item.valType === 'radio' &&  
+                  <Radio.Group onChange={(e) => { item.valChange(e, node ) }} defaultValue={item.subformat(node, item)}>
+                    <Radio value={1}>否</Radio>
+                    <Radio value={2}>是</Radio>
+                  </Radio.Group>
                 }
               </>
             }

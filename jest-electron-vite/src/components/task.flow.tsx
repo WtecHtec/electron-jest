@@ -75,13 +75,37 @@ const TaskFlow = (porps) => {
 				const newNode = JSON.parse(message)
 				// console.log('newNode---', nodes)
         const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+        if (Array.isArray(newNode) && newNode.length) {
+          console.log(newNode)
+          const nodeDatas = newNode.map(item => ({
+            id: getId(),
+            position: { x: reactFlowBounds.left, y: reactFlowBounds.top },
+            ...item,
+          }))
+
+          // {\"source\":\"8hubw05ome3\",\"sourceHandle\":null,\"target\":\"gfxid91vm1d\",\"targetHandle\":null,\"id\":\"reactflow__edge-8hubw05ome3-gfxid91vm1d\"}
+          const edges: any[] = []
+          for (let i = 0; i < nodeDatas.length - 1; i++) {
+            edges.push({
+              id: `reactflow__edge-${nodeDatas[i].id}-${nodeDatas[i + 1].id}`,
+              source: nodeDatas[i].id,
+              sourceHandle: null,
+              target: nodeDatas[i + 1].id,
+              targetHandle: null,
+            })
+          }
+          console.log('nodeDatas----', nodeDatas)
+          setNodes(nds => nds.concat([...nodeDatas]));
+          setEdges(eds => eds.concat([...edges]))
+          return
+        }
 				setNodes(nds => nds.concat([{
 					id: getId(),
 					position: { x: reactFlowBounds.left, y: reactFlowBounds.top },
 					...newNode,
 				}]))
 			} catch (err) {
-				console.log(err)
+				console.log('_onMessage_', err)
 			}
 		}
     const _onStatus = (_event, value) => { 

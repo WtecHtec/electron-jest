@@ -1,7 +1,7 @@
 .CRX-content .content-entry {
   position: fixed;
   z-index: 9999;
-  bottom: 100px;
+  bottom: 150px;
   right: 20px;
   width: 50px;
   height: 50px;
@@ -9,7 +9,32 @@
   background-size: 100% 100%;
   cursor: pointer;
 }
-        
+
+.CRX-content .CRX-content-select {
+  position: fixed;
+  z-index: 9999;
+  bottom: 100px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+}
+.CRX-content-img {
+  width: 50px;
+  height: 50px;
+  vertical-align: top;
+}
+     
+.CRX-content .CRX-content-rec {
+  position: fixed;
+  z-index: 9999;
+  bottom: 50px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+}
+
 .dom-inspector {
   position: fixed;
   pointer-events: none;
@@ -102,4 +127,11 @@
 
 .dom-inspector-theme-default .content {
   background-color: rgba(81, 101, 255, 0.75);
+}
+
+
+.tip-img {
+  width: 20px;
+  height: 20px;
+  vertical-align: top;
 }
