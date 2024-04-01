@@ -61,3 +61,5 @@ yarn.lock
 chrome_mac64
 chrome_extension
 chrome_extension/*
+
+config.dev.js
