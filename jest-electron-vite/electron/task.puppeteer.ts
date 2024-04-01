@@ -4,7 +4,7 @@ class TaslPuppeteer {
 	browser: any
 	async runPuppeteer(url) {
 		// const buildCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/XPathHelper`)
-    const jestProCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/JestPro`)
+    const jestProCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_extension/JestPro`)
 		// console.log('buildCrx---', buildCrx)
 		const config = {
 			headless: false, // 关闭无头模式
