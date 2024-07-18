@@ -63,3 +63,4 @@ chrome_extension
 chrome_extension/*
 
 config.dev.js
+userDataDir
