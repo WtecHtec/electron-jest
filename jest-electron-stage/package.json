@@ -1,8 +1,11 @@
 {
-  "name": "jest-electron-stage",
+  "name": "flow-stage",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "flow-stage": "./task.run.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

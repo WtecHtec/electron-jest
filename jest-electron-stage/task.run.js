@@ -1,9 +1,11 @@
+#!/usr/bin/env node
 const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
 
 const argv = require('minimist')(process.argv.slice(2),  {
   string: ['filepath'],
+	string: ['userDataDir']
 });
 const winston = require('winston');
 const RunEnv = require('./run.evn')
@@ -45,6 +47,8 @@ const getBrowser = async () => {
   // console.log(buildCrx)
 	const config = {
 		headless: false, // 关闭无头模式
+		// userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
+		userDataDir: 'userDataDir',
     // ignoreDefaultArgs: ['--disable-extensions'],
 		// timeout: 0,
 		args: [
@@ -56,7 +60,7 @@ const getBrowser = async () => {
       // `--disable-extensions-except=${buildCrx},${jestProCrx}`,
 			// `--load-extension=${buildCrx},${jestProCrx}`,
 		],
-		ignoreHTTPSErrors: false, // 在导航期间忽略 HTTPS 错误
+		ignoreHTTPSErrors: true, // 在导航期间忽略 HTTPS 错误
     defaultViewport: null,
 		// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
 		// defaultViewport: { // 为每个页面设置一个默认视口大小
@@ -64,10 +68,10 @@ const getBrowser = async () => {
 		// 	height: 900
 		// }
 	}
-	if (DEV_CONFIG[ENV]) {
-		config.executablePath = path.join(__dirname, DEV_CONFIG[ENV])
-    logger.info(config.executablePath)
-	}
+	// if (DEV_CONFIG[ENV]) {
+	// 	config.executablePath = path.join(__dirname, DEV_CONFIG[ENV])
+  //   logger.info(config.executablePath)
+	// }
 	const browser = await puppeteer.launch(config);
 	return browser
 }
@@ -589,11 +593,16 @@ async function runTask(arg) {
 
 async function main() {
   console.log('task run-----', )
+	if (!argv.userDataDir) {
+		logger.error('浏览器缓存数据文件夹配置路径不能为空',)
+		return
+	}
 	const browser = await getBrowser()
   const env = new RunEnv()
   let taskData = []
   // console.log('argv----', argv)
   // const mode = argv.mode || 'dev'
+
   try {
     const data = fs.readFileSync(argv.filepath, 'utf-8');
     const dataconfig = JSON.parse(data);

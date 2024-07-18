@@ -28,3 +28,5 @@ chrome_win64
 *.exe
 *.run-macos
 *.run-linux
+
+userDataDir
