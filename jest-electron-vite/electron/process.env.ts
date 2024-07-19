@@ -6,6 +6,7 @@ function initEnv() {
   process.env.DIST = path.join(__dirname, '../dist')
   process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
   process.env.CHROME_DIST = process.env.MODE === 'dev' ? '../' : '../../../'
+  process.env.USER_DATA_DIR = path.join(process.env.DIST, 'userData')
 }
 
 export default initEnv;

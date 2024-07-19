@@ -8,6 +8,8 @@ class TaslPuppeteer {
 		// console.log('buildCrx---', buildCrx)
 		const config = {
 			headless: false, // 关闭无头模式
+			// userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
+			userDataDir: process.env.USER_DATA_DIR,
 			// timeout: 0,
 			args: [
 				// '--disable-gpu',
@@ -39,6 +41,7 @@ class TaslPuppeteer {
     browser.on('disconnected', (fn) => {
       console.log('brower disconnected')
       this._disconnected()
+	//   this.closeBrowser()
     });
 		const page = await browser.newPage()
 		await page.goto(url, {

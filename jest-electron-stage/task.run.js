@@ -48,7 +48,7 @@ const getBrowser = async () => {
 	const config = {
 		headless: false, // 关闭无头模式
 		// userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
-		userDataDir: 'userDataDir',
+		userDataDir: argv.userDataDir,
     // ignoreDefaultArgs: ['--disable-extensions'],
 		// timeout: 0,
 		args: [
