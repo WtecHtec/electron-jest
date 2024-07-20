@@ -1,8 +1,10 @@
 const puppeteer = require('puppeteer');
 import path from 'node:path'
+import kill from './kill';
 class TaslPuppeteer {
 	browser: any
 	async runPuppeteer(url) {
+		// await kill();
 		// const buildCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/XPathHelper`)
     const jestProCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_extension/JestPro`)
 		// console.log('buildCrx---', buildCrx)

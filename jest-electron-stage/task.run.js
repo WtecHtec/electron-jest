@@ -8,7 +8,8 @@ const argv = require('minimist')(process.argv.slice(2),  {
 	string: ['userDataDir']
 });
 const winston = require('winston');
-const RunEnv = require('./run.evn')
+const RunEnv = require('./run.evn');
+const kill = require('./kill');
 
 
 // 创建一个时间戳文件名
@@ -597,6 +598,7 @@ async function main() {
 		logger.error('浏览器缓存数据文件夹配置路径不能为空',)
 		return
 	}
+	await kill()
 	const browser = await getBrowser()
   const env = new RunEnv()
   let taskData = []
