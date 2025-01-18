@@ -8,7 +8,7 @@ import { saveTask, getAllTask, deleteTask, saveTaskParam } from './task.dao'
 const { exec, spawn } = require('child_process');
 
 const handleRunngin = () => {
-  ipcMain.on('task-running', (event, { filepath, data }) => {
+  ipcMain.on('task-running', (event, { filepath, data, taskparam }) => {
     console.log('task-running----')
     try {
       if (!filepath) {
@@ -18,11 +18,22 @@ const handleRunngin = () => {
         }));
         console.log("JSON data is saved.");
       }
-      const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
+      // const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
       // const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, `${process.env.CHROME_DIST}task.run-win.exe `)} --filepath ${filepath}` : '-e notepad.exe';
-     const command = 'flow-stage --filepath ' + filepath + ' --userDataDir ' + process.env.USER_DATA_DIR
+      let command = 'flowauto --filepath ' + filepath + ' --userDataDir ' + process.env.USER_DATA_DIR
      console.log('command---', command)
-     exec('flow-stage --filepath ' + filepath + ' --userDataDir ' + process.env.USER_DATA_DIR, (error, stdout, stderr) => {  
+
+     try {
+         const params = JSON.parse(taskparam)
+         console.log('params---', params)
+         for (const key in params) {
+            command = `${command} --${key} ${params[key]}`
+         }
+         console.log('command---', command)
+     } catch (error) {
+      console.error(error)
+     }
+     exec(command, (error, stdout, stderr) => {  
       if (error) {  
         console.error(`exec error: ${error}`);  
         return;  
@@ -163,6 +174,17 @@ function handleGetTask() {
   })
 }
 
+function handleGetConfig() {
+  ipcMain.handle('get-config', async () => {
+    return {
+      userDataDir: process.env.USER_DATA_DIR,
+      taskPath: path.join(__dirname, `${process.env.CHROME_DIST}/tasks`)
+    }
+  })
+}
+
+
+
 function hendleDelTask() {
   ipcMain.handle('del-task-id', async (event, id) => {
      await deleteTask(id)
@@ -201,6 +223,7 @@ function IpcManagement(win) {
   handleGetTaskDetail()
   hendleDelTask()
   hendleSaveTaskParam()
+  handleGetConfig()
 }
 
 export default IpcManagement

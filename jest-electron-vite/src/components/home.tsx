@@ -49,7 +49,11 @@ export default memo((props) => {
 	setTaskDatas([...data])
   }
   useEffect(() => {
-   
+    const getConfig = async () => {
+      const config = await window.ipcRenderer.invoke('get-config')
+      console.log('config---', config)
+    }
+    getConfig()
     getData()
     return () => {}
   }, [])
@@ -70,9 +74,11 @@ export default memo((props) => {
   }
 
   const onRunTask = (value) => {
-    const { filepath } =value
+    const { filepath, taskparam } =value
     window.ipcRenderer.send('task-running', {
       filepath,
+	  data: "",
+      taskparam
     })
   }
 	const onCreateTask = () => {
@@ -148,11 +154,21 @@ export default memo((props) => {
 		console.log('record---', record)
 		setEditTaskParam(record.taskparam)
 	  }
+
+	const showConfig = async () => {
+		const config = await window.ipcRenderer.invoke('get-config')
+		console.log('config---', config)
+		messageApi.open({
+			type: 'info',
+			content: JSON.stringify(config),
+		});
+	}
 	return (
 		<>
 			{contextHolder}
 			<Layout>
 				<Header className="layout-header">
+					<Button onClick={showConfig} className="mr-12"> 查看配置 </Button>
 					<Button onClick={onClearCache} className="mr-12"> 清除缓存 </Button>
 					<Button onClick={onCreateTask}> 新建任务</Button>
 				</Header>

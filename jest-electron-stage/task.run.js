@@ -3,9 +3,11 @@ const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
 
+const version = '0.0.6'
+
 const argv = require('minimist')(process.argv.slice(2),  {
-  string: ['filepath'],
-	string: ['userDataDir']
+  // string: ['filepath'],
+	// string: ['userDataDir']
 });
 const winston = require('winston');
 const RunEnv = require('./run.evn');
@@ -596,6 +598,11 @@ async function runTask(arg) {
 }
 
 async function main() {
+
+  if (argv.version) {
+    console.log('success v:${version}')
+    return
+  }
   console.log('task run-----', )
 	if (!argv.userDataDir) {
 		logger.error('浏览器缓存数据文件夹配置路径不能为空',)
@@ -613,7 +620,7 @@ async function main() {
   let taskData = []
   // console.log('argv----', argv)
   // const mode = argv.mode || 'dev'
-
+  logger.info(`参数: ${JSON.stringify(argv)}`)
   try {
     const data = fs.readFileSync(argv.filepath, 'utf-8');
     const dataconfig = JSON.parse(data);

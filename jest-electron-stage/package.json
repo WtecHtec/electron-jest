@@ -1,12 +1,18 @@
 {
   "name": "flowauto",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "author": "wtechtec",
   "description": "Google Chrome Automation Executor",
-  "keywords": ["utils", "Automation", "Google Chrome", "Executor", "puppeteer"],
+  "keywords": [
+    "utils",
+    "Automation",
+    "Google Chrome",
+    "Executor",
+    "puppeteer"
+  ],
   "main": "index.js",
   "bin": {
-    "flow-stage": "./task.run.js"
+    "flowauto": "./task.run.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
