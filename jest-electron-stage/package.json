@@ -1,7 +1,9 @@
 {
-  "name": "flow-stage",
-  "version": "1.0.0",
-  "description": "",
+  "name": "flowauto",
+  "version": "0.0.1",
+  "author": "wtechtec",
+  "description": "Google Chrome Automation Executor",
+  "keywords": ["utils", "Automation", "Google Chrome", "Executor", "puppeteer"],
   "main": "index.js",
   "bin": {
     "flow-stage": "./task.run.js"
@@ -9,8 +11,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WtecHtec/electron-jest/tree/main/jest-electron-stage"
+  },
   "license": "ISC",
   "dependencies": {
     "minimist": "^1.2.8",

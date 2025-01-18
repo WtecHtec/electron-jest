@@ -2,6 +2,7 @@ class RunEnv {
   constructor() {
     this.child = null
     this.pickDatas  = []
+    this.current = {}
   }
   createChild() {
     this.child = new RunEnv()

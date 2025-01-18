@@ -141,14 +141,17 @@ const runOptClick = async (arg) => {
 	return {  }
 }
 const runOptInput = async (arg) => {
-	const { browser, optsetting, page } = arg
+	const { browser, optsetting, page, env } = arg
 	const { xpath, waitTime, inputData } = optsetting
 	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
 	await clickElement.focus()
 	if (waitTime > 0) {
 		await page.waitForTimeout(waitTime * 1000)
 	}
-	const { inputValue } = inputData
+	let { inputValue, inputType } = inputData
+  if (inputType === 'paramType') { 
+    inputValue = env.get(inputValue) || inputValue
+  }
 	await clickElement.type(String(inputValue), { delay: 500 })
   logger.info(`输入： ${inputValue} `)
 	return {}
@@ -601,6 +604,12 @@ async function main() {
 	await kill()
 	const browser = await getBrowser()
   const env = new RunEnv()
+
+ // 加入参数
+  for (let key in argv) {
+    env.set(key, argv[key])
+  }
+
   let taskData = []
   // console.log('argv----', argv)
   // const mode = argv.mode || 'dev'

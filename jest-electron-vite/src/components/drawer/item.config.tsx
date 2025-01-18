@@ -93,7 +93,13 @@ export const INPUT_DATAS = [
     },
 		subformat: (node) => {
 			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputValue', '')
-		}
+		},
+		subTypeformat: (node) => { 
+			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputType', 'valueType')
+		},
+		changeType: (value, node) => {
+			node.data.optsetting.inputData.inputType = value
+		  },
 	},
 ]
 

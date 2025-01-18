@@ -1,6 +1,7 @@
 import React, { memo, useState } from 'react';
-import {  Space, Divider, InputNumber, Input, Radio } from 'antd';
+import {  Space, Divider, InputNumber, Input, Radio, Select } from 'antd';
 const { TextArea } = Input;
+const { Option } = Select;
 export default memo(({ node, datas}) => {
   // const datas = [
   //   {
@@ -28,6 +29,18 @@ export default memo(({ node, datas}) => {
               : <>
                 {
                   item.valType === 'number' && <InputNumber style={{ width: 200 }} min={1} defaultValue={ item.subformat(node, item) }  onChange={ (e) => item.valChange(e, node )} ></InputNumber>
+                }
+                {
+                  item.valType === 'text' && item.subTypeformat  && <Select  
+                   defaultValue={item.subTypeformat(node, item)} onSelect={(e) =>   {
+                    item.changeType(e, node )
+                    // node.data.optsetting.inputData.inputType = e
+              
+                  } } >
+                  <Option value="valueType">赋值</Option>
+                  {/* <Option value="pick_html">html</Option> */}
+                  <Option value="paramType">参数</Option>
+                </Select>
                 }
                 {
                   item.valType === 'text' && 	<TextArea rows={4} defaultValue={item.subformat(node, item)} onChange={(e) => {
