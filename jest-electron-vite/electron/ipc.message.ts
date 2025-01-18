@@ -5,44 +5,73 @@ import TaslPuppeteer from './task.puppeteer'
 import fs from 'fs'
 import path from 'node:path'
 import { saveTask, getAllTask, deleteTask, saveTaskParam } from './task.dao'
+import { createAppChromeFile, createAppLoggerFile, createAppTaskFile, createAppTaskLoggerFile } from './AppFile'
 const { exec, spawn } = require('child_process');
+const flowauto = require('flowauto/task.run')
+
+
+const taskDirectory = createAppTaskFile()
+
+function escapeSpacesInPath(path) {
+  return path.replace(/ /g, '\\ ');
+}
 
 const handleRunngin = () => {
   ipcMain.on('task-running', (event, { filepath, data, taskparam }) => {
     console.log('task-running----')
     try {
       if (!filepath) {
-        filepath = path.join(__dirname, `${process.env.CHROME_DIST}task.cache.json`)
+        // filepath = path.join(__dirname, `${process.env.CHROME_DIST}task.cache.json`)
+        filepath =  path.join(taskDirectory, "task.cache.json")
         fs.writeFileSync(filepath, JSON.stringify({
           task: data
         }));
         console.log("JSON data is saved.");
       }
-      // const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
-      // const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, `${process.env.CHROME_DIST}task.run-win.exe `)} --filepath ${filepath}` : '-e notepad.exe';
-      let command = 'flowauto --filepath ' + filepath + ' --userDataDir ' + process.env.USER_DATA_DIR
-     console.log('command---', command)
+      try {
+        const params = JSON.parse(taskparam)
+        flowauto({
+          filepath: filepath,
+          userDataDir: createAppChromeFile(),
+          logpath: createAppTaskLoggerFile(),
+          ...params,
+        })
+      } catch (error) {
+        console.error(error)
+        globalLogger.error('exec stderr:', error)
+      }
+     
 
-     try {
-         const params = JSON.parse(taskparam)
-         console.log('params---', params)
-         for (const key in params) {
-            command = `${command} --${key} ${params[key]}`
-         }
-         console.log('command---', command)
-     } catch (error) {
-      console.error(error)
-     }
-     exec(command, (error, stdout, stderr) => {  
-      if (error) {  
-        console.error(`exec error: ${error}`);  
-        return;  
-      }  
-      console.log(`stdout: ${stdout}`);  
-      if (stderr) {  
-        console.error(`stderr: ${stderr}`);  
-      }  
-    })
+
+    //   const flowautocommand = "./chrome_extension/flowauto/task.run.js"
+    //   // const terminal = process.platform === 'win32' ? 'cmd.exe' : 'x-terminal-emulator';
+    //   // const command = process.platform === 'win32' ? `/c start ${path.join(__dirname, `${process.env.CHROME_DIST}task.run-win.exe `)} --filepath ${filepath}` : '-e notepad.exe';
+    //   let command = flowautocommand + ' --filepath ' + escapeSpacesInPath(filepath) + ' --userDataDir ' + escapeSpacesInPath(createAppChromeFile())
+    //  console.log('command---', command)
+
+    //  try {
+    //      const params = JSON.parse(taskparam)
+    //      console.log('params---', params)
+    //      for (const key in params) {
+    //         command = `${command} --${key} ${params[key]}`
+    //      }
+    //      console.log('command---', command)
+    //  } catch (error) {
+    //   console.error(error)
+    //   globalLogger.error('task-running 错误', error)
+    //  }
+    //  exec(command, (error, stdout, stderr) => {  
+    //   if (error) {  
+    //     console.error(`exec error: ${error}`);  
+    //     globalLogger.error('exec error:', error)
+    //     return;  
+    //   }  
+    //   console.log(`stdout: ${stdout}`);  
+    //   if (stderr) {  
+    //     globalLogger.error('exec stderr:', stderr)
+    //     console.error(`stderr: ${stderr}`);  
+    //   }  
+    // })
 
    
 
@@ -147,14 +176,15 @@ function handleSaveTask() {
       const { id, taskdesc, taskdata, isupdate, taskurl, taskparam } = JSON.parse(data)
       try {
         // 检查文件夹是否存在
-        const savepath = path.join(__dirname, `${process.env.CHROME_DIST}/tasks`)
-        if (!fs.existsSync(savepath)) {
-          // 如果不存在，则创建文件夹
-          fs.mkdirSync(savepath);
-        } else {
-          console.log('文件夹已存在');
-        }
-        const filepath = path.join(savepath, `./${id}.json`)
+        // const savepath = path.join(__dirname, `${process.env.CHROME_DIST}/tasks`)
+        // if (!fs.existsSync(savepath)) {
+        //   // 如果不存在，则创建文件夹
+        //   fs.mkdirSync(savepath);
+        // } else {
+        //   console.log('文件夹已存在');
+        // }
+        // const filepath = path.join(savepath, `./${id}.json`)
+        const filepath  =  path.join(taskDirectory, `./${id}.json`)
         fs.writeFileSync(filepath, taskdata);
         // console.log("task data is saved.", id, taskdesc);
        saveTask(id, filepath, taskdesc, taskurl, taskparam)
@@ -174,11 +204,13 @@ function handleGetTask() {
   })
 }
 
+// escapeSpacesInPath(createAppChromeFile())
 function handleGetConfig() {
   ipcMain.handle('get-config', async () => {
     return {
-      userDataDir: process.env.USER_DATA_DIR,
-      taskPath: path.join(__dirname, `${process.env.CHROME_DIST}/tasks`)
+      userDataDir: escapeSpacesInPath(createAppChromeFile()),
+      taskPath: escapeSpacesInPath(createAppTaskFile()),
+      logPath: escapeSpacesInPath(createAppLoggerFile()),
     }
   })
 }

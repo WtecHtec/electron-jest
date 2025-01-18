@@ -11,12 +11,13 @@ npm install -g flowauto
 # Usage
 
 ```
-flowauto --userDataDir ./userDataDir --filepath ./flow.json
+flowauto --userDataDir ./userDataDir --filepath ./flow.json --logpath ./logs
 ```
 
 # Parameters
 	•	userDataDir: Path to the browser cache data directory.
 	•	filepath: Path to the task configuration file.
+	•	logpath:  Path to the log  file.
 
 # Task Configuration File
 
@@ -40,4 +41,16 @@ Example:
 
 ```
 flowauto --userDataDir ./userDataDir --filepath ./flow.json --param1 value1 --param2 value2
+```
+
+# Support node
+
+```
+const flowauto = require('flowauto/task.run')
+
+flowauto({
+	userDataDir,
+	filepath,
+	logpath
+})
 ```

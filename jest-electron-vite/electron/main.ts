@@ -3,6 +3,9 @@ import initEnv from './process.env';
 import path from 'node:path'
 import IpcManagement from './ipc.message';
 import Sqlite from './data.sqlite'
+
+// 获取应用的资源路径
+
 initEnv()
 Sqlite.getInstance()
 Sqlite.getInstance()
@@ -43,6 +46,8 @@ function createWindow() {
 	}
 
 	if (process.env.MODE === 'dev') win.webContents.openDevTools()
+
+
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common

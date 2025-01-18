@@ -1,6 +1,10 @@
+import path from "path";
+import { createAppLoggerFile } from "./AppFile";
+
 const { createLogger, format, transports } = require("winston");
 require("winston-daily-rotate-file");
 
+let logDirectory = createAppLoggerFile()
 const customFormat = format.combine(
     format.timestamp({ format: "MMM-DD-YYYY HH:mm:ss" }),
     format.align(),
@@ -17,12 +21,12 @@ const globalLogger = createLogger({
     format: customFormat,
     transports: [
         new transports.DailyRotateFile({
-            filename: "logs/info-%DATE%.log",
+            filename:  path.join(logDirectory,"/info-%DATE%.log") ,
             level: "info",
             ...defaultOptions,
         }),
         new transports.DailyRotateFile({
-            filename: "logs/error-%DATE%.log",
+            filename: path.join(logDirectory,"/error-%DATE%.log"),
             level: "error",
             ...defaultOptions,
         }),

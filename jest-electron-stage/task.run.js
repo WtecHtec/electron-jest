@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
 
-const version = '0.0.6'
+const version = '0.0.11'
 
 const argv = require('minimist')(process.argv.slice(2),  {
   // string: ['filepath'],
@@ -14,24 +14,17 @@ const RunEnv = require('./run.evn');
 const kill = require('./kill');
 
 
-// 创建一个时间戳文件名
-const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
-const logFilename = `./tasks-run-logs/jest-run-${timestamp}.log`;
+let logFilename = ""
 
 // 创建一个 winston 日志记录器
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} ${level.toUpperCase()}: ${message}`;
-    })
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: logFilename }),
-  ],
-});
+let logger = {
+  info: (message) => {
+    console.log(message)
+  },
+  error: (message) => {
+    console.error(message)
+  }
+}
 
 // const TaskData = require('./task.data')
 
@@ -600,7 +593,7 @@ async function runTask(arg) {
 async function main() {
 
   if (argv.version) {
-    console.log('success v:${version}')
+    console.log(`success v:${version}`)
     return
   }
   console.log('task run-----', )
@@ -640,4 +633,125 @@ async function main() {
 	
 }
 
-main()
+// main()
+
+
+// ... existing code ...
+
+// 修改 main 函数，添加参数并返回结果
+async function execute(options = {}) {
+  try {
+    if (options.logpath) {
+      logDirectory = options.logpath
+    } else {
+      let logDirectory = path.join(__dirname, '/tasks-run-logs');
+         // 确保目录存在
+      if (!fs.existsSync(logDirectory)) {
+          fs.mkdirSync(logDirectory, { recursive: true });
+      }
+    }
+      // 创建一个时间戳文件名
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+    logFilename = path.join(logDirectory, `/jest-run-${timestamp}.log`);
+
+    
+    // 创建一个 winston 日志记录器
+    logger = winston.createLogger({
+      level: 'info',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => {
+          return `${timestamp} ${level.toUpperCase()}: ${message}`;
+        })
+      ),
+      transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({ filename: logFilename }),
+      ],
+    });
+    // 合并传入的选项与命令行参数
+    const runOptions = { ...options };
+
+    if (runOptions.version) {
+      console.log(`success v:${version}`);
+      return { success: true, version };
+    }
+
+    if (!runOptions.userDataDir) {
+      logger.error('浏览器缓存数据文件夹配置路径不能为空');
+      return { success: false, error: '浏览器缓存数据文件夹配置路径不能为空' };
+    }
+
+    await kill();
+    const browser = await getBrowser();
+    const env = new RunEnv();
+
+    // 加入参数
+    for (let key in runOptions) {
+      env.set(key, runOptions[key]);
+    }
+
+    let taskData = [];
+    logger.info(`参数: ${JSON.stringify(runOptions)}`);
+
+    const data = fs.readFileSync(runOptions.filepath, 'utf-8');
+    const dataconfig = JSON.parse(data);
+    taskData = JSON.parse(dataconfig.task);
+
+    if (Array.isArray(taskData)) {
+      await runTask({ browser, taskData, env });
+      logger.info('任务结束');
+      return { success: true };
+    } else {
+      logger.error('读取或解析任务数据时发生错误: 数据类型错误');
+      return { success: false, error: '数据类型错误' };
+    }
+  } catch (err) {
+    logger.error('程序执行异常:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+// 仅在直接运行脚本时执行 main()
+if (require.main === module) {
+
+
+    // 创建一个时间戳文件名
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+
+
+    let logDirectory =  ""
+
+    console.log("logDirectory ::::", logDirectory)
+ 
+    if (argv.logpath) {
+      logDirectory = argv.logpath
+    } else {
+      let logDirectory = path.join(__dirname, '/tasks-run-logs');
+         // 确保目录存在
+      if (!fs.existsSync(logDirectory)) {
+          fs.mkdirSync(logDirectory, { recursive: true });
+      }
+    }
+   logFilename = path.join(logDirectory, `/jest-run-${timestamp}.log`);
+
+// 创建一个 winston 日志记录器
+ logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} ${level.toUpperCase()}: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: logFilename }),
+  ],
+});
+
+  main();
+}
+
+// 导出 main 函数
+module.exports = execute;

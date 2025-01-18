@@ -30,3 +30,5 @@ chrome_win64
 *.run-linux
 
 userDataDir
+
+tasks-run-logs/*

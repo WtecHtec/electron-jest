@@ -1,17 +1,23 @@
 const puppeteer = require('puppeteer');
 import path from 'node:path'
 import kill from './kill';
+import { createAppChromeFile, escapeSpacesInPath } from './AppFile';
+// 获取资源路径
+const resourcesPath = process.resourcesPath;
+const assetsPath = path.join(resourcesPath, '/chrome_extension/JestPro');
+
 class TaslPuppeteer {
 	browser: any
 	async runPuppeteer(url) {
 		// await kill();
 		// const buildCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_win64/chrome_extension/XPathHelper`)
-    const jestProCrx = path.join(__dirname, `${process.env.CHROME_DIST}/chrome_extension/JestPro`)
+    const jestProCrx =  process.env.MODE === 'dev' 
+	? path.join(__dirname, `${process.env.CHROME_DIST}/chrome_extension/JestPro`) : assetsPath
 		// console.log('buildCrx---', buildCrx)
 		const config = {
 			headless: false, // 关闭无头模式
 			// userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
-			userDataDir: process.env.USER_DATA_DIR,
+			userDataDir: escapeSpacesInPath(createAppChromeFile()),
 			// timeout: 0,
 			args: [
 				// '--disable-gpu',

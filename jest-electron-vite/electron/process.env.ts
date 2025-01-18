@@ -1,5 +1,6 @@
 import { app, } from 'electron'
 import path from 'node:path'
+import { createAppChromeFile } from './AppFile'
 const mode = import.meta.env.MODE
 function initEnv() {
   process.env.MODE = mode
