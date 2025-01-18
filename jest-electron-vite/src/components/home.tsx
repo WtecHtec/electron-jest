@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 const { Header, Content, Footer } = Layout
 const { TextArea } = Input;
 export default memo((props) => {
+	const [isEditTaskParamOpen, setIsEditTaskParamOpen] = useState(false)
+	const [editTaskParam, setEditTaskParam] = useState("{}")
 	const columns = [
 		{
 			title: 'ID',
@@ -22,6 +24,7 @@ export default memo((props) => {
 			key: 'action',
 			render: (_, record) => (
 				<div>
+					<Button type="link" onClick={ ()=> onHandleEditTaskParam(record)}>参数配置</Button>
 					<Button type="link" onClick={ ()=> onRunTask(record)}>执行任务</Button>
 					<Button type="link" onClick={() =>  onUpdateTask(record)}>修改任务</Button>
           {/* <Button type="link" onClick={() =>  onDelTask(record)}>删除任务</Button> */}
@@ -39,13 +42,14 @@ export default memo((props) => {
 	const [taskUrl, setTaskUrl] = useState('https://juejin.cn/')
   const [taskDesc, setTaskDesc] = useState('')
   const [taskDatas, setTaskDatas] = useState<any>([])
-
+  const [id, setId] = useState('')
+  const getData = async () => {
+	const data = await window.ipcRenderer.invoke('select-task-all');
+	// console.log('data---', data)
+	setTaskDatas([...data])
+  }
   useEffect(() => {
-    const getData = async () => {
-      const data = await window.ipcRenderer.invoke('select-task-all');
-      // console.log('data---', data)
-      setTaskDatas([...data])
-    }
+   
     getData()
     return () => {}
   }, [])
@@ -53,7 +57,7 @@ export default memo((props) => {
   const onUpdateTask = (value) => {
     console.log(value)
     const { taskurl, taskdesc, id, filepath } =value
-    navigate(`/setting?filepath=${filepath}&taskurl=${taskurl}&taskdesc=${taskdesc}&taskid=${id}`)
+    navigate(`/setting?filepath=${filepath}&taskurl=${taskurl}&taskdesc=${taskdesc}&taskid=${id}&taskparam=${value.taskparam}`)
   }
 
   const onDelTask = async (value) => {
@@ -120,6 +124,30 @@ export default memo((props) => {
 	const onClearCache = () => {
 		window.ipcRenderer.send('close-task-setting')
 	}
+	const handleEditTaskParamOk = async () => {
+			try {
+				const editParams = JSON.parse(editTaskParam)
+				console.log('editParams---', editParams)
+				setIsEditTaskParamOpen(false)
+				await window.ipcRenderer.invoke('save-task-param', id, editTaskParam);
+				setTimeout(() => {
+					getData()
+				}, 1000)
+			} catch (error) {
+				console.error(error)
+				messageApi.open({
+					type: 'error',
+					content: '参数配置错误',
+				});
+			}
+	  }
+
+	  const onHandleEditTaskParam = (record) => {
+		setId(record.id)
+		setIsEditTaskParamOpen(true)
+		console.log('record---', record)
+		setEditTaskParam(record.taskparam)
+	  }
 	return (
 		<>
 			{contextHolder}
@@ -149,6 +177,10 @@ export default memo((props) => {
 				<Input placeholder="页面URL" value={taskUrl} onChange={onUrlChange}></Input>
         <TextArea placeholder="任务描述" value={taskDesc} onChange={onDescChange} style={{marginTop: 12}}></TextArea>
 			</Modal>
+			
+		<Modal title="参数配置" open={isEditTaskParamOpen} onOk={handleEditTaskParamOk} cancelText="取消" okText="确定保存" onCancel={() => setIsEditTaskParamOpen(false)}>
+          <TextArea value={editTaskParam} onChange={(e) => setEditTaskParam(e.target.value)}></TextArea>
+        </Modal>
 		</>
 	);
 });

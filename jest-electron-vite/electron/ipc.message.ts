@@ -4,7 +4,7 @@ import WsServer from './ws.server'
 import TaslPuppeteer from './task.puppeteer'
 import fs from 'fs'
 import path from 'node:path'
-import { saveTask, getAllTask, deleteTask } from './task.dao'
+import { saveTask, getAllTask, deleteTask, saveTaskParam } from './task.dao'
 const { exec, spawn } = require('child_process');
 
 const handleRunngin = () => {
@@ -132,7 +132,8 @@ function startServer(wsServer, taslPuppeteer, url, win) {
 function handleSaveTask() {
   ipcMain.on('task-save', (event, data) => { 
     try {
-      const { id, taskdesc, taskdata, isupdate, taskurl } = JSON.parse(data)
+      console.log('handleSaveTask data---', data)
+      const { id, taskdesc, taskdata, isupdate, taskurl, taskparam } = JSON.parse(data)
       try {
         // 检查文件夹是否存在
         const savepath = path.join(__dirname, `${process.env.CHROME_DIST}/tasks`)
@@ -145,7 +146,7 @@ function handleSaveTask() {
         const filepath = path.join(savepath, `./${id}.json`)
         fs.writeFileSync(filepath, taskdata);
         // console.log("task data is saved.", id, taskdesc);
-        !isupdate && saveTask(id, filepath, taskdesc, taskurl)
+       saveTask(id, filepath, taskdesc, taskurl, taskparam)
       } catch (error) {
         console.error(error);
       }
@@ -165,6 +166,13 @@ function handleGetTask() {
 function hendleDelTask() {
   ipcMain.handle('del-task-id', async (event, id) => {
      await deleteTask(id)
+     return true
+  })
+}
+
+function hendleSaveTaskParam() {
+  ipcMain.handle('save-task-param', async (event, id, param) => {
+     await saveTaskParam(id, param)
      return true
   })
 }
@@ -192,6 +200,7 @@ function IpcManagement(win) {
   handleGetTask()
   handleGetTaskDetail()
   hendleDelTask()
+  hendleSaveTaskParam()
 }
 
 export default IpcManagement

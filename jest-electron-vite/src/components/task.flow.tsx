@@ -8,7 +8,7 @@ import ReactFlow, {
 	useEdgesState,
 	ReactFlowProvider,
 } from 'react-flow-renderer';
-import { Drawer, Button, Space, Divider, message, Modal } from 'antd';
+import { Drawer, Button, Space, Divider, message, Modal, Input } from 'antd';
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import NodeDrawer from './drawer';
@@ -24,6 +24,7 @@ import ListItemNode from '../flownode/list.item.node';
 import './task.flow.css'
 import { getMutliLevelProperty } from '../util';
 
+const { TextArea } = Input;
 const FLOW_TASK_MAP = {
   logic_loop: 'logic',
   logic_export: 'logic',
@@ -62,9 +63,13 @@ const TaskFlow = (porps) => {
   const [loading, setLoading] = useState(false)
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
 
+  const [editTaskParam, setEditTaskParam] = useState(params.get('taskparam') ? params.get('taskparam') : "{}")
+  const [isEditTaskParamOpen, setIsEditTaskParamOpen] = useState(false)
+
   useEffect(() => {
     setNodes(porps.nodes)
     setEdges(porps.edges)
+
   }, [porps.nodes])
 
 	useEffect(() => {
@@ -494,6 +499,7 @@ const TaskFlow = (porps) => {
     if (!item) {
       return
     }
+    console.log('handleSaveOk', checkParams(nodes, edges))
     window.ipcRenderer.send('task-save', JSON.stringify({
       id: params.get('taskid') || getId(),
       taskdesc: params.get('taskdesc'),
@@ -502,16 +508,74 @@ const TaskFlow = (porps) => {
       taskdata: JSON.stringify({
         nodes: JSON.stringify(nodes),
         edges: JSON.stringify(edges),
-        task: JSON.stringify(getTask(nodes, edges))
-      })
+        task: JSON.stringify(getTask(nodes, edges)),
+        
+      }),
+      taskparam: JSON.stringify(checkParams(nodes, edges))
     }))
     setIsSaveModalOpen(false)
+  }
+  const getTaskParam = (nodes, edges) => {
+     console.log('nodes---', nodes)
+     const result = {}
+     nodes.forEach(element => {
+      if (element.type === 'opt_input') {
+        console.log('element---', element)
+        const  inputType = getMutliLevelProperty(element, 'data.optsetting.inputData.inputType', '')
+        const inputValue = getMutliLevelProperty(element, 'data.optsetting.inputData.inputValue', '')
+        if ( inputType === "paramType") {
+          result[inputValue] = ""
+        }
+      }
+    });
+    return result
+  }
+  
+  const checkParams = (nodes, edges) => { 
+    let editParams = {}
+    try {
+       editParams = JSON.parse(editTaskParam)
+    } catch (error) {
+      console.error(error)
+    }
+    console.log('checkParams editParams---', editParams)
+    let params = getTaskParam(nodes, edges)
+    for (const key in params) {
+      if (!editParams[key]) {
+        editParams[key] = ""
+      }
+    }
+    return editParams
+  }
+
+  const handleParams = () => { 
+    let editParams = checkParams(nodes, edges)
+    console.log('params---', params)
+    setIsEditTaskParamOpen(true)
+    setEditTaskParam(JSON.stringify(editParams))
+  
+
+  }
+
+  const handleEditTaskParamOk = () => {
+    try {
+      const editParams = JSON.parse(editTaskParam)
+       console.log('editParams---', editParams)
+      setIsEditTaskParamOpen(false)
+    } catch (error) {
+      console.error(error)
+      messageApi.open({
+        type: 'error',
+        content: '参数配置错误',
+      });
+    }
   }
 	return (
 		<>
 			{contextHolder}
 			<div className="reactflow-wrapper" ref={reactFlowWrapper}>
 				<div className="tools">
+        <Button className="tools-btn" onClick={handleParams}>参数配置</Button>
 					<Button className="tools-btn" onClick={handlefinishSet}>保存任务</Button>
 					<Button className="tools-btn" onClick={handleRunning}>立即执行</Button>
           {
@@ -552,6 +616,9 @@ const TaskFlow = (porps) => {
         <Modal title="提示" open={isSaveModalOpen} onOk={handleSaveOk} cancelText="取消" okText="确定保存" onCancel={() => setIsSaveModalOpen(false)}>
 					<p>如果存在现有任务,该操作将会覆盖原有任务！</p>
 				</Modal>
+        <Modal title="参数配置" open={isEditTaskParamOpen} onOk={handleEditTaskParamOk} cancelText="取消" okText="确定保存" onCancel={() => setIsEditTaskParamOpen(false)}>
+          <TextArea value={editTaskParam} onChange={(e) => setEditTaskParam(e.target.value)}></TextArea>
+        </Modal>
 			</div>
 		</>
 	);
