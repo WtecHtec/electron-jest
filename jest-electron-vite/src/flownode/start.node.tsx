@@ -4,6 +4,7 @@ import { Handle } from 'react-flow-renderer';
 
 import StartSvg from '../assets/start.svg'
 import './flow.node.css'
+import { getMutliLevelProperty } from '../util';
 
 export default memo(({ isConnectable, selected, data }) => {
 	return (
@@ -14,8 +15,14 @@ export default memo(({ isConnectable, selected, data }) => {
 					title={<img src={StartSvg} className={`card-img  ${selected && 'selected'}`} />}
 					style={{ maxWidth: 300, minWidth: 260 }}
 				>
-					<p className="wrap-txt">打开页面：{data.url}</p>
-					{/* <span>下一步</span> */}
+					<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '打开网页')}</p>
+					{
+						getMutliLevelProperty(data, 'optsetting.handleType', 'web') === 'web' ? (
+							<p className="wrap-txt">打开页面：{data.url}</p>
+						) : (
+							<p className="wrap-txt">执行指令：{data.optsetting.command}</p>
+						)
+					}
 				</Card>
 			</div>
 			<Handle

@@ -31,6 +31,16 @@ const NODE_DATAS = [
         disable: true,
         txt: '开始',
         nodeType: 'start',
+        data: {
+          type: 'start',
+          optsetting: {
+            rename: '打开网页',
+            handleType: 'web',
+            waitTime: 0,
+            command:  ""
+          }
+          
+        }
       },
       {
         imgSrc: EndSvg,

@@ -2,9 +2,12 @@
 const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
+const { exec } = require('child_process');
+const os = process.platform;
+console.log('os---', os)
 // const clipboardy = require('clipboardy');
 const { keyboard, Key, sleep } = require('@nut-tree-fork/nut-js');
-const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
+// const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
 
 const version = '0.0.12'
 
@@ -18,6 +21,23 @@ const RunEnv = require('./run.evn');
 const kill = require('./kill');
 
 
+
+// 封装执行命令的 async 函数
+async function executeCommand(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        reject(`stderr: ${stderr}`);
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+}
 
 let logFilename = ""
 
@@ -79,14 +99,22 @@ const getBrowser = async () => {
 
 const runNodeStart = async (arg) => {
 	const { browser, task } = arg
-	const { url } = task
-	const page = await browser.newPage()
-  logger.info(`打开页面：${url}`)
-	await page.goto(url, {
-		waitUntil: 'domcontentloaded',
-	});
+	const { url, optsetting } = task
+	const { handleType = 'web', command = '', waitTime = 0 } = optsetting || {}
+  if (handleType === 'web') {
+    const page = await browser.newPage()
+    logger.info(`打开页面：${url}`)
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+    });
+    return { page }
+  } else {
+    await executeCommand(command)
+    await sleep(1000 * waitTime)
+  } 
+  return {}
   // await page.keyboard.press('Tab'); // 通过按下 Tab 键切换焦点
-	return { page }
+
 }
 
 const runNodeOpt = async (arg) => {
@@ -346,10 +374,39 @@ const handKeyEsc = async (arg) => {
    keyboard.config.autoDelayMs = 50;
 
    // 模拟按下 Esc 键
-   await keyboard.pressKey(Key.Escape);
-   await keyboard.releaseKey(Key.Escape);
+  await keyboard.type(Key.Escape);
   await sleep(waitTime * 1000);
   logger.info(`执行Esc操作`)
+  return {}
+}
+
+const handKeySreach = async (arg) => {
+  const { optsetting } = arg
+  const { waitTime } = optsetting
+  
+  keyboard.config.autoDelayMs = 50;
+
+  if (os === 'darwin') {
+    // macOS: Command + F
+    // await keyboard.pressKey(Key.Comma, Key.F);
+    // await keyboard.releaseKey(Key.Comma, Key.F);
+
+    // 确保按键有适当延迟
+    await keyboard.pressKey(Key.LeftCmd);
+    await keyboard.pressKey(Key.F);
+
+    await sleep(400);
+    await keyboard.releaseKey(Key.F);
+    await keyboard.releaseKey(Key.LeftCmd);
+  
+
+  } else if (os === 'win32') {
+    // Windows: Ctrl + F
+    await keyboard.pressKey(Key.Control, Key.F);
+
+  }
+  await sleep(waitTime * 1000);
+  logger.info(`执行搜索操作`)
   return {}
 }
 
@@ -358,6 +415,7 @@ const KEY_BOARD_TYPE_EVENT = {
   'input': handKeyInput,
   'tab': handKeyTab,
   'esc': handKeyEsc,
+  'sreach': handKeySreach,
 }
 
 const runLogicBack =  async (arg) => {  
@@ -647,7 +705,6 @@ async function runTask(arg) {
 	while (step < maxStep && taskData[step]) {
     // console.log(step)
 		const { nodeType } = taskData[step]
-    console.log('nodeType---', nodeType)
 		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
       const params = {
         ...arg,
@@ -685,14 +742,9 @@ async function main() {
 		return
 	}
 	await kill()
-	const browser = await getBrowser()
+
   const env = new RunEnv()
-
- // 加入参数
-  for (let key in argv) {
-    env.set(key, argv[key])
-  }
-
+  let browser = null
   let taskData = []
   // console.log('argv----', argv)
   // const mode = argv.mode || 'dev'
@@ -702,6 +754,14 @@ async function main() {
     const dataconfig = JSON.parse(data);
     taskData = JSON.parse(dataconfig.task)
     if (Array.isArray(taskData)) {
+      if (taskData[0].nodeType === 'start' 
+        && ( !taskData[0].optsetting || taskData[0].optsetting.handleType === 'web') ) {
+        browser = await getBrowser()
+      }
+     // 加入参数
+      for (let key in argv) {
+        env.set(key, argv[key])
+      }
       // console.log('taskData---', taskData)
       await runTask({ browser, taskData, env })
       logger.info('任务结束',)
@@ -767,7 +827,7 @@ async function execute(options = {}) {
     }
 
     await kill();
-    const browser = await getBrowser();
+    let browser = {}
     const env = new RunEnv();
 
     // 加入参数
@@ -783,6 +843,11 @@ async function execute(options = {}) {
     taskData = JSON.parse(dataconfig.task);
 
     if (Array.isArray(taskData)) {
+
+      if (taskData[0].nodeType === 'start' 
+        && ( !taskData[0].optsetting || taskData[0].optsetting.handleType === 'web') ) {
+        browser = await getBrowser()
+      }
       await runTask({ browser, taskData, env });
       logger.info('任务结束');
       return { success: true };

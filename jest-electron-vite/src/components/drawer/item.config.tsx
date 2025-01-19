@@ -1,28 +1,4 @@
 import { getMutliLevelProperty } from "../../util"
-export const END_DATAS = [
-	{
-		label: '退出流程',
-	},
-	{
-		label: '该流程只会存在一个',
-		color: '#FA5151',
-	}
-]
-
-export const START_DATAS = [
-	{
-		label: '打开页面：',
-		sublabel: true,
-		subformat: (node) => {
-			return getMutliLevelProperty(node, 'data.url', '')
-		}
-	},
-	{
-		label: '该流程只会存在一个,不可删除。',
-		color: '#FA5151',
-	}
-]
-
 
 const INPUT_BASE_CONFIG = [
 	{
@@ -50,6 +26,68 @@ const INPUT_BASE_CONFIG = [
 		}
 	},
 ]
+
+export const END_DATAS = [
+	{
+		label: '退出流程',
+	},
+	{
+		label: '该流程只会存在一个',
+		color: '#FA5151',
+	}
+]
+
+export const START_DATAS = [
+	// {
+	// 	label: '打开页面：',
+	// 	sublabel: true,
+	// 	subformat: (node) => {
+	// 		return getMutliLevelProperty(node, 'data.url', '')
+	// 	}
+	// },
+	...INPUT_BASE_CONFIG,
+	{
+		label: '类型:',
+		sublabel: true,
+    edit: true,
+    valType: 'select',
+	selectOptions: [
+		{
+			label: '网页',
+			value: 'web'
+		},
+		{
+			label: '指令',
+			value: 'command'
+		}
+	],
+    valChange: (e, node) => {
+      node.data.optsetting.handleType = e
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.handleType', 'web')
+		}
+	},
+	{
+		label: '操作内容:',
+		sublabel: true,
+    edit: true,
+    valType: 'text',
+    valChange: (e, node) => {
+      node.data.optsetting.command = e.target.value
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.command', '')
+		},
+	},
+	{
+		label: '该流程只会存在一个,不可删除。',
+		color: '#FA5151',
+	}
+]
+
+
+
 const BASE_CONFIG = [
 	{
 		label: '元素Xpath:',
@@ -290,6 +328,10 @@ export const OPT_KEYBOARD_DATAS = [
 		{
 			label: '输入',
 			value: 'input'
+		},
+		{
+			label: '搜索',
+			value: 'sreach'
 		},
 	],
 		valChange: (e, node) => {

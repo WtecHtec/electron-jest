@@ -16,7 +16,13 @@ function TaskSetting() {
 		id: 'jest_0',
 		type: 'start',
 		data: {
-			url: params.get('taskurl')
+			url: params.get('taskurl'),
+      optsetting: {
+        rename: '打开网页',
+        handleType: 'web',
+        waitTime: 1,
+        command:  params.get('taskurl')
+      }
 		},
 		position: { x: 250, y: 0 },
 	},]
