@@ -9,7 +9,7 @@ console.log('os---', os)
 const { keyboard, Key, sleep } = require('@nut-tree-fork/nut-js');
 // const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
 
-const version = '0.0.12'
+const version = '0.0.13'
 
 
 let argv = require('minimist')(process.argv.slice(2),  {
