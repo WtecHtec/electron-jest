@@ -89,7 +89,7 @@ const NODE_DATAS = [
           type: 'opt_keyboard',
           data: {
             optsetting: {
-              logicType: 'opt_keyboard',
+              optType: 'opt_keyboard',
               rename: '回车',
               waitTime: 1,
               keyType: "enter",

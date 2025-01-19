@@ -288,13 +288,9 @@ export const OPT_KEYBOARD_DATAS = [
 			value: 'tab'
 		},
 		{
-			label: '复制',
-			value: 'copy'
+			label: '输入',
+			value: 'input'
 		},
-		{
-			label: '粘贴',
-			value: 'paste'
-		}
 	],
 		valChange: (e, node) => {
 			node.data.optsetting.keyType = e

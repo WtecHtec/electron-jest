@@ -2,8 +2,12 @@
 const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
+// const clipboardy = require('clipboardy');
+const { keyboard, Key, sleep } = require('@nut-tree-fork/nut-js');
+const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
 
 const version = '0.0.12'
+
 
 let argv = require('minimist')(process.argv.slice(2),  {
   // string: ['filepath'],
@@ -12,6 +16,7 @@ let argv = require('minimist')(process.argv.slice(2),  {
 const winston = require('winston');
 const RunEnv = require('./run.evn');
 const kill = require('./kill');
+
 
 
 let logFilename = ""
@@ -80,6 +85,7 @@ const runNodeStart = async (arg) => {
 	await page.goto(url, {
 		waitUntil: 'domcontentloaded',
 	});
+  // await page.keyboard.press('Tab'); // 通过按下 Tab 键切换焦点
 	return { page }
 }
 
@@ -111,6 +117,9 @@ const runOptClick = async (arg) => {
 	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
   // console.log('clickElement---', clickElement ) 
 	const oldPages = await browser.pages()
+
+  await clickElement.focus()
+
   await clickElement.click();
   // console.log('click')
 	if (waitTime > 0) {
@@ -282,6 +291,75 @@ const runLogicExport = async (arg) => {
   return {}
 }
 
+const runLogicKeyboard = async (arg) => {
+  const { optsetting } = arg
+  const { keyType } = optsetting
+  if (typeof KEY_BOARD_TYPE_EVENT[keyType]  === 'function') {
+    return await KEY_BOARD_TYPE_EVENT[keyType]({ ...arg })
+  }
+  return {}
+}
+const handKeyInput = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  if (inputData.inputType === 'paramType') {
+    inputValue = env.get(inputValue) || inputValue
+  }
+  keyboard.config.autoDelayMs = 0;
+  // await new Clipboard.default().copy(inputValue)
+  // await sleep(1000);
+  // await keyboard.pressKey(Key.Comma, Key.V); // 对于 macOS 使用 Key.LeftCommand
+  // await keyboard.releaseKey(Key.Comma, Key.V); // 对于 macOS 使用 Key.LeftCommand
+  // await new Clipboard.default().paste(inputValue)
+  await keyboard.type(inputValue);
+  await sleep(waitTime * 1000);
+  // console.log('text---', text)
+  logger.info(`执行输入操作`)
+  return {}
+}
+
+const handKeyTab = async (arg) => {
+  const { optsetting } = arg
+  const { waitTime } = optsetting
+  // await keyboard.pressKey(Key.Tab);
+  await keyboard.type(Key.Tab);
+  await sleep(waitTime * 1000);
+  logger.info(`执行Tab操作`)
+  return {}
+}
+
+const handKeyEnter = async (arg) => {
+  const { optsetting } = arg
+  const { waitTime } = optsetting
+  keyboard.config.autoDelayMs = 50;
+  await keyboard.type(Key.Enter);
+  await sleep(waitTime * 1000);
+  logger.info(`执行Enter操作`)
+  return {}
+}
+
+const handKeyEsc = async (arg) => {
+  const { optsetting } = arg
+  const { waitTime } = optsetting
+   // 配置自动延迟
+   keyboard.config.autoDelayMs = 50;
+
+   // 模拟按下 Esc 键
+   await keyboard.pressKey(Key.Escape);
+   await keyboard.releaseKey(Key.Escape);
+  await sleep(waitTime * 1000);
+  logger.info(`执行Esc操作`)
+  return {}
+}
+
+const KEY_BOARD_TYPE_EVENT = {
+  'enter': handKeyEnter,
+  'input': handKeyInput,
+  'tab': handKeyTab,
+  'esc': handKeyEsc,
+}
+
 const runLogicBack =  async (arg) => {  
   const { page, logicsetting, browser } = arg
   await page.goBack()
@@ -400,6 +478,8 @@ const runLogicListItem = async  (arg) => {
   return {}
 }
 
+
+
 const runExportText = async (arg) => {  
   const { logicsetting } = arg
   const { fileType } = logicsetting
@@ -516,6 +596,7 @@ const RUN_OPT_TYPE = {
 	'opt_pick': runOptPick,
   'opt_hover': runOptHover,
   'opt_exists': runOptExists,
+  'opt_keyboard': runLogicKeyboard,
 }
 
 
@@ -531,6 +612,7 @@ const RUN_LOGIC = {
   'logic_condition': runLogicCondition,
   'logic_list': runLogicList,
   'logic_listitem': runLogicListItem,
+  
 }
 
 
@@ -565,6 +647,7 @@ async function runTask(arg) {
 	while (step < maxStep && taskData[step]) {
     // console.log(step)
 		const { nodeType } = taskData[step]
+    console.log('nodeType---', nodeType)
 		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
       const params = {
         ...arg,

@@ -43,6 +43,7 @@ const FLOW_TASK_MAP = {
   opt_pick: 'opt',
   opt_hover: 'opt',
   opt_exists: 'opt',
+  opt_keyboard: 'opt',
   start: 'start',
   end: 'end',
 }
