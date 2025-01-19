@@ -23,15 +23,9 @@ export const START_DATAS = [
 	}
 ]
 
-const BASE_CONFIG = [
+
+const INPUT_BASE_CONFIG = [
 	{
-		label: '元素Xpath:',
-		sublabel: true,
-		subformat: (node) => {
-			return getMutliLevelProperty(node, 'data.optsetting.xpath', '')
-		}
-	},
-  {
 		label: '操作描述:',
 		sublabel: true,
     edit: true,
@@ -55,6 +49,17 @@ const BASE_CONFIG = [
 			return getMutliLevelProperty(node, 'data.optsetting.waitTime', '')
 		}
 	},
+]
+const BASE_CONFIG = [
+	{
+		label: '元素Xpath:',
+		sublabel: true,
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.xpath', '')
+		}
+	},
+	...INPUT_BASE_CONFIG,
+
 ]
 export const CLICK_DATAS = [
 	{
@@ -84,6 +89,28 @@ export const INPUT_DATAS = [
 	},
 	...BASE_CONFIG,
 	{
+		label: '输入类型:',
+		sublabel: true,
+    edit: true,
+    valType: 'select',
+	selectOptions: [
+		{
+			label: '赋值',
+			value: 'valueType'
+		},
+		{
+			label: '参数',
+			value: 'paramType'
+		}
+	],
+    valChange: (e, node) => {
+      node.data.optsetting.inputData.inputType = e
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputType', 'valueType')
+		}
+	},
+	{
 		label: '输入数据:',
 		sublabel: true,
     edit: true,
@@ -94,12 +121,6 @@ export const INPUT_DATAS = [
 		subformat: (node) => {
 			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputValue', '')
 		},
-		subTypeformat: (node) => { 
-			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputType', 'valueType')
-		},
-		changeType: (value, node) => {
-			node.data.optsetting.inputData.inputType = value
-		  },
 	},
 ]
 
@@ -239,5 +260,82 @@ export const LOGIC_LIST_ITEM = [
   {
 		label: '👇:',
 		sublabel: '本次任务执行完, 下一个任务,仅支持节点【单个任务队列】',
+	},
+]
+
+export const OPT_KEYBOARD_DATAS = [
+	{
+		label: '处理事件:',
+		sublabel: '按键操作',
+	},
+	...INPUT_BASE_CONFIG,
+	{
+		label: '按键类型:',
+		sublabel: true,
+    edit: true,
+    valType: 'select',
+	selectOptions: [
+		{
+			label: '回车',
+			value: 'enter'
+		},
+		{
+			label: 'ESC',
+			value: 'esc'
+		},
+		{
+			label: 'TAB',
+			value: 'tab'
+		},
+		{
+			label: '复制',
+			value: 'copy'
+		},
+		{
+			label: '粘贴',
+			value: 'paste'
+		}
+	],
+		valChange: (e, node) => {
+			node.data.optsetting.keyType = e
+		},
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.keyType', 'enter')
+		}
+	},
+	{
+		label: '类型【复制有效】:',
+		sublabel: true,
+    edit: true,
+    valType: 'select',
+	selectOptions: [
+		{
+			label: '赋值',
+			value: 'valueType'
+		},
+		{
+			label: '参数',
+			value: 'paramType'
+		}
+	],
+    valChange: (e, node) => {
+      node.data.optsetting.inputData.inputType = e
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputType', 'valueType')
+		}
+	},
+	{
+		label: '输入数据【复制有效】:',
+		sublabel: true,
+    edit: true,
+    valType: 'text',
+
+    valChange: (e, node) => {
+      node.data.optsetting.inputData.inputValue = e.target.value
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputValue', '')
+		},
 	},
 ]

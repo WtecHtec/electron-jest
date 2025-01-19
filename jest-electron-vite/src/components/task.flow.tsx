@@ -197,6 +197,7 @@ const TaskFlow = (porps) => {
     logic_reload: (porps) => <OptNode imgType="logic_reload" {...porps} />,
     logic_func: (porps) => <OptNode imgType="logic_func" {...porps} />,
     logic_new_page: (porps) => <OptNode imgType="logic_new_page" {...porps} />,
+    opt_keyboard: (porps) => <OptNode imgType="opt_keyboard" {...porps} />,
 		end: EndNode
 	}), []);
 
@@ -289,6 +290,7 @@ const TaskFlow = (porps) => {
     // console.log(getTask(nodes, edges))
     window.ipcRenderer.send('task-running', {
       data: JSON.stringify(getTask(nodes, edges)),
+      taskparam: JSON.stringify(checkParams(nodes, edges))
     })
   }
 
@@ -519,7 +521,7 @@ const TaskFlow = (porps) => {
      console.log('nodes---', nodes)
      const result = {}
      nodes.forEach(element => {
-      if (element.type === 'opt_input') {
+      if (element.type === 'opt_input' || element.type === 'opt_keyboard') {
         console.log('element---', element)
         const  inputType = getMutliLevelProperty(element, 'data.optsetting.inputData.inputType', '')
         const inputValue = getMutliLevelProperty(element, 'data.optsetting.inputData.inputValue', '')

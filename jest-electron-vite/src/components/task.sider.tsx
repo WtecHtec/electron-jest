@@ -21,6 +21,7 @@ import NewSvg from '../assets/new.svg'
 import ConditionSvg from '../assets/condition.svg'
 import ListItemSvg from '../assets/list-item.svg'
 import ListSvg from '../assets/list.svg'
+import KeySvg from '../assets/keyboard.svg'
 const NODE_DATAS = [
   {
     label: '常规',
@@ -74,6 +75,33 @@ const NODE_DATAS = [
           }
         }
       },
+    ]
+  },
+  {
+    label: '键盘事件',
+    disable: false,
+    children: [
+      {
+        imgSrc: KeySvg,
+        txt: '键盘',
+        nodeType: 'opt_keyboard',
+        data: {
+          type: 'opt_keyboard',
+          data: {
+            optsetting: {
+              logicType: 'opt_keyboard',
+              rename: '回车',
+              waitTime: 1,
+              keyType: "enter",
+              inputData: {
+                inputValue: "",
+                inputType: "valueType"
+              }
+            }
+          }
+        }
+      },
+      
     ]
   },
   {

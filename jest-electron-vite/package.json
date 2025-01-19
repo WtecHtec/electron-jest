@@ -13,7 +13,7 @@
     "@uiw/react-codemirror": "^4.21.21",
     "antd": "^5.12.8",
     "express": "^4.18.2",
-    "flowauto": "^0.0.10",
+    "flowauto": "^0.0.12",
     "puppeteer": "^21.6.1",
     "puppeteer-core": "^21.6.1",
     "react": "^18.2.0",

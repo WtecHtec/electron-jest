@@ -31,9 +31,9 @@ const handleRunngin = () => {
       try {
         const params = JSON.parse(taskparam)
         flowauto({
-          filepath: filepath,
-          userDataDir: createAppChromeFile(),
-          logpath: createAppTaskLoggerFile(),
+          filepath:  (filepath),
+          userDataDir: escapeSpacesInPath(createAppChromeFile()),
+          logpath:  escapeSpacesInPath(createAppTaskLoggerFile()),
           ...params,
         })
       } catch (error) {

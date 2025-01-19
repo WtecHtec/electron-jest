@@ -3,9 +3,9 @@ const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
 
-const version = '0.0.11'
+const version = '0.0.12'
 
-const argv = require('minimist')(process.argv.slice(2),  {
+let argv = require('minimist')(process.argv.slice(2),  {
   // string: ['filepath'],
 	// string: ['userDataDir']
 });
@@ -641,6 +641,7 @@ async function main() {
 // 修改 main 函数，添加参数并返回结果
 async function execute(options = {}) {
   try {
+    argv = { ...options }
     if (options.logpath) {
       logDirectory = options.logpath
     } else {
