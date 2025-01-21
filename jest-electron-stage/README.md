@@ -2,6 +2,9 @@
 
 Google Chrome Automation Executor
 
+The task flow configuration data is more troublesome, so a desktop client is provided for free arrangement.
+[app](https://github.com/WtecHtec/electron-jest/releases)
+
 # Installation
 
 ```
