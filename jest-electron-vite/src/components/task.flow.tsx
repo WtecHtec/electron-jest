@@ -522,7 +522,7 @@ const TaskFlow = (porps) => {
      console.log('nodes---', nodes)
      const result = {}
      nodes.forEach(element => {
-      if (element.type === 'opt_input' || element.type === 'opt_keyboard') {
+      if (element.type === 'opt_input' || (element.type === 'opt_keyboard' && element.data.optsetting.keyType !== 'shortcut')) {
         console.log('element---', element)
         const  inputType = getMutliLevelProperty(element, 'data.optsetting.inputData.inputType', '')
         const inputValue = getMutliLevelProperty(element, 'data.optsetting.inputData.inputValue', '')

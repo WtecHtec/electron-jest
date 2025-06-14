@@ -59,3 +59,18 @@ flowauto({
 ```
 
 #  Support keyboard
+
+# 支持
+1. 自定义快捷键触发
+2. 任务参数：
+
+  --taskparamfile: json文件
+  ```
+  --taskparamfile ./taskparam.json 
+  ```
+
+  --taskparam: json内容
+  ```
+  --taskparam "{\"FriendName\":\"霜月初十\",\"Message\":\"新年快乐\"}"
+  
+  ```

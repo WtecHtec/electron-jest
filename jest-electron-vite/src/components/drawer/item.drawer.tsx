@@ -32,9 +32,11 @@ export default memo(({ node, datas}) => {
                 }
                 {
                    item.valType === 'select'   && <Select  
+                   style={{ width: '100%' }}
                    defaultValue={item.subformat(node, item)} onSelect={(e) =>   {
                     item.valChange(e, node )
                     // node.data.optsetting.inputData.inputType = e
+                    item.itemtype === 'opt_keyboard' && setRefresh(Math.random())
               
                   } } >
                     {
@@ -46,6 +48,7 @@ export default memo(({ node, datas}) => {
                   <Option value="paramType">参数</Option> */}
                 </Select>
                 }
+              
                 {
                   item.valType === 'text' && 	<TextArea rows={4} defaultValue={item.subformat(node, item)} onChange={(e) => {
                     // setRefresh(Math.random)
@@ -61,7 +64,11 @@ export default memo(({ node, datas}) => {
                 }
               </>
             }
+             
           </Space.Compact>
+          {
+             item.itemtype === 'opt_keyboard' && node.type === "opt_keyboard" && node?.data?.optsetting?.keyType === 'shortcut' && <span>在内容中输入按键码<a href="https://blog.csdn.net/weixin_42429220/article/details/148649258" target="_blank">查看</a>, 例如: 107,75</span>
+          }
           <Divider></Divider>
         </>
       })

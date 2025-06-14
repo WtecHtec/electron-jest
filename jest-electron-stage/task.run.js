@@ -388,16 +388,17 @@ const handKeySreach = async (arg) => {
 
   if (os === 'darwin') {
     // macOS: Command + F
-    // await keyboard.pressKey(Key.Comma, Key.F);
-    // await keyboard.releaseKey(Key.Comma, Key.F);
+    await keyboard.pressKey(Key.LeftCmd, Key.F);
+    await sleep(400);
+    await keyboard.releaseKey(Key.LeftCmd, Key.F);
+
 
     // 确保按键有适当延迟
-    await keyboard.pressKey(Key.LeftCmd);
-    await keyboard.pressKey(Key.F);
-
-    await sleep(400);
-    await keyboard.releaseKey(Key.F);
-    await keyboard.releaseKey(Key.LeftCmd);
+    // await keyboard.pressKey(Key.LeftCmd);
+    // await keyboard.pressKey(Key.F);
+    // await sleep(400);
+    // await keyboard.releaseKey(Key.F);
+    // await keyboard.releaseKey(Key.LeftCmd);
   
 
   } else if (os === 'win32') {
@@ -410,12 +411,71 @@ const handKeySreach = async (arg) => {
   return {}
 }
 
+
+const getShortcutKey = (arg) => {
+  const { optsetting, env } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  if (!inputValue) {
+    return []
+  }
+  
+  return inputValue.split(',').map(item => {
+    return Number(item) 
+  })
+}
+
+const handKeyShortcut = async (arg) => {
+  const { optsetting } = arg
+  const { waitTime } = optsetting
+  keyboard.config.autoDelayMs = 50;
+  const keys = getShortcutKey(arg)
+  console.log('keys----', keys, Key.LeftCmd)
+  if (keys.length) {
+    // await keyboard.pressKey(...keys)
+    if (os === 'darwin') {
+      // macOS: Command + F
+      // await keyboard.pressKey(Key.Comma, Key.F);
+      // await keyboard.releaseKey(Key.Comma, Key.F);
+  
+      await keyboard.pressKey(...keys);
+
+      // for (let i = 0; i < keys.length; i++) {
+      //   await keyboard.pressKey(keys[i])
+      // }
+      // 确保按键有适当延迟
+      // await keyboard.pressKey(Key.LeftCmd);
+      // await keyboard.pressKey(Key.F);
+  
+      await sleep(400);
+      await keyboard.releaseKey(...keys);
+
+      // for (let i = 0; i < keys.length; i++) {
+      //   await keyboard.releaseKey(keys[i])
+      // }
+
+      // await keyboard.releaseKey(Key.F);
+      // await keyboard.releaseKey(Key.LeftCmd);
+    
+  
+    } else if (os === 'win32') {
+      // Windows: Ctrl + F
+      await keyboard.pressKey(...keys);
+  
+    }
+  }
+  await sleep(waitTime * 1000);
+  logger.info(`执行快捷键操作`)
+  return {}
+}
+
 const KEY_BOARD_TYPE_EVENT = {
   'enter': handKeyEnter,
   'input': handKeyInput,
   'tab': handKeyTab,
   'esc': handKeyEsc,
   'sreach': handKeySreach,
+  'shortcut': handKeyShortcut,
 }
 
 const runLogicBack =  async (arg) => {  
@@ -737,7 +797,7 @@ async function main() {
     return
   }
   console.log('task run-----', )
-	if (!argv.userDataDir) {
+	if (!argv.userDataDir && argv.mode !== 'dev') {
 		logger.error('浏览器缓存数据文件夹配置路径不能为空',)
 		return
 	}
@@ -753,6 +813,29 @@ async function main() {
     const data = fs.readFileSync(argv.filepath, 'utf-8');
     const dataconfig = JSON.parse(data);
     taskData = JSON.parse(dataconfig.task)
+
+
+    try {
+      const data = fs.readFileSync(argv.taskparamfile, 'utf-8');
+      const taskparam = JSON.parse(data || '{}')
+      console.log('taskparamfile ---', taskparam)
+      for (let key in taskparam) {
+        env.set(key, taskparam[key])
+      }
+    } catch (error) {
+      console.log('taskparamfile---', error)
+    }
+
+    try {
+      const taskparam = JSON.parse(argv.taskparam || '{}')
+      console.log('taskparam---', taskparam)
+      for (let key in taskparam) {
+        env.set(key, taskparam[key])
+      }
+    } catch (error) {
+      console.log('taskparam---', error)
+    }
+
     if (Array.isArray(taskData)) {
       if (taskData[0].nodeType === 'start' 
         && ( !taskData[0].optsetting || taskData[0].optsetting.handleType === 'web') ) {
@@ -821,7 +904,7 @@ async function execute(options = {}) {
       return { success: true, version };
     }
 
-    if (!runOptions.userDataDir) {
+    if (!runOptions.userDataDir && runOptions.mode !== 'dev') {
       logger.error('浏览器缓存数据文件夹配置路径不能为空');
       return { success: false, error: '浏览器缓存数据文件夹配置路径不能为空' };
     }

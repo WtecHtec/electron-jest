@@ -149,7 +149,7 @@ export const INPUT_DATAS = [
 		}
 	},
 	{
-		label: '输入数据:',
+		label: '内容:',
 		sublabel: true,
     edit: true,
     valType: 'text',
@@ -312,6 +312,7 @@ export const OPT_KEYBOARD_DATAS = [
 		sublabel: true,
     edit: true,
     valType: 'select',
+	itemtype: 'opt_keyboard',
 	selectOptions: [
 		{
 			label: '回车',
@@ -333,6 +334,10 @@ export const OPT_KEYBOARD_DATAS = [
 			label: '搜索',
 			value: 'sreach'
 		},
+		{
+			label: '快捷键',
+			value: 'shortcut'
+		},
 	],
 		valChange: (e, node) => {
 			node.data.optsetting.keyType = e
@@ -342,11 +347,15 @@ export const OPT_KEYBOARD_DATAS = [
 		}
 	},
 	{
-		label: '类型【复制有效】:',
+		label: '类型:',
 		sublabel: true,
     edit: true,
     valType: 'select',
 	selectOptions: [
+		{
+			label: '无操作',
+			value: 'none'
+		},
 		{
 			label: '赋值',
 			value: 'valueType'
@@ -354,7 +363,8 @@ export const OPT_KEYBOARD_DATAS = [
 		{
 			label: '参数',
 			value: 'paramType'
-		}
+		},
+		
 	],
     valChange: (e, node) => {
       node.data.optsetting.inputData.inputType = e
@@ -364,7 +374,7 @@ export const OPT_KEYBOARD_DATAS = [
 		}
 	},
 	{
-		label: '输入数据【复制有效】:',
+		label: '内容:',
 		sublabel: true,
     edit: true,
     valType: 'text',
