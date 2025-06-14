@@ -10,7 +10,8 @@ import LoopDrawer from './loop.drawer';
 import LogicBaseDrawer from './logic.base.drawer';
 
 import { END_DATAS, START_DATAS, CLICK_DATAS, PICK_DATAS, INPUT_DATAS, 
-  VERIFY_DATAS, HOVER_DATAS, OPT_EXISTS_DATAS, LOGIC_CONDITION, LOGIC_LIST, LOGIC_LIST_ITEM, OPT_KEYBOARD_DATAS } from './item.config';
+  VERIFY_DATAS, HOVER_DATAS, OPT_EXISTS_DATAS, LOGIC_CONDITION, LOGIC_LIST, LOGIC_LIST_ITEM, OPT_KEYBOARD_DATAS, 
+  OPT_MOUSE_DATAS} from './item.config';
 
 
 import './index.css'
@@ -30,6 +31,7 @@ const ITEM_DATA_MAP = {
   logic_list: LOGIC_LIST,
   logic_listitem: LOGIC_LIST_ITEM,
   opt_keyboard: OPT_KEYBOARD_DATAS,
+  opt_mouse: OPT_MOUSE_DATAS,
 }
 export default memo((porps) => {
 	const { node } = porps

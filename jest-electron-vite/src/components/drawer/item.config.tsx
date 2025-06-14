@@ -387,3 +387,76 @@ export const OPT_KEYBOARD_DATAS = [
 		},
 	},
 ]
+
+
+
+export const OPT_MOUSE_DATAS = [
+	{
+		label: '处理事件:',
+		sublabel: '应用操作',
+	},
+	...INPUT_BASE_CONFIG,
+	{
+		label: '类型:',
+		sublabel: true,
+    edit: true,
+    valType: 'select',
+	selectOptions: [
+		// {
+		// 	label: '单个单词',
+		// 	value: 'singleWord'
+		// },
+		// {
+		// 	label: '文本行',
+		// 	value: 'textLine'
+		// },
+		{
+			label: '鼠标移动',
+			value: 'mousemove'
+		},
+		{
+			label: '鼠标左击',
+			value: 'mouseleftclick'
+		},
+		{
+			label: '左键双击',
+			value: 'mousedoubleleftclick'
+		},
+		{
+			label: '鼠标右击',
+			value: 'mouserightclick'
+		},
+		{
+			label: '右键双击',
+			value: 'mousedoublerightclick'
+		},
+		{
+			label: '向下滚动',
+			value: 'scrollDown'
+		},
+		{
+			label: '向上滚动',
+			value: 'scrollUp'
+		},
+	],
+		valChange: (e, node) => {
+			node.data.optsetting.mouseType = e
+		},
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.mouseType', 'mouseleftclick')
+		}
+	},
+	{
+		label: '内容:',
+		sublabel: true,
+    edit: true,
+    valType: 'text',
+
+    valChange: (e, node) => {
+      node.data.optsetting.inputData.inputValue = e.target.value
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.inputData.inputValue', '')
+		},
+	},
+]

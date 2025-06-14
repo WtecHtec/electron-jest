@@ -19,6 +19,7 @@ import SelfdiySvg from '../assets/selfdiy.svg'
 import NewSvg from '../assets/new.svg'
 import ExistsSvg from '../assets/exists.svg'
 import KeySvg from '../assets/keyboard.svg'
+import MouseSvg from '../assets/mouse.svg'
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -36,7 +37,8 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_back: BackSvg,
     logic_func: SelfdiySvg,
     logic_new_page: NewSvg,
-    opt_keyboard: KeySvg
+    opt_keyboard: KeySvg,
+	opt_mouse: MouseSvg
 	}
 
 	const showLabel = {
@@ -79,6 +81,11 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '这是一个按键操作')}</p>
 		<p className="wrap-txt"> 按键操作：{getMutliLevelProperty(data, 'optsetting.keyType', '')}</p>
 	</>,
+	opt_mouse: () => <>
+		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '这是一个屏幕操作')}</p>
+		<p className="wrap-txt"> 鼠标操作：{getMutliLevelProperty(data, 'optsetting.mouseType', '')}</p>
+	</>,
+	
     logic_new_page: '获取最新页面',
 	}
 

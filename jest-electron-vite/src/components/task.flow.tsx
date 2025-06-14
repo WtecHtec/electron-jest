@@ -44,6 +44,7 @@ const FLOW_TASK_MAP = {
   opt_hover: 'opt',
   opt_exists: 'opt',
   opt_keyboard: 'opt',
+  opt_mouse: 'opt',
   start: 'start',
   end: 'end',
 }
@@ -199,6 +200,7 @@ const TaskFlow = (porps) => {
     logic_func: (porps) => <OptNode imgType="logic_func" {...porps} />,
     logic_new_page: (porps) => <OptNode imgType="logic_new_page" {...porps} />,
     opt_keyboard: (porps) => <OptNode imgType="opt_keyboard" {...porps} />,
+    opt_mouse: (porps) => <OptNode imgType="opt_mouse" {...porps} />,
 		end: EndNode
 	}), []);
 

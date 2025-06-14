@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const os = process.platform;
 console.log('os---', os)
 // const clipboardy = require('clipboardy');
-const { keyboard, Key, sleep } = require('@nut-tree-fork/nut-js');
+const { keyboard, Key, sleep, mouse, Button, Point } = require('@nut-tree-fork/nut-js');
 // const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
 
 const version = '0.0.14'
@@ -327,6 +327,7 @@ const runLogicKeyboard = async (arg) => {
   }
   return {}
 }
+
 const handKeyInput = async (arg) => {
   const { optsetting, env } = arg
   const { inputData, waitTime } = optsetting
@@ -468,6 +469,7 @@ const handKeyShortcut = async (arg) => {
   logger.info(`执行快捷键操作`)
   return {}
 }
+
 
 const KEY_BOARD_TYPE_EVENT = {
   'enter': handKeyEnter,
@@ -700,6 +702,160 @@ const onRunLoopSelfFunc = async (arg) => {
   return {}
 }
 
+
+
+const runLogicMouse = async (arg) => {
+  const { optsetting } = arg
+  const { mouseType } = optsetting
+  console.log('screenType---', mouseType)
+  if (typeof MOUSE_TYPE_EVENT[mouseType] === 'function') {
+    return await MOUSE_TYPE_EVENT[mouseType](arg)
+  } 
+  return {}
+}
+
+const handSingleWord = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (!inputValue) {
+    return {}
+  }
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+ 
+  console.log('screen.find(textLine(inputValue))---',  straightTo(centerOf(screen.find(textLine(inputValue)))))
+  await mouse.move(straightTo(centerOf(screen.find(textLine(inputValue)))));
+  
+}
+
+
+// const handTextLine = async (arg) => {
+//   const { optsetting } = arg
+//   const { screenType } = optsetting
+//   if (screenType === 'textLine') {
+//     await runLogicKeyboard(arg)
+//   }
+// }
+
+const handMouseMove = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (!inputValue) {
+    return {}
+  }
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  try {
+    const datas = JSON.parse(inputValue)
+    for (let i = 0; i < datas.length; i++) {
+      const data = datas[i]
+      await mouse.move(new Point(data[0], data[1]));
+    }
+   
+  } catch (error) {
+    console.log('mouse.move error---', error)
+  }
+  return {}
+  
+}
+
+const handMouseLeftClick = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  await mouse.click(Button.LEFT);
+  return {}
+}
+
+const handMouseDoubleLeftClick = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  await mouse.doubleClick(Button.LEFT);
+  return {}
+}
+
+const handMouseRightClick = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  await mouse.click(Button.RIGHT);
+  return {}
+}
+
+const handMouseDoubleRightClick = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  await mouse.doubleClick(Button.RIGHT);
+  return {}
+}
+
+const handScrollDown = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (!inputValue) {
+    return {}
+  }
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  await mouse.scrollDown(Number(inputValue));
+  return {}
+}
+
+const handScrollUp = async (arg) => {
+  const { optsetting } = arg
+  const { inputData, waitTime } = optsetting
+  let { inputValue } = inputData
+  console.log('inputValue---', inputValue)
+  if (!inputValue) {
+    return {}
+  }
+  if (waitTime > 0) {
+		await sleep(waitTime * 1000)
+	}
+  await mouse.scrollUp(Number(inputValue));
+}
+
+
+const MOUSE_TYPE_EVENT = {
+  // 'singleWord': handSingleWord,
+  // 'textLine': handTextLine,
+  'mousemove': handMouseMove,
+  'mouseleftclick': handMouseLeftClick,
+  'mousedoubleleftclick': handMouseDoubleLeftClick,
+  'mouserightclick': handMouseRightClick,
+  'mousedoublerightclick': handMouseDoubleRightClick,
+  'scrollDown': handScrollDown,
+  'scrollUp': handScrollUp,
+}
+
 const RUN_NODE_TYPE = {
 	'start': runNodeStart,
 	'opt': runNodeOpt,
@@ -715,6 +871,7 @@ const RUN_OPT_TYPE = {
   'opt_hover': runOptHover,
   'opt_exists': runOptExists,
   'opt_keyboard': runLogicKeyboard,
+  'opt_mouse': runLogicMouse,
 }
 
 
@@ -816,11 +973,13 @@ async function main() {
 
 
     try {
-      const data = fs.readFileSync(argv.taskparamfile, 'utf-8');
-      const taskparam = JSON.parse(data || '{}')
-      console.log('taskparamfile ---', taskparam)
-      for (let key in taskparam) {
-        env.set(key, taskparam[key])
+      if (argv.taskparamfile) {
+        const data = fs.readFileSync(argv.taskparamfile, 'utf-8');
+        const taskparam = JSON.parse(data || '{}')
+        console.log('taskparamfile ---', taskparam)
+        for (let key in taskparam) {
+          env.set(key, taskparam[key])
+        }
       }
     } catch (error) {
       console.log('taskparamfile---', error)

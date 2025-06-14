@@ -22,6 +22,7 @@ import ConditionSvg from '../assets/condition.svg'
 import ListItemSvg from '../assets/list-item.svg'
 import ListSvg from '../assets/list.svg'
 import KeySvg from '../assets/keyboard.svg'
+import MouseSvg from '../assets/mouse.svg'
 const NODE_DATAS = [
   {
     label: '常规',
@@ -103,6 +104,27 @@ const NODE_DATAS = [
               rename: '回车',
               waitTime: 1,
               keyType: "enter",
+              inputData: {
+                inputValue: "",
+                inputType: "valueType"
+              }
+            }
+          }
+        }
+      },
+
+      {
+        imgSrc: MouseSvg,
+        txt: '鼠标',
+        nodeType: 'opt_mouse',
+        data: {
+          type: 'opt_mouse',
+          data: {
+            optsetting: {
+              optType: 'opt_mouse',
+              rename: '鼠标左击',
+              waitTime: 1,
+              mouseType: "mouseleftclick",
               inputData: {
                 inputValue: "",
                 inputType: "valueType"
