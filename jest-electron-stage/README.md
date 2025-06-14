@@ -60,17 +60,15 @@ flowauto({
 
 #  Support keyboard
 
-# 支持
-1. 自定义快捷键触发
-2. 任务参数：
+✅ Support 2025-06-14
+	1.	Custom Hotkey Trigger
+	2.	Task Parameters:
+  	•	--taskparamfile: JSON file path
+```
+--taskparamfile ./taskparam.json 
+```
+•	--taskparam: JSON string content
+```
+--taskparam "{\"FriendName\":\"霜月初十\",\"Message\":\"Happy New Year\"}"
 
-  --taskparamfile: json文件
-  ```
-  --taskparamfile ./taskparam.json 
-  ```
-
-  --taskparam: json内容
-  ```
-  --taskparam "{\"FriendName\":\"霜月初十\",\"Message\":\"新年快乐\"}"
-  
-  ```
+```
