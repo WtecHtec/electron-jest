@@ -19,7 +19,11 @@ jest-chrome-plugin: 谷歌插件(圈选元素)
 jest-electron-stage: 任务执行器 [npm 包](https://www.npmjs.com/package/flowauto)
 
 
+
 # 运行
+
+node v16
+
 1. 先将谷歌插件打包，打包成功之后，放到 jest-electron-vite 目录下，新建 文件夹 chrome_extension， 并把插件文件夹命名为 JestPro， 如图：
    ![image](https://github.com/user-attachments/assets/87e8fd4f-7718-42f2-b4fa-2fdf99ed7bfa)
 
