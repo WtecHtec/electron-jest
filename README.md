@@ -1,34 +1,132 @@
-# electron-jest
-electron jest
 
-[从0到1自动化工具专栏](https://blog.csdn.net/weixin_42429220/category_12560336.html?spm=1001.2014.3001.5482)
+### 3. 启动主应用
 
-【流程自动化工具-录制操作绘制流程】 https://www.bilibili.com/video/BV1aZ421a7Vz/?share_source=copy_web&vd_source=b38d30b9afa4cdb7d6538c4c2978a4c8
+```bash
+cd jest-electron-vite
+npm install
+npm run dev
+```
 
-【从0到1开发自动化工具-自动化采集】 https://www.bilibili.com/video/BV1VN4y1H74p/?share_source=copy_web&vd_source=b38d30b9afa4cdb7d6538c4c2978a4c8
+如果遇到 Electron 下载失败，设置镜像：
 
-【从0到1开发自动化工具-自动化测试】 https://www.bilibili.com/video/BV1f94y1K7Mw/?share_source=copy_web&vd_source=b38d30b9afa4cdb7d6538c4c2978a4c8
+```bash
+export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+```
 
-[支持参数+ 控制键盘](https://www.bilibili.com/video/BV1PVwYecEim/?vd_source=d5b28d31bf0713b1e64a887d37daeb4a)
+### 4. 启动 AI 服务器 (可选)
 
-# 目录介绍
-jest-electron-vite : 客户端
+```bash
+cd jest-server
+npm install
+node index.js
+```
 
-jest-chrome-plugin: 谷歌插件(圈选元素)
+服务器默认运行在 `http://localhost:3000`
 
-jest-electron-stage: 任务执行器 [npm 包](https://www.npmjs.com/package/flowauto)
+### 5. 使用任务执行器
 
+任务执行器可以独立使用：
 
+```bash
+# 全局安装
+npm install -g flowauto
 
-# 运行
+# 或在 jest-electron-stage 目录下使用
+cd jest-electron-stage
+npm install
+node task.run.js
+```
 
-node v16
+## 🔧 开发指南
 
-1. 先将谷歌插件打包，打包成功之后，放到 jest-electron-vite 目录下，新建 文件夹 chrome_extension， 并把插件文件夹命名为 JestPro， 如图：
-   ![image](https://github.com/user-attachments/assets/87e8fd4f-7718-42f2-b4fa-2fdf99ed7bfa)
+### 开发模式运行
 
+1. **Chrome 插件开发**:
+   ```bash
+   cd jest-chrome-plugin
+   npm run dev
+   ```
 
-2. 最后 执行 npm run dev
+2. **客户端开发**:
+   ```bash
+   cd jest-electron-vite
+   npm run dev
+   ```
 
-# 注意
-在拉取  electron 不成功，可以设置： export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+3. **服务器开发**:
+   ```bash
+   cd jest-server
+   node index.js
+   ```
+
+### 构建生产版本
+
+```bash
+cd jest-electron-vite
+npm run build
+```
+
+构建完成后，可执行文件将生成在 `release` 目录中。
+
+## 📦 部署说明
+
+### Chrome 插件安装
+
+1. 打开 Chrome 浏览器
+2. 访问 `chrome://extensions/`
+3. 开启"开发者模式"
+4. 点击"加载已解压的扩展程序"
+5. 选择 `jest-chrome-plugin/build` 目录
+
+### 任务执行器独立使用
+
+```bash
+# 安装
+npm install -g flowauto
+
+# 使用
+flowauto --help
+```
+
+## 🛠️ 技术栈
+
+- **前端**: React 18 + TypeScript + Antd + Vite
+- **桌面端**: Electron 26
+- **后端**: Express + Node.js
+- **AI 集成**: Google Gemini AI
+- **自动化**: Puppeteer + nut.js
+- **构建工具**: Vite + Electron Builder
+
+## 📝 使用说明
+
+1. **录制流程**: 使用 Chrome 插件选择页面元素
+2. **编辑任务**: 在 Electron 客户端中编辑自动化流程
+3. **执行测试**: 使用任务执行器运行自动化测试
+4. **AI 辅助**: 可选使用 AI 服务优化测试流程
+
+## 🐛 常见问题
+
+### Electron 下载失败
+```bash
+export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+```
+
+### Chrome 插件无法加载
+确保插件文件夹命名为 `JestPro` 且放置在正确位置：
+`jest-electron-vite/chrome_extension/JestPro/`
+
+### 任务执行失败
+检查 Node.js 版本是否为 v16 或更高版本。
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request。
+
+## 📄 许可证
+
+ISC
+
+## 📞 联系方式
+
+- 作者: wtechtec
+- 项目地址: https://github.com/WtecHtec/electron-jest
