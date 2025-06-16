@@ -14,10 +14,15 @@
 ## 🏗️ 项目结构
 
 electron-jest/
+
 ├── jest-electron-vite/ # Electron 客户端 (主应用)
+
 ├── jest-chrome-plugin/ # Chrome 插件 (元素选择器)
+
 ├── jest-electron-stage/ # 任务执行器 (npm 包: flowauto)
+
 ├── jest-server/ # AI 服务器
+
 └── README.md
 
 
@@ -65,11 +70,13 @@ cp -r ../jest-chrome-plugin/build chrome_extension/JestPro
 
 **重要**: 插件文件夹必须命名为 `JestPro`，目录结构如下：
 jest-electron-vite/
+
 └── chrome_extension/
-└── JestPro/
-├── manifest.json
-├── popup.html
-└── ... (其他插件文件)
+
+   └── JestPro/
+   ├── manifest.json
+   ├── popup.html
+   └── ... (其他插件文件)
 
 
 ### 3. 启动主应用
