@@ -1,4 +1,77 @@
 
+# Electron Jest - 自动化测试工具
+
+这是一个集成化的自动化测试工具套件，包含 Electron 客户端、Chrome 插件、任务执行器和 AI 服务器。帮助用户录制、编辑和执行自动化流程测试。
+
+## 📺 演示视频
+
+- [从0到1自动化工具专栏](https://blog.csdn.net/weixin_42429220/category_12560336.html?spm=1001.2014.3001.5482)
+- [流程自动化工具-录制操作绘制流程](https://www.bilibili.com/video/BV1aZ421a7Vz/?share_source=copy_web&vd_source=b38d30b9afa4cdb7d6538c4c2978a4c8)
+- [从0到1开发自动化工具-自动化采集](https://www.bilibili.com/video/BV1VN4y1H74p/?share_source=copy_web&vd_source=b38d30b9afa4cdb7d6538c4c2978a4c8)
+- [从0到1开发自动化工具-自动化测试](https://www.bilibili.com/video/BV1f94y1K7Mw/?share_source=copy_web&vd_source=b38d30b9afa4cdb7d6538c4c2978a4c8)
+- [支持参数+ 控制键盘](https://www.bilibili.com/video/BV1PVwYecEim/?vd_source=d5b28d31bf0713b1e64a887d37daeb4a)
+
+## 🏗️ 项目结构
+
+electron-jest/
+├── jest-electron-vite/ # Electron 客户端 (主应用)
+├── jest-chrome-plugin/ # Chrome 插件 (元素选择器)
+├── jest-electron-stage/ # 任务执行器 (npm 包: flowauto)
+├── jest-server/ # AI 服务器
+└── README.md
+
+
+
+### 各模块说明
+
+- **jest-electron-vite**: 基于 Vite + React + Electron 的桌面客户端，提供可视化界面
+- **jest-chrome-plugin**: Chrome 浏览器扩展，用于圈选网页元素
+- **jest-electron-stage**: 任务执行引擎，已发布为 npm 包 [flowauto](https://www.npmjs.com/package/flowauto)
+- **jest-server**: 集成 Google Gemini AI 的后端服务器
+
+## 📋 系统要求
+
+- **Node.js**: v16.x 或更高版本
+- **操作系统**: Windows / macOS / Linux
+- **浏览器**: Google Chrome (用于插件)
+
+## 🚀 快速开始
+
+### 1. 克隆项目
+
+```bash
+git clone https://github.com/WtecHtec/electron-jest.git
+cd electron-jest
+```
+
+### 2. 安装 Chrome 插件
+
+首先构建 Chrome 插件：
+
+```bash
+cd jest-chrome-plugin
+npm install
+npm run build
+```
+
+构建完成后，将插件文件放置到客户端目录：
+
+```bash
+# 在项目根目录执行
+cd jest-electron-vite
+mkdir -p chrome_extension
+cp -r ../jest-chrome-plugin/build chrome_extension/JestPro
+```
+
+**重要**: 插件文件夹必须命名为 `JestPro`，目录结构如下：
+jest-electron-vite/
+└── chrome_extension/
+└── JestPro/
+├── manifest.json
+├── popup.html
+└── ... (其他插件文件)
+
+
 ### 3. 启动主应用
 
 ```bash
