@@ -9,8 +9,14 @@ console.log('os---', os)
 const { keyboard, Key, sleep, mouse, Button, Point } = require('@nut-tree-fork/nut-js');
 // const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
 
-const version = '0.0.14'
-
+const version = '0.1.1'
+const waitForTimeout = (waitTime) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve()
+    }, waitTime)
+  })
+}
 
 let argv = require('minimist')(process.argv.slice(2),  {
   // string: ['filepath'],
@@ -141,8 +147,7 @@ const runNodeEnd = async (arg) => {
 const runOptClick = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, clickData } = optsetting
-  // console.log('xpath---', xpath,)
-	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
+	const clickElement = await  page.$(`::-p-xpath(${xpath})`, { timeout: 0})
   // console.log('clickElement---', clickElement ) 
 	const oldPages = await browser.pages()
 
@@ -151,7 +156,7 @@ const runOptClick = async (arg) => {
   await clickElement.click();
   // console.log('click')
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
 	// await page.waitForNavigation()
 	const { isCurrentPage } = clickData
@@ -175,10 +180,10 @@ const runOptClick = async (arg) => {
 const runOptInput = async (arg) => {
 	const { browser, optsetting, page, env } = arg
 	const { xpath, waitTime, inputData } = optsetting
-	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
+	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
 	await clickElement.focus()
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
 	let { inputValue, inputType } = inputData
   if (inputType === 'paramType') { 
@@ -192,9 +197,9 @@ const runOptInput = async (arg) => {
 const runOptVerify = async (arg) => {
 	const { browser, optsetting, page } = arg
 	const { xpath, waitTime, verifyData } = optsetting
-	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
+	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
 	const { verifyValue, rename, tipType } = verifyData
 	const text = await page.evaluate(node => node.innerText, clickElement)
@@ -228,10 +233,10 @@ const runOptPick = async (arg) => {
 const runOptHover =  async (arg) => { 
   const {  optsetting, page,  } = arg
   const { xpath, waitTime, } = optsetting
-	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
+	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
 	await clickElement.hover()
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   return {}
 }
@@ -244,14 +249,14 @@ const runOptExists = async (arg) => {
     console.log('xpath---', xpath)
   } 
   try {
-    await page.waitForXPath(xpath, { timeout: 0})
+    await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
     console.log(`${rename}元素存在`)
   } catch (error) {
     console.log(`${rename}元素不存在`)
     return false
   }
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   return true
 }
@@ -263,9 +268,9 @@ const runPick = async (arg) => {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
   } 
-	const clickElement = await page.waitForXPath(xpath, { timeout: 0})
+	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
 	if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   await page.addScriptTag({ 
     content: `const PICK_VALUE = {
@@ -291,7 +296,7 @@ const runNodeLogic = async (arg) => {
   const { logicsetting, waitTime } = task
   const { logicType } = logicsetting
   if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   // console.log('logicsetting---', logicsetting)
   if (typeof RUN_LOGIC[logicType] === 'function') {
@@ -485,7 +490,7 @@ const runLogicBack =  async (arg) => {
   await page.goBack()
   const { waitTime } = logicsetting 
   if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   const pages = await browser.pages()
   const newPage = pages.length > 0 ? pages[pages.length - 1] : null
@@ -497,7 +502,7 @@ const runLogicReload = async (arg) => {
   await page.reload()
   const { waitTime } = logicsetting 
   if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   return {}
 }
@@ -507,7 +512,7 @@ const runLogicClose = async (arg) => {
   await page.close()
   const { waitTime } = logicsetting 
   if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   const pages = await browser.pages()
   const newPage = pages.length > 0 ? pages[pages.length - 1] : null
@@ -551,7 +556,7 @@ const runLogicNewPage = async (arg) => {
   const pages = await browser.pages()
   const newPage = pages.length > 0 ? pages[pages.length - 1] : null
   if (waitTime > 0) {
-		await page.waitForTimeout(waitTime * 1000)
+		await waitForTimeout(waitTime * 1000)
 	}
   return { page: newPage }
 }
@@ -1013,7 +1018,7 @@ async function main() {
     }
   } catch (err) {
     // console.error('读取或解析任务数据时发生错误 err:', err);
-    logger.error('程序执行异常:', err)
+    logger.error('程序执行异常 xxxx:', err)
   }
 	
 }
@@ -1098,7 +1103,7 @@ async function execute(options = {}) {
       return { success: false, error: '数据类型错误' };
     }
   } catch (err) {
-    logger.error('程序执行异常:', err);
+    logger.error('程序执行异常 xxxxx:', err);
     return { success: false, error: err.message };
   }
 }

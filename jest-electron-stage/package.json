@@ -1,6 +1,6 @@
 {
   "name": "flowauto",
-  "version": "0.0.16",
+  "version": "0.1.1",
   "author": "wtechtec",
   "description": "Google Chrome Automation Executor",
   "keywords": [
@@ -26,7 +26,7 @@
     "@nut-tree-fork/nut-js": "^4.2.4",
     "clipboardy": "^4.0.0",
     "minimist": "^1.2.8",
-    "puppeteer": "^21.7.0",
+    "puppeteer": "^24.16.2",
     "winston": "^3.11.0"
   }
 }
