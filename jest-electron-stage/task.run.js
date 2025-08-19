@@ -145,8 +145,16 @@ const runNodeEnd = async (arg) => {
 }
 
 const runOptClick = async (arg) => {
-	const { browser, optsetting, page } = arg
-	const { xpath, waitTime, clickData } = optsetting
+	const { browser, optsetting, page, logicType, frequency, } = arg
+	let { xpath, waitTime, clickData } = optsetting
+
+	const {  clickMethod, levelXpath, fixXpath  } = clickData
+
+  if (logicType === 'loop'  && clickMethod === 'list' && frequency !== undefined && frequency !== null ) {
+    xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
+    // console.log('xpath---', xpath)
+  } 
+
 	const clickElement = await  page.$(`::-p-xpath(${xpath})`, { timeout: 0})
   // console.log('clickElement---', clickElement ) 
 	const oldPages = await browser.pages()

@@ -94,7 +94,7 @@ function TaskDrawer({ onClose, open, xpath }) {
 				<InputNumber style={{ flex: 1 }} min={1} defaultValue={1} value={waitTime} onChange={onWaitTimeChange} />
 			</Space.Compact>
 			{
-				optType === 'opt_click' && <OptClickItem ref={optRef}></OptClickItem>
+				optType === 'opt_click' && <OptClickItem ref={optRef}  xpath={xpath}></OptClickItem>
 			}
 			{
 				optType === 'opt_input' && <OptInputItem ref={optRef}></OptInputItem>
