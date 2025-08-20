@@ -150,7 +150,7 @@ const runOptClick = async (arg) => {
 
 	const {  clickMethod, levelXpath, fixXpath  } = clickData
 
-  if (logicType === 'loop'  && clickMethod === 'list' && frequency !== undefined && frequency !== null ) {
+  if (logicType === 'loop' && levelXpath  && clickMethod === 'list' && frequency !== undefined && frequency !== null ) {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
   } 
@@ -252,7 +252,7 @@ const runOptExists = async (arg) => {
   const { optsetting, page, logicType, frequency} = arg
   let { xpath, waitTime, existsData } = optsetting
   const { rename, pickMethod, levelXpath, fixXpath  } = existsData
-  if (logicType === 'loop'  && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
+  if (logicType === 'loop' && levelXpath  && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     console.log('xpath---', xpath)
   } 
@@ -270,9 +270,9 @@ const runOptExists = async (arg) => {
 }
 const runPick = async (arg) => {
 	const { browser, optsetting, page, logicType, frequency, env, } = arg
-	let { xpath, waitTime, pickData } = optsetting
+	let { xpath, waitTime, pickData , rename: renamept} = optsetting
 	const { rename, pickType, pickMethod, levelXpath, fixXpath  } = pickData
-  if (logicType === 'loop'  && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
+  if (logicType === 'loop'&&  levelXpath && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
     xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
   } 
@@ -288,12 +288,17 @@ const runPick = async (arg) => {
     }; 
     const pickType = '${pickType}'`,
   })
-	const text = await page.evaluate(node => { return node[PICK_VALUE[pickType] || 'innerText'] }, clickElement)
+	const text = await page.evaluate(node => { 
+    if (node) {
+      return node[PICK_VALUE[pickType]] || node.innerText
+    } 
+  return ""
+}, clickElement)
 
   console.log(`${rename}:${text}`)
   logger.info(`采集数据：${rename}:${text}`)
   env && (typeof env.pickData === 'function') && env.pickData({
-    rename,
+    key: renamept || rename,
     value: text,
   })
 	return {}

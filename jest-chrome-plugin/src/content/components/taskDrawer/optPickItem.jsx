@@ -58,6 +58,7 @@ const OptPickItem = forwardRef((props, ref) => {
 
   const onCheckEl = ()=> {
     let  levelXpath = getXpathByParentLevel(xpath, pickData.pickLevel)
+     console.log("levelXpath:::", levelXpath)
     if (levelXpath && REG_EXP.test(levelXpath)) {
       try {
         const fixXpath = xpath.split(levelXpath)[1]
