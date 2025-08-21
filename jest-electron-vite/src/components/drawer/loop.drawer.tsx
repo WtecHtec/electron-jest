@@ -13,7 +13,7 @@ const BASE_CODE = `
  * 必须返回 Boolean 类型
  * */
  const { page, env, browser, ...other } = arg
- return true
+ return false
 `
 import { getMutliLevelProperty } from '../../util';
 const { Option } = Select;

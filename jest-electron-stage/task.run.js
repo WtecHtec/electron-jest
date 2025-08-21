@@ -628,10 +628,10 @@ const runExportText = async (arg) => {
 }
 
 const runExportToJson = async (arg) => {  
-  const { logicsetting, env } = arg
+  const { logicsetting, env , export_data} = arg
   const { savaPath, rename } = logicsetting
   try {
-    const data = env.getPickData()
+    const data = export_data || env.getPickData()
     // console.log('data----', data)
     const newSavaPath = savaPath ?  `${savaPath}/${rename || new Date().getTime() }.json` : path.join(__dirname, `${rename || new Date().getTime() }.json`)
     fs.writeFileSync(newSavaPath, JSON.stringify(data, null, 4));
@@ -943,6 +943,7 @@ async function runTask(arg) {
 		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
       const params = {
         ...arg,
+        ...resultData,
 				browser,
 				task: taskData[step],
 			}
