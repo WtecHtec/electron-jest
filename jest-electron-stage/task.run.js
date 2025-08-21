@@ -295,8 +295,8 @@ const runPick = async (arg) => {
   return ""
 }, clickElement)
 
-  console.log(`${rename}:${text}`)
-  logger.info(`采集数据：${rename}:${text}`)
+  console.log(`${renamept || rename}:${text}`)
+  logger.info(`采集数据：${renamept || rename}:${text}`)
   env && (typeof env.pickData === 'function') && env.pickData({
     key: renamept || rename,
     value: text,
@@ -553,7 +553,7 @@ const runLogicFunc = async (arg) => {
     try {
       selfFunc = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
     } catch (error) {
-      logger.error(`自定义事件: ${rename}解析错误`)
+      logger.error(`自定义事件: ${rename}解析错误: ${error}`)
     }
     if (typeof selfFunc === 'function') {
       return await selfFunc(arg)
