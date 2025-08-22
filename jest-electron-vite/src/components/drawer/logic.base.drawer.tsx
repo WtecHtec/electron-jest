@@ -12,6 +12,7 @@ const BASE_DESC = {
    'logic_reload': [ '刷新', '刷新当前页面'],
    'logic_pdf': [ '导出PDF', '将当前页面导出为PDF'],
    'logic_func': ['自定义事件', '通过代码实现处理逻辑'],
+   'logic_js_func': ['自定义JS函数', '通过JS代码实现处理逻辑'],
    'logic_new_page': ['获取最新页面', '获取最新页面']
 }
 
@@ -20,7 +21,7 @@ const BASE_CODE = `
  * 【此处为函数体】
  * 参数： const { page, env, browser, logWithCallback, ...other } = arg
  * 返回一个对象 【可调用page,下次操作参数会在arg中】
- * logWithCallback.info('') 进行打印
+ * logWithCallback.info('') 可打印日志
  * 注意1：  page, env, browser , logWithCallback 尽量不要返回
  * 注意2：  导出时，export_data 会被导出
  * 
@@ -28,12 +29,23 @@ const BASE_CODE = `
  const { page, env, browser, logWithCallback, ...other } = arg
  return {}
 `
+
+const BASE_JS_CODE = `
+/***
+ * 【此处为函数体】 【JS函数】 可以使用window 关键字
+ * 参数： const {  ...other } = arg 
+ * 返回一个对象 【下次操作参数会在arg中】
+ * 注意： 导出时，export_data 会被导出
+ * */
+ const { ...other } = arg
+ return {}
+`
 export default memo(({ node }) => {
   // console.log('node===', node)
   const [savaPath, setSavePath] = useState(getMutliLevelProperty(node, 'data.logicsetting.savaPath', ''))
   const [waitTime, setWaitTime] = useState(getMutliLevelProperty(node, 'data.logicsetting.waitTime', ''))
   const [rename, setReName] = useState(getMutliLevelProperty(node, 'data.logicsetting.rename', ''))
-  const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode', BASE_CODE) || BASE_CODE)) 
+  const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode',  node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE) || node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE)) 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onWaitTimeChange = (value) => {
@@ -115,7 +127,7 @@ export default memo(({ node }) => {
       </>
     }
     {
-       node.type === 'logic_func' && <>
+       (node.type === 'logic_func' || node.type === 'logic_js_func')  && <>
         <Space.Compact  block style={{ alignItems: 'center',   }}>
           <span className="dr-left">处理描述:</span> 
           <span className="dr-txt"> 

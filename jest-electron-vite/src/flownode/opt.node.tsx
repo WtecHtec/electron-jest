@@ -36,6 +36,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_reload: ReloadSvg,
     logic_back: BackSvg,
     logic_func: SelfdiySvg,
+    logic_js_func: SelfdiySvg,
     logic_new_page: NewSvg,
     opt_keyboard: KeySvg,
 	opt_mouse: MouseSvg
@@ -76,6 +77,10 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_func: () => <>
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
       <p className="wrap-txt"> 自定义事件</p>
+    </>,
+    logic_js_func: () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
+      <p className="wrap-txt"> 自定义JS函数</p>
     </>,
 	opt_keyboard: () => <>
 		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '这是一个按键操作')}</p>

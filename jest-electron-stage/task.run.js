@@ -180,10 +180,10 @@ const runNodeOpt = async (arg) => {
 
 const runNodeEnd = async (arg) => {
   const { browser, task, page } = arg
-  await page.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
-  await page.evaluate(() => {
-    alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
-  });
+  // await page.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
+  // await page.evaluate(() => {
+  //   alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
+  // });
   await browser.close();
   logWithCallback.info(`任务结束`)
   return {}
@@ -601,8 +601,29 @@ const runLogicFunc = async (arg) => {
       logWithCallback.error(`自定义事件: ${rename}解析错误: ${error}`)
     }
     if (typeof selfFunc === 'function') {
-      return await selfFunc({...arg, logWithCallback})
+       const res = await selfFunc({...arg, logWithCallback})
+       logWithCallback.info(`自定义事件: ${rename} 执行结果: ${res}`)
+       return res
     }
+  }
+  return {}
+}
+
+const runLogicJSFunc = async (arg) => {
+  const { logicsetting, env } = arg
+  const { selfFuncCode, rename , waitTime } = logicsetting
+    logWithCallback.info(`自定义js事件: ${rename}`)
+    const funcName = `JEST_JS_FUNC_${new Date().getTime()}`
+     if (waitTime > 0) {
+      await waitForTimeout(waitTime * 1000)
+    }
+    if (selfFuncCode) {
+      await page.addScriptTag({ content: `const ${funcName} = (arg) => { '${selfFuncCode}' } ;` })
+      const res = await page.evaluate((funcName, arg) => {
+        return window[funcName](arg)
+      }, funcName, arg);
+      logWithCallback.info(`自定义js事件: ${rename} 执行结果: ${res}`)
+     return res || {}
   }
   return {}
 }
@@ -946,6 +967,7 @@ const RUN_LOGIC = {
   'logic_close': runLogicClose,
   'logic_pdf': runLogicPDF,
   'logic_func': runLogicFunc,
+  'logic_js_func': runLogicJSFunc,
   'logic_new_page': runLogicNewPage,
   'logic_condition': runLogicCondition,
   'logic_list': runLogicList,

@@ -260,6 +260,22 @@ const NODE_DATAS = [
           }
         }
       },
+       {
+        imgSrc: SelfdiySvg,
+        disable: false,
+        txt: '自定义JS函数',
+        nodeType: 'logic_js_func',
+        data: {
+          type: 'logic_js_func',
+          data: {
+            logicsetting: {
+              logicType: 'logic_js_func',
+              selfFuncCode: '',
+              rename: '',
+            }
+          }
+        }
+      },
       {
         imgSrc: NewSvg,
         disable: false,

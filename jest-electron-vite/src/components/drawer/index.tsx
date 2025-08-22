@@ -56,7 +56,7 @@ export default memo((porps) => {
 		if (ITEM_DATA_MAP[node.type]) return <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
 		if (node.type === 'logic_export') return <ExportDrawer node={node}></ExportDrawer>
     if (node.type === 'logic_loop') return <LoopDrawer node={node}></LoopDrawer>
-    if (['logic_close','logic_back','logic_reload','logic_pdf', 'logic_func', 'logic_new_page'].includes(node.type)) return <LogicBaseDrawer node={node}></LogicBaseDrawer>
+    if (['logic_close','logic_back','logic_reload','logic_pdf', 'logic_func', 'logic_new_page', 'logic_js_func'].includes(node.type)) return <LogicBaseDrawer node={node}></LogicBaseDrawer>
     return <></>
 	}
 	return (

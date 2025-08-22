@@ -34,6 +34,7 @@ const FLOW_TASK_MAP = {
   logic_back: 'logic',
   logic_reload: 'logic',
   logic_func: 'logic',
+  logic_js_func: 'logic',
   logic_new_page: 'logic',
   logic_condition: 'logic',
   logic_list: 'logic',
@@ -166,7 +167,7 @@ const TaskFlow = (porps) => {
     const fTarget = nodes.find(({ id }) => id === target)
     const fSource = nodes.find(({ id }) => id === source)
     if (sourceHandle === 'loopcondition') {
-      if (!['logic_func', 'opt_verify', 'opt_exists'].includes(fTarget.type)) {
+      if (!['logic_func', 'opt_verify', 'opt_exists', 'logic_js_func'].includes(fTarget.type)) {
         messageApi.open({
           type: 'error',
           content: '不能连接该类型节点！！！',
@@ -211,6 +212,7 @@ const TaskFlow = (porps) => {
     logic_back: (porps) => <OptNode imgType="logic_back" {...porps} />,
     logic_reload: (porps) => <OptNode imgType="logic_reload" {...porps} />,
     logic_func: (porps) => <OptNode imgType="logic_func" {...porps} />,
+    logic_js_func: (porps) => <OptNode imgType="logic_js_func" {...porps} />,
     logic_new_page: (porps) => <OptNode imgType="logic_new_page" {...porps} />,
     opt_keyboard: (porps) => <OptNode imgType="opt_keyboard" {...porps} />,
     opt_mouse: (porps) => <OptNode imgType="opt_mouse" {...porps} />,
@@ -303,7 +305,7 @@ const TaskFlow = (porps) => {
       });
       return
     }
-    // console.log(getTask(nodes, edges))
+    console.log("立即执行:::", getTask(nodes, edges))
     window.ipcRenderer.send('task-running', {
       data: JSON.stringify(getTask(nodes, edges)),
       taskparam: JSON.stringify(checkParams(nodes, edges))
@@ -339,13 +341,13 @@ const TaskFlow = (porps) => {
 
     return false
   }
-  const getTask = (nodes, edges, node = null, type = '') => {
+  const getTask = (nodes, edges, node = null, type = '', edgeId = '') => {
     const cache = {}
     let cacheKey = ''
     let current = node || nodes.find(item => item.type === 'start')
     const result: any[] = []
     if (!current) return result
-
+    let currentEdgeId = edgeId
     while (current) {
      
       const edge = edges.find(edg => {
@@ -357,7 +359,8 @@ const TaskFlow = (porps) => {
       
       let { id, source, target, sourceHandle, targetHandle, } = edge || {}
       
-      current.data['edgeId'] = id
+      current.data['edgeId'] = currentEdgeId
+      currentEdgeId = id
       const item = {
         nodeType: FLOW_TASK_MAP[current.type],
         ...current.data
@@ -383,7 +386,7 @@ const TaskFlow = (porps) => {
           const node = nodes.find(item => item.id === loopBody.target)
           if (node) {
             // console.log('node---loop', node)
-            current.data.logicsetting['loopBody'] = [...getTask(nodes, edges, node)]
+            current.data.logicsetting['loopBody'] = [...getTask(nodes, edges, node, '', loopBody.id)]
           }
         }
         // 循环条件
@@ -394,7 +397,7 @@ const TaskFlow = (porps) => {
           if (loopcondition) {
             const node = nodes.find(item => item.id === loopcondition.target)
             if (node) {
-              const tasks = getTask(nodes, edges, node)
+              const tasks = getTask(nodes, edges, node, '', loopcondition.id)
               current.data.logicsetting['loopcondition'] = tasks.length ? [tasks[0]] : ''
             }
           }
@@ -407,7 +410,7 @@ const TaskFlow = (porps) => {
         if (loopcondition) {
           const node = nodes.find(item => item.id === loopcondition.target)
           if (node) {
-            const tasks = getTask(nodes, edges, node)
+            const tasks = getTask(nodes, edges, node, '', loopcondition.id)
             current.data.logicsetting['condition'] = tasks.length ? [tasks[0]] : ''
           }
         }
@@ -417,7 +420,7 @@ const TaskFlow = (porps) => {
         if (nobody) {
           const node = nodes.find(item => item.id === nobody.target)
           if (node) {
-            const tasks = getTask(nodes, edges, node)
+            const tasks = getTask(nodes, edges, node, '', nobody.id)
             current.data.logicsetting['noBody'] = [...tasks]
           }
         }
@@ -427,7 +430,7 @@ const TaskFlow = (porps) => {
         if (yesbody) {
           const node = nodes.find(item => item.id === yesbody.target)
           if (node) {
-            const tasks = getTask(nodes, edges, node)
+            const tasks = getTask(nodes, edges, node, '', yesbody.id)
             current.data.logicsetting['yesBody'] = [...tasks]
           }
         }
@@ -440,7 +443,7 @@ const TaskFlow = (porps) => {
           const node = nodes.find(item => item.id === listBody.target)
           if (node) {
             // console.log('node---loop', node)
-            current.data.logicsetting['listBody'] = [...getTask(nodes, edges, node, 'list')]
+            current.data.logicsetting['listBody'] = [...getTask(nodes, edges, node, 'list', listBody.id)]
           }
         }
       } else if (current && current.type === 'logic_listitem') {
@@ -450,7 +453,7 @@ const TaskFlow = (porps) => {
           const node = nodes.find(item => item.id === taskBody.target)
           if (node) {
             // console.log('node---loop', node)
-            current.data.logicsetting['taskBody'] = [...getTask(nodes, edges, node, 'list')]
+            current.data.logicsetting['taskBody'] = [...getTask(nodes, edges, node, 'list', taskBody.id)]
           }
         }
       }
