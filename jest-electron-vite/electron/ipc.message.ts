@@ -16,7 +16,7 @@ function escapeSpacesInPath(path) {
   return path.replace(/ /g, '\\ ');
 }
 
-const handleRunngin = () => {
+const handleRunngin = (win) => {
   ipcMain.on('task-running', (event, { filepath, data, taskparam }) => {
     console.log('task-running----')
     try {
@@ -38,11 +38,16 @@ const handleRunngin = () => {
             console.log('任务进度:', event.eventType);
             console.log('当前步骤:', event.step || 'N/A');
             console.log('任务数据:', event.currentTask);
+            win?.webContents.send('task_running_progress', event)
           },
           ...params,
         })
       } catch (error) {
         console.error(error)
+         win?.webContents.send('task_running_progress', {
+          eventType: "error",
+          message: error.message
+         })
         globalLogger.error('exec stderr:', error)
       }
 
@@ -254,7 +259,7 @@ function IpcManagement(win) {
   handelCloseTaskSetting()
   handelSelectFolder()
   handelRunSetting(win)
-  handleRunngin()
+  handleRunngin(win)
   handleSaveTask()
   handleGetTask()
   handleGetTaskDetail()

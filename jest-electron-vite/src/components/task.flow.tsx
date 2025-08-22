@@ -8,7 +8,7 @@ import ReactFlow, {
   useEdgesState,
   ReactFlowProvider,
 } from 'react-flow-renderer';
-import { Drawer, Button, Space, Divider, message, Modal, Input } from 'antd';
+import { Drawer, Button, Space, Divider, message, Modal, Input, Dropdown } from 'antd';
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import NodeDrawer from './drawer';
@@ -23,7 +23,8 @@ import ListItemNode from '../flownode/list.item.node';
 
 import './task.flow.css'
 import { getMutliLevelProperty } from '../util';
-
+import ExecutionStatusPanel from './execution.status.panel';
+import { DownOutlined, } from '@ant-design/icons';
 const { TextArea } = Input;
 const FLOW_TASK_MAP = {
   logic_loop: 'logic',
@@ -67,7 +68,7 @@ const TaskFlow = (porps) => {
 
   const [editTaskParam, setEditTaskParam] = useState(params.get('taskparam') ? params.get('taskparam') : "{}")
   const [isEditTaskParamOpen, setIsEditTaskParamOpen] = useState(false)
-
+  const [executionPanelVisible, setExecutionPanelVisible] = useState(false);
   useEffect(() => {
     setNodes(porps.nodes)
     setEdges(porps.edges)
@@ -127,6 +128,18 @@ const TaskFlow = (porps) => {
       window.ipcRenderer.removeAllListeners('task-flow-data', 'browser-close')
     }
   }, [])
+
+
+  // useEffect(() => {
+  //     const _onMessage = (_event, message) => { 
+
+  //     }
+  //   window.ipcRenderer.on('task_running_progress', _onMessage)
+  //   return () => {
+  //     // 
+  //     window.ipcRenderer.removeListener('task_running_progress', _onMessage)
+  //   }
+  // }, [reactFlowInstance,])
 
   const onConnect = useCallback((params) => {
     const edges = reactFlowInstance.getEdges()
@@ -295,6 +308,7 @@ const TaskFlow = (porps) => {
       data: JSON.stringify(getTask(nodes, edges)),
       taskparam: JSON.stringify(checkParams(nodes, edges))
     })
+    setExecutionPanelVisible(true)
   }
 
   const checkExport = (nodes) => {
@@ -333,21 +347,25 @@ const TaskFlow = (porps) => {
     if (!current) return result
 
     while (current) {
-      result.push({
-        nodeType: FLOW_TASK_MAP[current.type],
-        ...current.data
-      })
+     
       const edge = edges.find(edg => {
         if (['logic_loop', 'logic_list', 'logic_listitem'].includes(current.type)) {
           return edg.source === current.id && edg.sourceHandle === 'next'
         }
         return edg.source === current.id
       })
+      
+      let { id, source, target, sourceHandle, targetHandle, } = edge || {}
+      
+      current.data['edgeId'] = id
+      const item = {
+        nodeType: FLOW_TASK_MAP[current.type],
+        ...current.data
+      }
+      result.push(item)
       if (!edge) {
         return result
       }
-      let { id, source, target, sourceHandle, targetHandle, } = edge
-      current.data.optsetting['edgeId'] = id
       cacheKey = `${id}-${source}-${target}-${sourceHandle}-${targetHandle}`
       if (cache[cacheKey]) {
         console.log(' 有环 ')
@@ -599,18 +617,72 @@ const TaskFlow = (porps) => {
       });
     }
   }
+
+   // 任务操作菜单
+  const taskActionMenu = {
+    items: [
+      {
+        key: 'params',
+        label: '参数配置',
+
+        onClick: handleParams,
+      },
+      {
+        key: 'copy',
+        label: '复制任务',
+
+        onClick: handlefinishCopySet,
+      },
+      {
+        key: 'save',
+        label: '保存任务',
+
+        onClick: handlefinishSet,
+      },
+    ],
+  };
+
+  // 执行操作菜单
+  const executionMenu = {
+    items: [
+      {
+        key: 'details',
+        label: '任务详情',
+        onClick: () => setExecutionPanelVisible(true),
+      },
+      {
+        key: 'run',
+        label: '立即执行',
+
+        onClick: handleRunning,
+      },
+      ...(reRun ? [{
+        key: 'rerun',
+        label: '开始设计',
+        disabled: loading,
+        onClick: onReRun,
+      }] : []),
+    ],
+  };
+
   return (
     <>
       {contextHolder}
       <div className="reactflow-wrapper" ref={reactFlowWrapper}>
         <div className="tools">
-          <Button className="tools-btn" onClick={handleParams}>参数配置</Button>
-          <Button className="tools-btn" onClick={handlefinishCopySet}>复制</Button>
-          <Button className="tools-btn" onClick={handlefinishSet}>保存任务</Button>
-          <Button className="tools-btn" onClick={handleRunning}>立即执行</Button>
-          {
-            reRun && <Button className="tools-btn" loading={loading} onClick={onReRun}>开始设计</Button>
-          }
+             {/* 任务操作下拉菜单 */}
+          <Dropdown menu={taskActionMenu} placement="bottomLeft">
+            <Button className="tools-btn">
+              任务操作  <DownOutlined />
+            </Button>
+          </Dropdown>
+          
+          {/* 执行操作下拉菜单 */}
+          <Dropdown menu={executionMenu} placement="bottomLeft">
+            <Button className="tools-btn">
+              执行操作  <DownOutlined />
+            </Button>
+          </Dropdown>
           <Button className="tools-btn" onClick={goBackRouter}>返回首页</Button>
         </div>
         <ReactFlowProvider>
@@ -650,6 +722,12 @@ const TaskFlow = (porps) => {
           <TextArea value={editTaskParam} onChange={(e) => setEditTaskParam(e.target.value)}></TextArea>
         </Modal>
       </div>
+      {/* 执行状态面板组件 */}
+      <ExecutionStatusPanel 
+        visible={executionPanelVisible}
+        onClose={() => setExecutionPanelVisible(false)}
+        setEdges={setEdges}
+      />
     </>
   );
 };
