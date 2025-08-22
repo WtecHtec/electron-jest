@@ -18,13 +18,17 @@ const waitForTimeout = (waitTime) => {
   })
 }
 
-let argv = require('minimist')(process.argv.slice(2),  {
+let argv = require('minimist')(process.argv.slice(2), {
   // string: ['filepath'],
-	// string: ['userDataDir']
+  // string: ['userDataDir']
 });
 const winston = require('winston');
 const RunEnv = require('./run.evn');
 const kill = require('./kill');
+const TaskExecutionCallback = require('./TaskExecutionCallback');
+
+// 创建全局 callback 实例
+const callback = new TaskExecutionCallback()
 
 
 
@@ -62,54 +66,95 @@ let logger = {
 const ENV = 'mac'
 
 const DEV_CONFIG = {
-	win: '',
-	mac: ''
+  win: '',
+  mac: ''
 }
-const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+
+
+// 统一的日志函数
+const logWithCallback = {
+  info: (message, ...args) => {
+    callback.onLog('info', message, ...args)
+    if (logger && logger.info) {
+      logger.info(message, ...args)
+    } else {
+      console.log(`INFO: ${message}`, ...args)
+    }
+  },
+  error: (message, ...args) => {
+    callback.onLog('error', message, ...args)
+    if (logger && logger.error) {
+      logger.error(message, ...args)
+    } else {
+      console.error(`ERROR: ${message}`, ...args)
+    }
+  },
+  warn: (message, ...args) => {
+    callback.onLog('warn', message, ...args)
+    if (logger && logger.warn) {
+      logger.warn(message, ...args)
+    } else {
+      console.warn(`WARN: ${message}`, ...args)
+    }
+  },
+  log: (message, ...args) => {
+    callback.onLog('log', message, ...args)
+    console.log(message, ...args)
+  },
+  debug: (message, ...args) => {
+    callback.onLog('debug', message, ...args)
+    if (logger && logger.debug) {
+      logger.debug(message, ...args)
+    } else {
+      console.debug(`DEBUG: ${message}`, ...args)
+    }
+  }
+}
 
 // console.log(TaskData)
 const getBrowser = async () => {
   // const buildCrx = path.join(__dirname, `/chrome_win64/chrome_extension/XPathHelper`)
   // const jestProCrx = path.join(__dirname, `/chrome_win64/chrome_extension/JestPro`)
   // console.log(buildCrx)
-	const config = {
-		headless: false, // 关闭无头模式
-		// userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
-		userDataDir: argv.userDataDir,
+  const config = {
+    headless: false, // 关闭无头模式
+    // userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
+    userDataDir: argv.userDataDir,
     // ignoreDefaultArgs: ['--disable-extensions'],
-		// timeout: 0,
-		args: [
-      '--disable-extensions', 
+    // timeout: 0,
+    args: [
+      '--disable-extensions',
       '--disable-plugins',
       '--disable-dev-shm-usage',
       '--no-sandbox',
       '--start-maximized',
       // `--disable-extensions-except=${buildCrx},${jestProCrx}`,
-			// `--load-extension=${buildCrx},${jestProCrx}`,
-		],
-		ignoreHTTPSErrors: true, // 在导航期间忽略 HTTPS 错误
+      // `--load-extension=${buildCrx},${jestProCrx}`,
+    ],
+    ignoreHTTPSErrors: true, // 在导航期间忽略 HTTPS 错误
     defaultViewport: null,
-		// args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
-		// defaultViewport: { // 为每个页面设置一个默认视口大小
-		// 	width: 820,
-		// 	height: 900
-		// }
-	}
-	// if (DEV_CONFIG[ENV]) {
-	// 	config.executablePath = path.join(__dirname, DEV_CONFIG[ENV])
+    // args: ['--start-maximized', ], // 最大化启动，开启vue-devtools插件
+    // defaultViewport: { // 为每个页面设置一个默认视口大小
+    // 	width: 820,
+    // 	height: 900
+    // }
+  }
+  // if (DEV_CONFIG[ENV]) {
+  // 	config.executablePath = path.join(__dirname, DEV_CONFIG[ENV])
   //   logger.info(config.executablePath)
-	// }
-	const browser = await puppeteer.launch(config);
-	return browser
+  // }
+  const browser = await puppeteer.launch(config);
+  return browser
 }
 
 const runNodeStart = async (arg) => {
-	const { browser, task } = arg
-	const { url, optsetting } = task
-	const { handleType = 'web', command = '', waitTime = 0 } = optsetting || {}
+  const { browser, task } = arg
+  const { url, optsetting } = task
+  const { handleType = 'web', command = '', waitTime = 0 } = optsetting || {}
   if (handleType === 'web') {
     const page = await browser.newPage()
-    logger.info(`打开页面：${url}`)
+    logWithCallback.info(`打开页面：${url}`)
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
     });
@@ -117,170 +162,170 @@ const runNodeStart = async (arg) => {
   } else {
     await executeCommand(command)
     await sleep(1000 * waitTime)
-  } 
+  }
   return {}
   // await page.keyboard.press('Tab'); // 通过按下 Tab 键切换焦点
 
 }
 
 const runNodeOpt = async (arg) => {
-	const { browser, task, page } = arg
-	const { optsetting } = task
-	const { optType } = optsetting
-	if (typeof RUN_OPT_TYPE[optType] === 'function') {
-		return await RUN_OPT_TYPE[optType]({ ...arg, optsetting })
-	}
-	return {}
+  const { browser, task, page } = arg
+  const { optsetting } = task
+  const { optType } = optsetting
+  if (typeof RUN_OPT_TYPE[optType] === 'function') {
+    return await RUN_OPT_TYPE[optType]({ ...arg, optsetting })
+  }
+  return {}
 }
 
 const runNodeEnd = async (arg) => {
-	const { browser, task, page } = arg
+  const { browser, task, page } = arg
   await page.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
   await page.evaluate(() => {
     alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
   });
-	await browser.close();
-  logger.info(`任务结束`)
-	return {}
+  await browser.close();
+  logWithCallback.info(`任务结束`)
+  return {}
 }
 
 const runOptClick = async (arg) => {
-	const { browser, optsetting, page, logicType, frequency, } = arg
-	let { xpath, waitTime, clickData } = optsetting
+  const { browser, optsetting, page, logicType, frequency, } = arg
+  let { xpath, waitTime, clickData } = optsetting
 
-	const {  clickMethod, levelXpath, fixXpath  } = clickData
+  const { clickMethod, levelXpath, fixXpath } = clickData
 
-  if (logicType === 'loop' && levelXpath  && clickMethod === 'list' && frequency !== undefined && frequency !== null ) {
-    xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
+  if (logicType === 'loop' && levelXpath && clickMethod === 'list' && frequency !== undefined && frequency !== null) {
+    xpath = `${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
-  } 
+  }
 
-	const clickElement = await  page.$(`::-p-xpath(${xpath})`, { timeout: 0})
+  const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
   // console.log('clickElement---', clickElement ) 
-	const oldPages = await browser.pages()
+  const oldPages = await browser.pages()
 
   await clickElement.focus()
 
   await clickElement.click();
   // console.log('click')
-	if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
-	// await page.waitForNavigation()
-	const { isCurrentPage } = clickData
-	
-  logger.info(`点击 `)
-	if (isCurrentPage !== 1) {
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
+  // await page.waitForNavigation()
+  const { isCurrentPage } = clickData
+
+  logWithCallback.info(`点击 `)
+  if (isCurrentPage !== 1) {
     let newPage = page
-		const pages = await browser.pages()
-		newPage = pages[pages.length - 1]
+    const pages = await browser.pages()
+    newPage = pages[pages.length - 1]
     // console.log('pages----', pages, oldPages)
-		if (oldPages.length < pages.length) {
-			await newPage.bringToFront()
-      logger.info(`切换新页面tab`)
-		} else {
-      logger.info(`切换新页面`)
+    if (oldPages.length < pages.length) {
+      await newPage.bringToFront()
+      logWithCallback.info(`切换新页面tab`)
+    } else {
+      logWithCallback.info(`切换新页面`)
     }
     return { page: newPage }
-	}
-	return {  }
+  }
+  return {}
 }
 const runOptInput = async (arg) => {
-	const { browser, optsetting, page, env } = arg
-	const { xpath, waitTime, inputData } = optsetting
-	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
-	await clickElement.focus()
-	if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
-	let { inputValue, inputType } = inputData
-  if (inputType === 'paramType') { 
+  const { browser, optsetting, page, env } = arg
+  const { xpath, waitTime, inputData } = optsetting
+  const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
+  await clickElement.focus()
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
+  let { inputValue, inputType } = inputData
+  if (inputType === 'paramType') {
     inputValue = env.get(inputValue) || inputValue
   }
-	await clickElement.type(String(inputValue), { delay: 500 })
-  logger.info(`输入： ${inputValue} `)
-	return {}
+  await clickElement.type(String(inputValue), { delay: 500 })
+  logWithCallback.info(`输入： ${inputValue} `)
+  return {}
 }
 
 const runOptVerify = async (arg) => {
-	const { browser, optsetting, page } = arg
-	const { xpath, waitTime, verifyData } = optsetting
-	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
-	if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
-	const { verifyValue, rename, tipType } = verifyData
-	const text = await page.evaluate(node => node.innerText, clickElement)
-	if (text === verifyValue) {
-		console.log(`${rename}:通过`)
-    logger.info(`校验： ${rename} 【通过】`)
+  const { browser, optsetting, page } = arg
+  const { xpath, waitTime, verifyData } = optsetting
+  const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
+  const { verifyValue, rename, tipType } = verifyData
+  const text = await page.evaluate(node => node.innerText, clickElement)
+  if (text === verifyValue) {
+    logWithCallback.log(`${rename}:通过`)
+    logWithCallback.info(`校验： ${rename} 【通过】`)
     return true
-	} else {
-		console.log(`${rename}:测试不通过`)
-    logger.info(`校验： ${rename} 【不通过】`)
-		if (tipType === 'tip_alert') {
-			await page.addScriptTag({ content: `const VERIFY_TIP = '${rename}:测试不通过'` })
-			await page.evaluate(() => {
-				alert(VERIFY_TIP)
-			});
-		}
-	}
-	return false
+  } else {
+    logWithCallback.log(`${rename}:测试不通过`)
+    logWithCallback.info(`校验： ${rename} 【不通过】`)
+    if (tipType === 'tip_alert') {
+      await page.addScriptTag({ content: `const VERIFY_TIP = '${rename}:测试不通过'` })
+      await page.evaluate(() => {
+        alert(VERIFY_TIP)
+      });
+    }
+  }
+  return false
 }
 
 const runOptPick = async (arg) => {
-	const { browser, optsetting, page } = arg
-	const { pickData } = optsetting
-	const { pickType } = pickData
-	if (typeof RUN_PICK_TYPE[pickType] === 'function') {
-		return await RUN_PICK_TYPE[pickType]({ ...arg, optsetting})
-	}
-	return {}
+  const { browser, optsetting, page } = arg
+  const { pickData } = optsetting
+  const { pickType } = pickData
+  if (typeof RUN_PICK_TYPE[pickType] === 'function') {
+    return await RUN_PICK_TYPE[pickType]({ ...arg, optsetting })
+  }
+  return {}
 }
 
-const runOptHover =  async (arg) => { 
-  const {  optsetting, page,  } = arg
+const runOptHover = async (arg) => {
+  const { optsetting, page, } = arg
   const { xpath, waitTime, } = optsetting
-	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
-	await clickElement.hover()
-	if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+  const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
+  await clickElement.hover()
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
   return {}
 }
 const runOptExists = async (arg) => {
-  const { optsetting, page, logicType, frequency} = arg
+  const { optsetting, page, logicType, frequency } = arg
   let { xpath, waitTime, existsData } = optsetting
-  const { rename, pickMethod, levelXpath, fixXpath  } = existsData
-  if (logicType === 'loop' && levelXpath  && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
-    xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
+  const { rename, pickMethod, levelXpath, fixXpath } = existsData
+  if (logicType === 'loop' && levelXpath && pickMethod === 'list' && frequency !== undefined && frequency !== null) {
+    xpath = `${levelXpath.replace('$index', frequency)}${fixXpath}`
     console.log('xpath---', xpath)
-  } 
+  }
   try {
-    await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
-    console.log(`${rename}元素存在`)
+    await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
+    logWithCallback.log(`${rename}元素存在`)
   } catch (error) {
-    console.log(`${rename}元素不存在`)
+    logWithCallback.log(`${rename}元素不存在`)
     return false
   }
-	if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
   return true
 }
 const runPick = async (arg) => {
-	const { browser, optsetting, page, logicType, frequency, env, } = arg
-	let { xpath, waitTime, pickData , rename: renamept} = optsetting
-	const { rename, pickType, pickMethod, levelXpath, fixXpath  } = pickData
-  if (logicType === 'loop'&&  levelXpath && pickMethod === 'list' && frequency !== undefined && frequency !== null ) {
-    xpath =`${levelXpath.replace('$index', frequency)}${fixXpath}`
+  const { browser, optsetting, page, logicType, frequency, env, } = arg
+  let { xpath, waitTime, pickData, rename: renamept } = optsetting
+  const { rename, pickType, pickMethod, levelXpath, fixXpath } = pickData
+  if (logicType === 'loop' && levelXpath && pickMethod === 'list' && frequency !== undefined && frequency !== null) {
+    xpath = `${levelXpath.replace('$index', frequency)}${fixXpath}`
     // console.log('xpath---', xpath)
-  } 
-	const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0})
-	if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
-  await page.addScriptTag({ 
+  }
+  const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
+  await page.addScriptTag({
     content: `const PICK_VALUE = {
       'pick_text': 'innerText',
       'pick_src': 'src',
@@ -288,29 +333,29 @@ const runPick = async (arg) => {
     }; 
     const pickType = '${pickType}'`,
   })
-	const text = await page.evaluate(node => { 
+  const text = await page.evaluate(node => {
     if (node) {
       return node[PICK_VALUE[pickType]] || node.innerText
-    } 
-  return ""
-}, clickElement)
+    }
+    return ""
+  }, clickElement)
 
   console.log(`${renamept || rename}:${text}`)
-  logger.info(`采集数据：${renamept || rename}:${text}`)
+  logWithCallback.info(`采集数据：${renamept || rename}:${text}`)
   env && (typeof env.pickData === 'function') && env.pickData({
     key: renamept || rename,
     value: text,
   })
-	return {}
+  return {}
 }
 
-const runNodeLogic = async (arg) => { 
-	const { browser, task, page,  } = arg
+const runNodeLogic = async (arg) => {
+  const { browser, task, page, } = arg
   const { logicsetting, waitTime } = task
   const { logicType } = logicsetting
   if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+    await waitForTimeout(waitTime * 1000)
+  }
   // console.log('logicsetting---', logicsetting)
   if (typeof RUN_LOGIC[logicType] === 'function') {
     return await RUN_LOGIC[logicType]({ ...arg, logicsetting })
@@ -318,21 +363,21 @@ const runNodeLogic = async (arg) => {
   return {}
 }
 
-const runLogicLoop = async (arg) => {  
+const runLogicLoop = async (arg) => {
   const { logicsetting } = arg
   const { loopType } = logicsetting
-  logger.info(`执行循环`)
+  logWithCallback.info(`执行循环`)
   if (typeof LOOP_TYPE[loopType] === 'function') {
-    return await LOOP_TYPE[loopType]({ ...arg, logicsetting})
+    return await LOOP_TYPE[loopType]({ ...arg, logicsetting })
   }
   return {}
 }
 
-const runLogicExport = async (arg) => {  
+const runLogicExport = async (arg) => {
   const { logicsetting } = arg
   const { dataType } = logicsetting
   if (typeof EXPORT_DATA_TYPE[dataType] === 'function') {
-    return await EXPORT_DATA_TYPE[dataType]({ ...arg, logicsetting})
+    return await EXPORT_DATA_TYPE[dataType]({ ...arg, logicsetting })
   }
   return {}
 }
@@ -340,7 +385,7 @@ const runLogicExport = async (arg) => {
 const runLogicKeyboard = async (arg) => {
   const { optsetting } = arg
   const { keyType } = optsetting
-  if (typeof KEY_BOARD_TYPE_EVENT[keyType]  === 'function') {
+  if (typeof KEY_BOARD_TYPE_EVENT[keyType] === 'function') {
     return await KEY_BOARD_TYPE_EVENT[keyType]({ ...arg })
   }
   return {}
@@ -362,7 +407,7 @@ const handKeyInput = async (arg) => {
   await keyboard.type(inputValue);
   await sleep(waitTime * 1000);
   // console.log('text---', text)
-  logger.info(`执行输入操作`)
+  logWithCallback.info(`执行输入操作`)
   return {}
 }
 
@@ -372,7 +417,7 @@ const handKeyTab = async (arg) => {
   // await keyboard.pressKey(Key.Tab);
   await keyboard.type(Key.Tab);
   await sleep(waitTime * 1000);
-  logger.info(`执行Tab操作`)
+  logWithCallback.info(`执行Tab操作`)
   return {}
 }
 
@@ -382,27 +427,27 @@ const handKeyEnter = async (arg) => {
   keyboard.config.autoDelayMs = 50;
   await keyboard.type(Key.Enter);
   await sleep(waitTime * 1000);
-  logger.info(`执行Enter操作`)
+  logWithCallback.info(`执行Enter操作`)
   return {}
 }
 
 const handKeyEsc = async (arg) => {
   const { optsetting } = arg
   const { waitTime } = optsetting
-   // 配置自动延迟
-   keyboard.config.autoDelayMs = 50;
+  // 配置自动延迟
+  keyboard.config.autoDelayMs = 50;
 
-   // 模拟按下 Esc 键
+  // 模拟按下 Esc 键
   await keyboard.type(Key.Escape);
   await sleep(waitTime * 1000);
-  logger.info(`执行Esc操作`)
+  logWithCallback.info(`执行Esc操作`)
   return {}
 }
 
 const handKeySreach = async (arg) => {
   const { optsetting } = arg
   const { waitTime } = optsetting
-  
+
   keyboard.config.autoDelayMs = 50;
 
   if (os === 'darwin') {
@@ -418,7 +463,7 @@ const handKeySreach = async (arg) => {
     // await sleep(400);
     // await keyboard.releaseKey(Key.F);
     // await keyboard.releaseKey(Key.LeftCmd);
-  
+
 
   } else if (os === 'win32') {
     // Windows: Ctrl + F
@@ -426,7 +471,7 @@ const handKeySreach = async (arg) => {
 
   }
   await sleep(waitTime * 1000);
-  logger.info(`执行搜索操作`)
+  logWithCallback.info(`执行搜索操作`)
   return {}
 }
 
@@ -438,9 +483,9 @@ const getShortcutKey = (arg) => {
   if (!inputValue) {
     return []
   }
-  
+
   return inputValue.split(',').map(item => {
-    return Number(item) 
+    return Number(item)
   })
 }
 
@@ -456,7 +501,7 @@ const handKeyShortcut = async (arg) => {
       // macOS: Command + F
       // await keyboard.pressKey(Key.Comma, Key.F);
       // await keyboard.releaseKey(Key.Comma, Key.F);
-  
+
       await keyboard.pressKey(...keys);
 
       // for (let i = 0; i < keys.length; i++) {
@@ -465,7 +510,7 @@ const handKeyShortcut = async (arg) => {
       // 确保按键有适当延迟
       // await keyboard.pressKey(Key.LeftCmd);
       // await keyboard.pressKey(Key.F);
-  
+
       await sleep(400);
       await keyboard.releaseKey(...keys);
 
@@ -475,16 +520,16 @@ const handKeyShortcut = async (arg) => {
 
       // await keyboard.releaseKey(Key.F);
       // await keyboard.releaseKey(Key.LeftCmd);
-    
-  
+
+
     } else if (os === 'win32') {
       // Windows: Ctrl + F
       await keyboard.pressKey(...keys);
-  
+
     }
   }
   await sleep(waitTime * 1000);
-  logger.info(`执行快捷键操作`)
+  logWithCallback.info(`执行快捷键操作`)
   return {}
 }
 
@@ -498,62 +543,62 @@ const KEY_BOARD_TYPE_EVENT = {
   'shortcut': handKeyShortcut,
 }
 
-const runLogicBack =  async (arg) => {  
+const runLogicBack = async (arg) => {
   const { page, logicsetting, browser } = arg
   await page.goBack()
-  const { waitTime } = logicsetting 
+  const { waitTime } = logicsetting
   if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+    await waitForTimeout(waitTime * 1000)
+  }
   const pages = await browser.pages()
   const newPage = pages.length > 0 ? pages[pages.length - 1] : null
   return { page: newPage }
 }
 
-const runLogicReload = async (arg) => {  
+const runLogicReload = async (arg) => {
   const { page, logicsetting } = arg
   await page.reload()
-  const { waitTime } = logicsetting 
+  const { waitTime } = logicsetting
   if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+    await waitForTimeout(waitTime * 1000)
+  }
   return {}
 }
 
 const runLogicClose = async (arg) => {
   const { page, logicsetting, browser } = arg
   await page.close()
-  const { waitTime } = logicsetting 
+  const { waitTime } = logicsetting
   if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+    await waitForTimeout(waitTime * 1000)
+  }
   const pages = await browser.pages()
   const newPage = pages.length > 0 ? pages[pages.length - 1] : null
   return { page: newPage }
 }
 
-const runLogicPDF = async (arg) => { 
+const runLogicPDF = async (arg) => {
   const { logicsetting, env } = arg
   const { savaPath, rename } = logicsetting
-  await page.pdf({ 
-    path: path.join(savaPath,   `${ rename || `page-pdf-${new Date().getTime()}`}.pdf`), 
+  await page.pdf({
+    path: path.join(savaPath, `${rename || `page-pdf-${new Date().getTime()}`}.pdf`),
     format: 'A4'
   });
   console.log(`导出成功,pdf路径：${savaPath}`)
-  logger.info(`导出成功,pdf路径：${savaPath}`)
+  logWithCallback.info(`导出成功,pdf路径：${savaPath}`)
   return {}
 }
 
 const runLogicFunc = async (arg) => {
   const { logicsetting, env } = arg
   const { selfFuncCode, rename } = logicsetting
-  logger.info(`自定义事件: ${rename}`)
+  logWithCallback.info(`自定义事件: ${rename}`)
   if (selfFuncCode) {
     let selfFunc = null
     try {
       selfFunc = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
     } catch (error) {
-      logger.error(`自定义事件: ${rename}解析错误: ${error}`)
+      logWithCallback.error(`自定义事件: ${rename}解析错误: ${error}`)
     }
     if (typeof selfFunc === 'function') {
       return await selfFunc(arg)
@@ -565,78 +610,78 @@ const runLogicFunc = async (arg) => {
 const runLogicNewPage = async (arg) => {
   const { page, logicsetting, browser } = arg
   const { waitTime } = logicsetting
-  logger.info('获取最新页面')
+  logWithCallback.info('获取最新页面')
   const pages = await browser.pages()
   const newPage = pages.length > 0 ? pages[pages.length - 1] : null
   if (waitTime > 0) {
-		await waitForTimeout(waitTime * 1000)
-	}
+    await waitForTimeout(waitTime * 1000)
+  }
   return { page: newPage }
 }
 
 const runLogicCondition = async (arg) => {
   const { page, logicsetting, } = arg
-  const {  condition, noBody, yesBody } = logicsetting 
-  if (Array.isArray(condition) && condition.length ) {
-    let condStatus =  await runTask({ ...arg, taskData: condition, currentPage: page, })
+  const { condition, noBody, yesBody } = logicsetting
+  if (Array.isArray(condition) && condition.length) {
+    let condStatus = await runTask({ ...arg, taskData: condition, currentPage: page, })
     if (typeof condStatus !== 'boolean') {
-      console.log('解析条件件返回类型不是Boolean')
+      logWithCallback.log('解析条件件返回类型不是Boolean')
       return {}
     }
     let taskData = []
-    if (condStatus === true && Array.isArray(yesBody) && yesBody.length  ) {
+    if (condStatus === true && Array.isArray(yesBody) && yesBody.length) {
       taskData = yesBody
     } else if (condStatus === false && Array.isArray(noBody) && noBody.length) {
       taskData = noBody
     }
-    await runTask({ ...arg, taskData, currentPage: page,})
+    await runTask({ ...arg, taskData, currentPage: page, })
   }
   return {}
 }
 
-const runLogicList = async  (arg) => {
-  const { page, logicsetting,  env } = arg
-  const { listBody } = logicsetting 
+const runLogicList = async (arg) => {
+  const { page, logicsetting, env } = arg
+  const { listBody } = logicsetting
   if (Array.isArray(listBody) && listBody.length) {
     for (let i = 0; i < listBody.length; i++) {
       const listEnv = new RunEnv()
-      await runTask({...arg, taskData: [listBody[i]], env: listEnv, logicType: 'list'})
+      await runTask({ ...arg, taskData: [listBody[i]], env: listEnv, logicType: 'list' })
       env.pickData(listEnv.getPickData())
     }
   }
   return {}
 }
 
-const runLogicListItem = async  (arg) => {
+const runLogicListItem = async (arg) => {
   const { page, logicsetting, } = arg
-  const { taskBody } = logicsetting 
+  const { taskBody } = logicsetting
   if (Array.isArray(taskBody) && taskBody.length) {
-     await runTask({...arg, taskData: taskBody, logicType: 'listitem'})
+    await runTask({ ...arg, taskData: taskBody, logicType: 'listitem' })
   }
   return {}
 }
 
 
 
-const runExportText = async (arg) => {  
+const runExportText = async (arg) => {
   const { logicsetting } = arg
   const { fileType } = logicsetting
   if (typeof EXPORT_FILE_TYPE[fileType] === 'function') {
-    return await EXPORT_FILE_TYPE[fileType]({ ...arg, logicsetting})
+    return await EXPORT_FILE_TYPE[fileType]({ ...arg, logicsetting })
   }
   return {}
 }
 
-const runExportToJson = async (arg) => {  
-  const { logicsetting, env , export_data} = arg
+const runExportToJson = async (arg) => {
+  const { logicsetting, env, export_data } = arg
   const { savaPath, rename } = logicsetting
   try {
     const data = export_data || env.getPickData()
     // console.log('data----', data)
-    const newSavaPath = savaPath ?  `${savaPath}/${rename || new Date().getTime() }.json` : path.join(__dirname, `${rename || new Date().getTime() }.json`)
+    const newSavaPath = savaPath ? `${savaPath}/${rename || new Date().getTime()}.json` : path.join(__dirname, `${rename || new Date().getTime()}.json`)
     fs.writeFileSync(newSavaPath, JSON.stringify(data, null, 4));
     console.log(`导出成功,路径：${newSavaPath}`)
-    logger.info(`导出成功,路径：${newSavaPath}`)
+    logWithCallback.info(`导出成功,路径：${newSavaPath}`)
   } catch (error) {
     console.error(error);
   }
@@ -644,7 +689,7 @@ const runExportToJson = async (arg) => {
 }
 
 
-const onRunLoopFrequency =  async (arg) => {  
+const onRunLoopFrequency = async (arg) => {
   const { logicsetting, page, env } = arg
   let { loopBody, frequency } = logicsetting
   // console.log('onRunLoopFrequency---', arg)
@@ -653,7 +698,7 @@ const onRunLoopFrequency =  async (arg) => {
     let index = 1
     // const child = env.createChild()
     let loopEnv = null
-    while(frequency >= index ) {
+    while (frequency >= index) {
       loopEnv = new RunEnv()
       await runTask({ ...arg, taskData: loopBody, currentPage: page, frequency: index, env: loopEnv, logicType: 'loop', })
       index = index + 1
@@ -670,23 +715,23 @@ const onRunLoopFrequency =  async (arg) => {
 const onRunLoopByCondiNode = async (arg) => {
   const { logicsetting, page, env } = arg
   let { loopcondition, loopBody } = logicsetting
-  if (Array.isArray(loopcondition) && loopcondition.length ) {
+  if (Array.isArray(loopcondition) && loopcondition.length) {
     let loopEnv = null
-    let loopStatus =  await runTask({ ...arg, taskData: loopcondition, currentPage: page, logicType: 'loopcondition', })
+    let loopStatus = await runTask({ ...arg, taskData: loopcondition, currentPage: page, logicType: 'loopcondition', })
     if (typeof loopStatus !== 'boolean') {
-      console.log('解析条件件返回类型不是Boolean')
+      logWithCallback.log('解析条件件返回类型不是Boolean')
       return {}
     }
     let index = 1
-    while(loopStatus) {
-      console.log('解析循环自定义事件')
+    while (loopStatus) {
+      logWithCallback.log('解析循环自定义事件')
       loopEnv = new RunEnv()
       await runTask({ ...arg, taskData: loopBody, currentPage: page, env: loopEnv, logicType: 'loop', frequency: index, })
       env.pickData(loopEnv.getPickData())
-      loopStatus = await runTask({ ...arg, taskData: loopcondition, currentPage: page, logicType: 'loopcondition',  })
+      loopStatus = await runTask({ ...arg, taskData: loopcondition, currentPage: page, logicType: 'loopcondition', })
       index = index + 1
     }
-    console.log('节点条件循环结束')
+    logWithCallback.log('节点条件循环结束')
   }
 }
 
@@ -697,18 +742,18 @@ const onRunLoopSelfFunc = async (arg) => {
     let loopCondition = null
     try {
       loopCondition = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
-      logger.info('解析循环自定义事件')
+      logWithCallback.info('解析循环自定义事件')
     } catch (error) {
-      logger.error('循环自定义事件解析错误')
+      logWithCallback.error('循环自定义事件解析错误')
     }
     if (typeof loopCondition === 'function') {
       let loopEnv = null
       let loopStatus = await loopCondition(arg)
       if (typeof loopStatus !== 'boolean') {
-        console.log('解析循环自定义事件返回类型不是Boolean')
+        logWithCallback.log('解析循环自定义事件返回类型不是Boolean')
         return {}
       }
-      while(loopStatus) {
+      while (loopStatus) {
         console.log('解析循环自定义事件')
         loopEnv = new RunEnv()
         await runTask({ ...arg, taskData: loopBody, currentPage: page, env: loopEnv, logicType: 'loop', })
@@ -716,7 +761,7 @@ const onRunLoopSelfFunc = async (arg) => {
         loopStatus = await loopCondition(arg)
       }
     }
-  } 
+  }
   return {}
 }
 
@@ -728,7 +773,7 @@ const runLogicMouse = async (arg) => {
   console.log('screenType---', mouseType)
   if (typeof MOUSE_TYPE_EVENT[mouseType] === 'function') {
     return await MOUSE_TYPE_EVENT[mouseType](arg)
-  } 
+  }
   return {}
 }
 
@@ -741,12 +786,12 @@ const handSingleWord = async (arg) => {
     return {}
   }
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
- 
-  console.log('screen.find(textLine(inputValue))---',  straightTo(centerOf(screen.find(textLine(inputValue)))))
+    await sleep(waitTime * 1000)
+  }
+
+  console.log('screen.find(textLine(inputValue))---', straightTo(centerOf(screen.find(textLine(inputValue)))))
   await mouse.move(straightTo(centerOf(screen.find(textLine(inputValue)))));
-  
+
 }
 
 
@@ -767,20 +812,20 @@ const handMouseMove = async (arg) => {
     return {}
   }
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   try {
     const datas = JSON.parse(inputValue)
     for (let i = 0; i < datas.length; i++) {
       const data = datas[i]
       await mouse.move(new Point(data[0], data[1]));
     }
-   
+
   } catch (error) {
     console.log('mouse.move error---', error)
   }
   return {}
-  
+
 }
 
 const handMouseLeftClick = async (arg) => {
@@ -790,8 +835,8 @@ const handMouseLeftClick = async (arg) => {
   console.log('inputValue---', inputValue)
 
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   await mouse.click(Button.LEFT);
   return {}
 }
@@ -802,8 +847,8 @@ const handMouseDoubleLeftClick = async (arg) => {
   let { inputValue } = inputData
   console.log('inputValue---', inputValue)
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   await mouse.doubleClick(Button.LEFT);
   return {}
 }
@@ -814,8 +859,8 @@ const handMouseRightClick = async (arg) => {
   let { inputValue } = inputData
   console.log('inputValue---', inputValue)
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   await mouse.click(Button.RIGHT);
   return {}
 }
@@ -826,8 +871,8 @@ const handMouseDoubleRightClick = async (arg) => {
   let { inputValue } = inputData
   console.log('inputValue---', inputValue)
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   await mouse.doubleClick(Button.RIGHT);
   return {}
 }
@@ -841,8 +886,8 @@ const handScrollDown = async (arg) => {
     return {}
   }
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   await mouse.scrollDown(Number(inputValue));
   return {}
 }
@@ -856,8 +901,8 @@ const handScrollUp = async (arg) => {
     return {}
   }
   if (waitTime > 0) {
-		await sleep(waitTime * 1000)
-	}
+    await sleep(waitTime * 1000)
+  }
   await mouse.scrollUp(Number(inputValue));
 }
 
@@ -875,17 +920,17 @@ const MOUSE_TYPE_EVENT = {
 }
 
 const RUN_NODE_TYPE = {
-	'start': runNodeStart,
-	'opt': runNodeOpt,
+  'start': runNodeStart,
+  'opt': runNodeOpt,
   'logic': runNodeLogic,
-	'end': runNodeEnd,
+  'end': runNodeEnd,
 }
 
 const RUN_OPT_TYPE = {
-	'opt_click': runOptClick,
-	'opt_input': runOptInput,
-	'opt_verify': runOptVerify,
-	'opt_pick': runOptPick,
+  'opt_click': runOptClick,
+  'opt_input': runOptInput,
+  'opt_verify': runOptVerify,
+  'opt_pick': runOptPick,
   'opt_hover': runOptHover,
   'opt_exists': runOptExists,
   'opt_keyboard': runLogicKeyboard,
@@ -905,14 +950,14 @@ const RUN_LOGIC = {
   'logic_condition': runLogicCondition,
   'logic_list': runLogicList,
   'logic_listitem': runLogicListItem,
-  
+
 }
 
 
 const RUN_PICK_TYPE = {
-	'pick_text': runPick,
-	'pick_src': runPick,
-	'pick_href': runPick
+  'pick_text': runPick,
+  'pick_src': runPick,
+  'pick_href': runPick
 }
 
 
@@ -926,43 +971,58 @@ const EXPORT_DATA_TYPE = {
   'text': runExportText
 }
 
-const EXPORT_FILE_TYPE= {
+const EXPORT_FILE_TYPE = {
   'json': runExportToJson
 }
 
 
 async function runTask(arg) {
-	let { browser, taskData, currentPage, logicType } = arg
-	let step = 0
-	let maxStep = taskData.length
-  let resultData = {}  
+  let { browser, taskData, currentPage, logicType } = arg
+  let step = 0
+  let maxStep = taskData.length
+  let resultData = {}
   // console.log('maxStep---', maxStep)
-	while (step < maxStep && taskData[step]) {
+  while (step < maxStep && taskData[step]) {
     // console.log(step)
-		const { nodeType } = taskData[step]
-		if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
-      const params = {
-        ...arg,
-        ...resultData,
-				browser,
-				task: taskData[step],
-			}
-    if (currentPage) params.page = currentPage;
-      resultData = await RUN_NODE_TYPE[nodeType](params);
-      if (typeof resultData === 'object' && Object.keys(resultData).length) {
-        const { page } = resultData
-        if (page) currentPage = page;
+    const { nodeType } = taskData[step]
+    const currentTask = taskData[step]
+    // 触发步骤开始回调
+    callback.onStepStart(step, currentTask)
+
+    try {
+      if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
+        const params = {
+          ...arg,
+          ...resultData,
+          browser,
+          task: taskData[step],
+        }
+        if (currentPage) params.page = currentPage;
+        resultData = await RUN_NODE_TYPE[nodeType](params);
+        if (typeof resultData === 'object' && Object.keys(resultData).length) {
+          const { page } = resultData
+          if (page) currentPage = page;
+        }
+        // 触发步骤成功回调
+        callback.onStepSuccess(step, currentTask, resultData)
       }
-		}
-		step = step + 1
-	}
-  if (!logicType && currentPage){
+    } catch (error) {
+      // 触发步骤错误回调
+      callback.onStepError(step, currentTask, error)
+      // 重新抛出错误以保持原有的错误处理逻辑
+      throw error
+    }
+    step = step + 1
+  }
+  if (!logicType && currentPage) {
     await currentPage.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
     // console.log('logicType---', logicType)
     await currentPage.evaluate(() => {
       alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
     });
   }
+  // 触发任务完成回调
+  callback.onComplete(resultData)
   return resultData
 }
 
@@ -972,12 +1032,14 @@ async function main() {
     console.log(`success v:${version}`)
     return
   }
-  console.log('task run-----', )
-	if (!argv.userDataDir && argv.mode !== 'dev') {
-		logger.error('浏览器缓存数据文件夹配置路径不能为空',)
-		return
-	}
-	await kill()
+  console.log('task run-----',)
+  if (!argv.userDataDir && argv.mode !== 'dev') {
+    logger.error('浏览器缓存数据文件夹配置路径不能为空',)
+    const error = new Error('读浏览器缓存数据文件夹配置路径不能为空');
+    callback.onError(error);
+    return
+  }
+  await kill()
 
   const env = new RunEnv()
   let browser = null
@@ -1002,6 +1064,7 @@ async function main() {
       }
     } catch (error) {
       console.log('taskparamfile---', error)
+      callback.onError(error);
     }
 
     try {
@@ -1012,14 +1075,16 @@ async function main() {
       }
     } catch (error) {
       console.log('taskparam---', error)
+      callback.onError(error);
     }
 
     if (Array.isArray(taskData)) {
-      if (taskData[0].nodeType === 'start' 
-        && ( !taskData[0].optsetting || taskData[0].optsetting.handleType === 'web') ) {
+      callback.onStart(taskData)
+      if (taskData[0].nodeType === 'start'
+        && (!taskData[0].optsetting || taskData[0].optsetting.handleType === 'web')) {
         browser = await getBrowser()
       }
-     // 加入参数
+      // 加入参数
       for (let key in argv) {
         env.set(key, argv[key])
       }
@@ -1029,12 +1094,16 @@ async function main() {
     } else {
       // console.error('读取或解析任务数据时发生错误: 数据类型错误',);
       logger.error('读取或解析任务数据时发生错误: 数据类型错误',)
+      const error = new Error('读取或解析任务数据时发生错误: 数据类型错误');
+      callback.onError(error);
     }
   } catch (err) {
     // console.error('读取或解析任务数据时发生错误 err:', err);
     logger.error('程序执行异常 xxxx:', err)
+    const error = new Error(`程序执行异常: ${err}`);
+    callback.onError(error);
   }
-	
+
 }
 
 // main()
@@ -1050,16 +1119,23 @@ async function execute(options = {}) {
       logDirectory = options.logpath
     } else {
       let logDirectory = path.join(__dirname, '/tasks-run-logs');
-         // 确保目录存在
+      // 确保目录存在
       if (!fs.existsSync(logDirectory)) {
-          fs.mkdirSync(logDirectory, { recursive: true });
+        fs.mkdirSync(logDirectory, { recursive: true });
       }
     }
-      // 创建一个时间戳文件名
+    // 创建一个时间戳文件名
     const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
     logFilename = path.join(logDirectory, `/jest-run-${timestamp}.log`);
 
-    
+
+    callback.removeAllCallback()
+    // 如果用户提供了回调函数，添加到回调管理器
+    if (options.onProgress && typeof options.onProgress === 'function') {
+
+      callback.addCallback(options.onProgress)
+    }
+
     // 创建一个 winston 日志记录器
     logger = winston.createLogger({
       level: 'info',
@@ -1084,6 +1160,8 @@ async function execute(options = {}) {
 
     if (!runOptions.userDataDir && runOptions.mode !== 'dev') {
       logger.error('浏览器缓存数据文件夹配置路径不能为空');
+      const error = new Error('浏览器缓存数据文件夹配置路径不能为空');
+      callback.onError(error);
       return { success: false, error: '浏览器缓存数据文件夹配置路径不能为空' };
     }
 
@@ -1105,8 +1183,8 @@ async function execute(options = {}) {
 
     if (Array.isArray(taskData)) {
 
-      if (taskData[0].nodeType === 'start' 
-        && ( !taskData[0].optsetting || taskData[0].optsetting.handleType === 'web') ) {
+      if (taskData[0].nodeType === 'start'
+        && (!taskData[0].optsetting || taskData[0].optsetting.handleType === 'web')) {
         browser = await getBrowser()
       }
       await runTask({ browser, taskData, env });
@@ -1114,51 +1192,91 @@ async function execute(options = {}) {
       return { success: true };
     } else {
       logger.error('读取或解析任务数据时发生错误: 数据类型错误');
+      const error = new Error('读取或解析任务数据时发生错误: 数据类型错误');
+      callback.onError(error);
       return { success: false, error: '数据类型错误' };
     }
   } catch (err) {
     logger.error('程序执行异常 xxxxx:', err);
+    callback.onError(err);
     return { success: false, error: err.message };
   }
 }
 
+
 // 仅在直接运行脚本时执行 main()
 if (require.main === module) {
 
+  callback.removeAllCallback()
 
-    // 创建一个时间戳文件名
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
-
-
-    let logDirectory =  ""
-
-    console.log("logDirectory ::::", logDirectory)
- 
-    if (argv.logpath) {
-      logDirectory = argv.logpath
-    } else {
-      let logDirectory = path.join(__dirname, '/tasks-run-logs');
-         // 确保目录存在
-      if (!fs.existsSync(logDirectory)) {
-          fs.mkdirSync(logDirectory, { recursive: true });
-      }
+  // 添加默认回调 - 记录到日志，包含taskdata信息
+  callback.addCallback((event) => {
+    switch (event.eventType) {
+      case 'start':
+        logger.info(`任务开始执行，共 ${event.totalSteps} 个步骤`)
+        logger.info(`任务数据概览: ${JSON.stringify(event.taskSummary, null, 2)}`)
+        break
+      case 'step_start':
+        logger.info(`步骤 ${event.step}/${event.totalSteps} 开始: ${event.taskName} (${event.nodeType})`)
+        logger.info(`当前任务详情: ${JSON.stringify(event.currentTask, null, 2)}`)
+        if (event.remainingTasks.length > 0) {
+          logger.info(`剩余 ${event.remainingTasks.length} 个任务待执行`)
+        }
+        break
+      case 'step_success':
+        logger.info(`步骤 ${event.step} 完成: ${event.taskName} - 耗时 ${event.duration}ms`)
+        logger.info(`执行结果: ${JSON.stringify(event.result, null, 2)}`)
+        logger.info(`进度: ${event.step}/${event.totalSteps} (${Math.round(event.step / event.totalSteps * 100)}%)`)
+        break
+      case 'step_error':
+        logger.error(`步骤 ${event.step} 失败: ${event.taskName} - ${event.error}`)
+        logger.error(`失败任务详情: ${JSON.stringify(event.failedTask, null, 2)}`)
+        break
+      case 'complete':
+        logger.info(`任务执行完成，总耗时 ${event.duration}ms`)
+        logger.info(`完成任务数: ${event.totalSteps}`)
+        break
+      case 'error':
+        logger.error(`任务执行失败: ${event.error}`)
+        if (event.failedTaskData) {
+          logger.error(`失败时的任务数据: ${JSON.stringify(event.failedTaskData, null, 2)}`)
+        }
+        break
     }
-   logFilename = path.join(logDirectory, `/jest-run-${timestamp}.log`);
+  })
+  // 创建一个时间戳文件名
+  const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
 
-// 创建一个 winston 日志记录器
- logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} ${level.toUpperCase()}: ${message}`;
-    })
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: logFilename }),
-  ],
-});
+
+  let logDirectory = ""
+
+  console.log("logDirectory ::::", logDirectory)
+
+  if (argv.logpath) {
+    logDirectory = argv.logpath
+  } else {
+    let logDirectory = path.join(__dirname, '/tasks-run-logs');
+    // 确保目录存在
+    if (!fs.existsSync(logDirectory)) {
+      fs.mkdirSync(logDirectory, { recursive: true });
+    }
+  }
+  logFilename = path.join(logDirectory, `/jest-run-${timestamp}.log`);
+
+  // 创建一个 winston 日志记录器
+  logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.printf(({ timestamp, level, message }) => {
+        return `${timestamp} ${level.toUpperCase()}: ${message}`;
+      })
+    ),
+    transports: [
+      new winston.transports.Console(),
+      new winston.transports.File({ filename: logFilename }),
+    ],
+  });
 
   main();
 }

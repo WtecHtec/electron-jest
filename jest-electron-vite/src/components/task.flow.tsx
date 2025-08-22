@@ -347,6 +347,7 @@ const TaskFlow = (porps) => {
         return result
       }
       let { id, source, target, sourceHandle, targetHandle, } = edge
+      current.data.optsetting['edgeId'] = id
       cacheKey = `${id}-${source}-${target}-${sourceHandle}-${targetHandle}`
       if (cache[cacheKey]) {
         console.log(' 有环 ')
@@ -402,7 +403,7 @@ const TaskFlow = (porps) => {
             current.data.logicsetting['noBody'] = [...tasks]
           }
         }
-
+ 
         // 真 流程 yesbody 
         const yesbody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'yesbody')
         if (yesbody) {
@@ -505,6 +506,8 @@ const TaskFlow = (porps) => {
       return
     }
     console.log('handleSaveOk', checkParams(nodes, edges))
+    const task = JSON.stringify(getTask(nodes, edges))
+    console.log("task::", task)
     window.ipcRenderer.send('task-save', JSON.stringify({
       id: params.get('taskid') || getId(),
       taskdesc: params.get('taskdesc'),
@@ -513,7 +516,7 @@ const TaskFlow = (porps) => {
       taskdata: JSON.stringify({
         nodes: JSON.stringify(nodes),
         edges: JSON.stringify(edges),
-        task: JSON.stringify(getTask(nodes, edges)),
+        task: task,
 
       }),
       taskparam: JSON.stringify(checkParams(nodes, edges))
