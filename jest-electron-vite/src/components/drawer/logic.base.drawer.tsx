@@ -18,12 +18,14 @@ const BASE_DESC = {
 const BASE_CODE = `
 /***
  * 【此处为函数体】
- * 参数： const { page, env, browser, ...other } = arg
+ * 参数： const { page, env, browser, logWithCallback, ...other } = arg
  * 返回一个对象 【可调用page,下次操作参数会在arg中】
- * 注意1：  page, env, browser 进来不要返回
+ * logWithCallback.info('') 进行打印
+ * 注意1：  page, env, browser , logWithCallback 尽量不要返回
  * 注意2：  导出时，export_data 会被导出
+ * 
  * */
- const { page, env, browser, ...other } = arg
+ const { page, env, browser, logWithCallback, ...other } = arg
  return {}
 `
 export default memo(({ node }) => {

@@ -9,10 +9,11 @@ import { javascript } from '@codemirror/lang-javascript';
 const BASE_CODE = `
 /***
  * 【此处为函数体】
- * 参数： const { page, env, browser, ...other } = arg
+ * 参数： const { page, env, browser, logWithCallback, ...other } = arg
+ * logWithCallback.info()  可打印日志
  * 必须返回 Boolean 类型
  * */
- const { page, env, browser, ...other } = arg
+ const { page, env, browser, logWithCallback, ...other } = arg
  return false
 `
 import { getMutliLevelProperty } from '../../util';

@@ -601,7 +601,7 @@ const runLogicFunc = async (arg) => {
       logWithCallback.error(`自定义事件: ${rename}解析错误: ${error}`)
     }
     if (typeof selfFunc === 'function') {
-      return await selfFunc(arg)
+      return await selfFunc({...arg, logWithCallback})
     }
   }
   return {}
@@ -748,7 +748,7 @@ const onRunLoopSelfFunc = async (arg) => {
     }
     if (typeof loopCondition === 'function') {
       let loopEnv = null
-      let loopStatus = await loopCondition(arg)
+      let loopStatus = await loopCondition({...arg, logWithCallback})
       if (typeof loopStatus !== 'boolean') {
         logWithCallback.log('解析循环自定义事件返回类型不是Boolean')
         return {}
@@ -977,7 +977,7 @@ const EXPORT_FILE_TYPE = {
 
 
 async function runTask(arg) {
-  let { browser, taskData, currentPage, logicType } = arg
+  let { browser, taskData, currentPage, logicType, env } = arg
   let step = 0
   let maxStep = taskData.length
   let resultData = {}
@@ -985,7 +985,10 @@ async function runTask(arg) {
   while (step < maxStep && taskData[step]) {
     // console.log(step)
     const { nodeType } = taskData[step]
-    const currentTask = taskData[step]
+    const currentTask = {
+      ...taskData[step],
+      TASK_RUN_ENV: env.toSerializable(),
+    } 
     // 触发步骤开始回调
     callback.onStepStart(step, currentTask)
 
@@ -1014,13 +1017,13 @@ async function runTask(arg) {
     }
     step = step + 1
   }
-  if (!logicType && currentPage) {
-    await currentPage.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
-    // console.log('logicType---', logicType)
-    await currentPage.evaluate(() => {
-      alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
-    });
-  }
+  // if (!logicType && currentPage) {
+  //   await currentPage.addScriptTag({ content: `let TASK_END_JEST_LOG = '${logFilename}';` })
+  //   // console.log('logicType---', logicType)
+  //   await currentPage.evaluate(() => {
+  //     alert(`任务执行结束,详情可前往查看日志【${TASK_END_JEST_LOG} 】！`)
+  //   });
+  // }
   // 触发任务完成回调
   callback.onComplete(resultData)
   return resultData

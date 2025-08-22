@@ -35,9 +35,6 @@ const handleRunngin = (win) => {
           userDataDir: escapeSpacesInPath(createAppChromeFile()),
           logpath: escapeSpacesInPath(createAppTaskLoggerFile()),
           onProgress: (event) => {
-            console.log('任务进度:', event.eventType);
-            console.log('当前步骤:', event.step || 'N/A');
-            console.log('任务数据:', event.currentTask);
             win?.webContents.send('task_running_progress', event)
           },
           ...params,

@@ -80,6 +80,19 @@ function TaskSetting() {
   // 处理粘贴事件
   const handlePaste = async (event: ClipboardEvent) => {
     try {
+        const target = event.target as HTMLElement;
+    const contentElement = document.querySelector('.ant-layout-content');
+    
+    // 如果粘贴事件不是发生在Content区域内，则不处理
+   
+    // 如果目标是输入框、文本域等可编辑元素，也不处理
+    if (target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.contentEditable === 'true' ||
+        target.closest('input, textarea, [contenteditable="true"]')) {
+      return; // 让默认粘贴行为继续
+    }
+
       const clipboardText = event.clipboardData?.getData('text/plain');
       if (!clipboardText) {
         return;
@@ -137,31 +150,32 @@ function TaskSetting() {
     // Ctrl+V 或 Cmd+V (Mac)
     if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
       // 阻止默认粘贴行为，使用自定义处理
-      event.preventDefault();
+     
       // 手动触发粘贴处理
       navigator.clipboard.readText().then(text => {
         try {
           const data = JSON.parse(text);
           if (validateFlowData(data)) {
+            event.preventDefault();
             setClipboardData(data);
             setIsReplaceModalOpen(true);
           } else {
-            messageApi.open({
-              type: 'error',
-              content: '粘贴的数据格式不符合规范，请检查数据格式！',
-            });
+            // messageApi.open({
+            //   type: 'error',
+            //   content: '粘贴的数据格式不符合规范，请检查数据格式！',
+            // });
           }
         } catch (error) {
-          messageApi.open({
-            type: 'error',
-            content: '粘贴的数据格式错误，无法解析JSON！',
-          });
+          // messageApi.open({
+          //   type: 'error',
+          //   content: '粘贴的数据格式错误，无法解析JSON！',
+          // });
         }
       }).catch(() => {
-        messageApi.open({
-          type: 'error',
-          content: '无法读取剪贴板内容！',
-        });
+        // messageApi.open({
+        //   type: 'error',
+        //   content: '无法读取剪贴板内容！',
+        // });
       });
     }
     
