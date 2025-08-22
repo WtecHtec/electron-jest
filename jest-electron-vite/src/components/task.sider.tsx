@@ -263,7 +263,7 @@ const NODE_DATAS = [
        {
         imgSrc: SelfdiySvg,
         disable: false,
-        txt: '自定义JS函数',
+        txt: '自定义JS事件',
         nodeType: 'logic_js_func',
         data: {
           type: 'logic_js_func',

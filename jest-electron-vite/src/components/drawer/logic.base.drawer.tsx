@@ -45,7 +45,7 @@ export default memo(({ node }) => {
   const [savaPath, setSavePath] = useState(getMutliLevelProperty(node, 'data.logicsetting.savaPath', ''))
   const [waitTime, setWaitTime] = useState(getMutliLevelProperty(node, 'data.logicsetting.waitTime', ''))
   const [rename, setReName] = useState(getMutliLevelProperty(node, 'data.logicsetting.rename', ''))
-  const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode',  node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE) || node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE)) 
+  const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode',  node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE) || (node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE))) 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onWaitTimeChange = (value) => {

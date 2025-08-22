@@ -602,7 +602,12 @@ const runLogicFunc = async (arg) => {
     }
     if (typeof selfFunc === 'function') {
        const res = await selfFunc({...arg, logWithCallback})
-       logWithCallback.info(`自定义事件: ${rename} 执行结果: ${res}`)
+       try {
+         logWithCallback.info(`自定义事件: ${rename} 执行结果: ${ JSON.stringify(res) }`)
+       } catch (error) {
+         logWithCallback.error(`自定义事件: ${rename} 执行结果解析错误: ${error}`)
+       }
+      
        return res
     }
   }
@@ -610,19 +615,24 @@ const runLogicFunc = async (arg) => {
 }
 
 const runLogicJSFunc = async (arg) => {
-  const { logicsetting, env } = arg
+  const { logicsetting, page, env } = arg
   const { selfFuncCode, rename , waitTime } = logicsetting
+    
+
     logWithCallback.info(`自定义js事件: ${rename}`)
-    const funcName = `JEST_JS_FUNC_${new Date().getTime()}`
      if (waitTime > 0) {
       await waitForTimeout(waitTime * 1000)
     }
     if (selfFuncCode) {
-      await page.addScriptTag({ content: `const ${funcName} = (arg) => { '${selfFuncCode}' } ;` })
-      const res = await page.evaluate((funcName, arg) => {
-        return window[funcName](arg)
-      }, funcName, arg);
-      logWithCallback.info(`自定义js事件: ${rename} 执行结果: ${res}`)
+      await page.addScriptTag({ content: `;var  JEST_JS_FUNC = (arg) => { ${decodeURIComponent(selfFuncCode)} }; ` })
+      const res = await page.evaluate((arg) => {
+        return JEST_JS_FUNC({...arg})
+      }, { ...arg });
+      try {
+        logWithCallback.info(`自定义js事件: ${rename} 执行结果: ${ JSON.stringify(res) }`)
+      } catch (error) {
+        logWithCallback.error(`自定义js事件: ${rename} 执行结果解析错误: ${error}`)
+      }
      return res || {}
   }
   return {}
@@ -1007,21 +1017,24 @@ async function runTask(arg) {
   while (step < maxStep && taskData[step]) {
     // console.log(step)
     const { nodeType } = taskData[step]
-    const currentTask = {
-      ...taskData[step],
-      TASK_RUN_ENV: env.toSerializable(),
-    } 
-    // 触发步骤开始回调
-    callback.onStepStart(step, currentTask)
-
-    try {
-      if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
-        const params = {
+      const params = {
           ...arg,
           ...resultData,
           browser,
           task: taskData[step],
-        }
+      }
+     const currentTask = {
+          ...taskData[step],
+          TASK_RUN_ENV: env.toSerializable(),
+          TASK_RUN_PARAMS: RunEnv.serialize(params),
+       } 
+
+    try {
+    
+      if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
+        // 触发步骤开始回调
+        callback.onStepStart(step, currentTask)
+     
         if (currentPage) params.page = currentPage;
         resultData = await RUN_NODE_TYPE[nodeType](params);
         if (typeof resultData === 'object' && Object.keys(resultData).length) {
@@ -1030,6 +1043,8 @@ async function runTask(arg) {
         }
         // 触发步骤成功回调
         callback.onStepSuccess(step, currentTask, resultData)
+      } else {
+       callback.onStepError(step, currentTask, `${nodeType} 不存在 事件`)
       }
     } catch (error) {
       // 触发步骤错误回调
@@ -1200,7 +1215,7 @@ async function execute(options = {}) {
     }
 
     let taskData = [];
-    logger.info(`参数: ${JSON.stringify(runOptions)}`);
+    logWithCallback.info(`参数: ${JSON.stringify(runOptions)}`);
 
     const data = fs.readFileSync(runOptions.filepath, 'utf-8');
     const dataconfig = JSON.parse(data);

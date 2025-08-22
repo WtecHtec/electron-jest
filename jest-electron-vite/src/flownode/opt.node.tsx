@@ -80,7 +80,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     </>,
     logic_js_func: () => <>
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
-      <p className="wrap-txt"> 自定义JS函数</p>
+      <p className="wrap-txt"> 自定义JS事件</p>
     </>,
 	opt_keyboard: () => <>
 		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '这是一个按键操作')}</p>
