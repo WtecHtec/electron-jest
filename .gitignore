@@ -64,3 +64,5 @@ chrome_extension/*
 
 config.dev.js
 userDataDir
+*.yarn.lock
+*.yaml

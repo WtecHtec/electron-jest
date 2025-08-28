@@ -8,7 +8,7 @@ import ReactFlow, {
   useEdgesState,
   ReactFlowProvider,
 } from 'react-flow-renderer';
-import { Drawer, Button, Space, Divider, message, Modal, Input, Dropdown } from 'antd';
+import { Drawer, Button, Space, Divider, message, Modal, Input, Dropdown, Switch } from 'antd';
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import NodeDrawer from './drawer';
@@ -70,6 +70,10 @@ const TaskFlow = (porps) => {
   const [editTaskParam, setEditTaskParam] = useState(params.get('taskparam') ? params.get('taskparam') : "{}")
   const [isEditTaskParamOpen, setIsEditTaskParamOpen] = useState(false)
   const [executionPanelVisible, setExecutionPanelVisible] = useState(false);
+
+    // 添加无头模式状态
+  const [headlessMode, setHeadlessMode] = useState(false);
+  
   useEffect(() => {
     setNodes(porps.nodes)
     setEdges(porps.edges)
@@ -306,9 +310,11 @@ const TaskFlow = (porps) => {
       return
     }
     console.log("立即执行:::", getTask(nodes, edges))
+    const taskParams = checkParams(nodes, edges);
+    taskParams.headless = headlessMode; // 添加无头模式参数
     window.ipcRenderer.send('task-running', {
       data: JSON.stringify(getTask(nodes, edges)),
-      taskparam: JSON.stringify(checkParams(nodes, edges))
+      taskparam: JSON.stringify(taskParams)
     })
     setExecutionPanelVisible(true)
   }
@@ -686,6 +692,17 @@ const TaskFlow = (porps) => {
               执行操作  <DownOutlined />
             </Button>
           </Dropdown>
+
+          {/* 无头模式开关 */}
+          <div className="tools-btn" style={{ display: 'flex', alignItems: 'center', padding: '4px 15px', background: '#fff', border: '1px solid #d9d9d9', borderRadius: '6px', marginLeft: '8px' }}>
+            <span style={{ marginRight: '8px' }}>无头模式:</span>
+            <Switch 
+              checked={headlessMode} 
+              onChange={setHeadlessMode}
+              size="small"
+            />
+          </div>
+
           <Button className="tools-btn" onClick={goBackRouter}>返回首页</Button>
         </div>
         <ReactFlowProvider>

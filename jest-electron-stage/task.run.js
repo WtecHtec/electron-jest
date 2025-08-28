@@ -113,12 +113,12 @@ const logWithCallback = {
 }
 
 // console.log(TaskData)
-const getBrowser = async () => {
+const getBrowser = async (headless = false) => {
   // const buildCrx = path.join(__dirname, `/chrome_win64/chrome_extension/XPathHelper`)
   // const jestProCrx = path.join(__dirname, `/chrome_win64/chrome_extension/JestPro`)
   // console.log(buildCrx)
   const config = {
-    headless: false, // 关闭无头模式
+    headless: headless, // 关闭无头模式
     // userDataDir: `/Users/sh/Library/Application Support/Google/Chrome`,
     userDataDir: argv.userDataDir,
     // ignoreDefaultArgs: ['--disable-extensions'],
@@ -1117,12 +1117,16 @@ async function main() {
       console.log('taskparam---', error)
       callback.onError(error);
     }
+    let headless = false
+    try {
+       headless = Boolean(argv.headless)  || false
+    } catch{}
 
     if (Array.isArray(taskData)) {
       callback.onStart(taskData)
       if (taskData[0].nodeType === 'start'
         && (!taskData[0].optsetting || taskData[0].optsetting.handleType === 'web')) {
-        browser = await getBrowser()
+        browser = await getBrowser(headless)
       }
       // 加入参数
       for (let key in argv) {
@@ -1225,7 +1229,7 @@ async function execute(options = {}) {
 
       if (taskData[0].nodeType === 'start'
         && (!taskData[0].optsetting || taskData[0].optsetting.handleType === 'web')) {
-        browser = await getBrowser()
+        browser = await getBrowser(runOptions.headless || false)
       }
       await runTask({ browser, taskData, env });
       logger.info('任务结束');
