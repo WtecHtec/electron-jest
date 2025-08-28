@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer');
 const path = require('path')
 const fs = require('fs');
 const { exec } = require('child_process');
+const FeishuBaseTable = require('./feishu.base.table')
 const os = process.platform;
 console.log('os---', os)
 // const clipboardy = require('clipboardy');
@@ -703,6 +704,69 @@ const runExportText = async (arg) => {
   return {}
 }
 
+async function runExportToFeishuExcel(arg) {
+  const { logicsetting, env, export_data } = arg
+  const { appToken, personalBaseToken, tableId } = logicsetting
+  logWithCallback.info(`开始导出飞书多维表格`)
+  const feishuBaseTable = new FeishuBaseTable(appToken, personalBaseToken, tableId)
+  await feishuBaseTable.initTable()
+  let datas = export_data || env.getPickData()
+  if (!!export_data === false &&  Array.isArray(datas) && datas.length) {
+    datas = handleDefault(datas)
+  }
+  if (!Array.isArray(datas)) {
+    throw new Error('导出飞书多维表格必须是数组')
+  }
+  // 创建表格字段
+  const fields = createFields(datas)
+  logWithCallback.info(`飞书多维表格字段: ${fields}`)
+  if (Array.isArray(fields) && fields.length) {
+    await feishuBaseTable.createTableFields(fields)
+    await waitForTimeout(2000)
+    try {
+       let records = datas.map(item => {
+        return {
+          fields: {
+            ...item
+          } ,
+        }
+       })
+       await feishuBaseTable.batchCreateRecord(records)
+    } catch (error) {
+      logWithCallback.error(`导出飞书多维表格失败: ${error}`)
+    }
+   
+  } else {
+    logWithCallback.error(`导出飞书多维表格字段失败`)
+  }
+  
+
+}
+
+function handleDefault(datas) {
+    let data = []
+    let item = {}
+    for (let i = 0; i < datas.length; i++) {
+        let key = datas[i].key
+        let value = datas[i].value
+        item [key] = value
+     }
+     data.push(item)
+     return data
+}
+
+function createFields(data) {
+  // [ { "" : ""}]
+  if (Array.isArray(data) && data.length) {
+  
+    return Object.keys(data[0]).map(item => {
+      return item
+    })
+  }
+  return []
+
+}
+
 const runExportToJson = async (arg) => {
   const { logicsetting, env, export_data } = arg
   const { savaPath, rename } = logicsetting
@@ -1004,8 +1068,11 @@ const EXPORT_DATA_TYPE = {
 }
 
 const EXPORT_FILE_TYPE = {
-  'json': runExportToJson
+  'json': runExportToJson,
+  'feishu_excel': runExportToFeishuExcel,
 }
+
+
 
 
 async function runTask(arg) {

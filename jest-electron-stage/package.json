@@ -23,10 +23,11 @@
   },
   "license": "ISC",
   "dependencies": {
+    "@lark-base-open/node-sdk": "^1.0.1",
     "@nut-tree-fork/nut-js": "^4.2.4",
     "clipboardy": "^4.0.0",
     "minimist": "^1.2.8",
-    "puppeteer": "^24.16.2",
+    "puppeteer": "^24.17.0",
     "winston": "^3.11.0"
   }
 }
