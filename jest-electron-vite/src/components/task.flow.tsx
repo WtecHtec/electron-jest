@@ -290,7 +290,7 @@ const TaskFlow = (porps) => {
     if (checkExport(nodes)) {
       messageApi.open({
         type: 'warning',
-        content: '导出流程选择导出位置！！',
+        content: '导出流程需要配置导出位置或飞书表格相关配置！！',
       });
       return
     }
@@ -320,7 +320,20 @@ const TaskFlow = (porps) => {
   }
 
   const checkExport = (nodes) => {
-    const fd = nodes.find(item => item.type === 'logic_export' && getMutliLevelProperty(item, 'data.logicsetting.savaPath', '') === '')
+    const fd = nodes.find(item => {
+      const fileType = getMutliLevelProperty(item, 'data.logicsetting.fileType', '')
+      if (item.type === 'logic_export' ) {
+        if (fileType === 'feishu_excel') {
+          const appToken = getMutliLevelProperty(item, 'data.logicsetting.appToken', '')
+          const personalBaseToken = getMutliLevelProperty(item, 'data.logicsetting.personalBaseToken', '')
+          const tableId = getMutliLevelProperty(item, 'data.logicsetting.tableId', '')
+          return !appToken || !personalBaseToken || !tableId
+        }
+        const savaPath = getMutliLevelProperty(item, 'data.logicsetting.savaPath', '')
+        return savaPath === ''
+      }
+      return false
+    })
     // console.log('fd---', fd)
     return !!fd
   }

@@ -1,10 +1,15 @@
 import React, { memo, useState } from 'react';
-import {  Space, Divider, Select, Button } from 'antd';
+import {  Space, Divider, Select, Button, Input } from 'antd';
 import { getMutliLevelProperty } from '../../util';
 const { Option } = Select;
 export default memo(({ node }) => {
   // console.log('node===', node)
   const [savaPath, setSavePath] = useState(getMutliLevelProperty(node, 'data.logicsetting.savaPath', ''))
+
+   const [appToken, setAppToken] = useState(getMutliLevelProperty(node, 'data.logicsetting.appToken', ''))
+  const [personalBaseToken, setPersonalBaseToken] = useState(getMutliLevelProperty(node, 'data.logicsetting.personalBaseToken', ''))
+  const [tableId, setTableId] = useState(getMutliLevelProperty(node, 'data.logicsetting.tableId', ''))
+
   const onDataTypeSelect = (value) => {
     try {
       node.data.logicsetting.dataType = value
@@ -28,11 +33,41 @@ export default memo(({ node }) => {
       console.error('onSavePathSelect---', error)
     }
   }
+
+   const onAppTokenChange = (e) => {
+    const value = e.target.value;
+    setAppToken(value);
+    try {
+      node.data.logicsetting.appToken = value
+    } catch (error) {
+      console.error('onAppTokenChange---', error)
+    }
+  }
+  
+  const onPersonalBaseTokenChange = (e) => {
+    const value = e.target.value;
+    setPersonalBaseToken(value);
+    try {
+      node.data.logicsetting.personalBaseToken = value
+    } catch (error) {
+      console.error('onPersonalBaseTokenChange---', error)
+    }
+  }
+  
+  const onTableIdChange = (e) => {
+    const value = e.target.value;
+    setTableId(value);
+    try {
+      node.data.logicsetting.tableId = value
+    } catch (error) {
+      console.error('onTableIdChange---', error)
+    }
+  }
  
   return <>
     <Space.Compact  block style={{ alignItems: 'center',   }}>
       <span className="dr-left">处理事件:</span> 
-      <span className="dr-txt"> 导出数据</span> 
+      <span className="dr-txt"> 导出数据(飞书表格需要填写)</span> 
     </Space.Compact>
     <Divider></Divider>
     <Space.Compact  block style={{ alignItems: 'center',   }}>
@@ -50,8 +85,9 @@ export default memo(({ node }) => {
       <span className="dr-txt"> 
         <Select defaultValue="json" style={{ width: 200 }} onSelect={onFileTypeSelect} >
           <Option value="json">json</Option>
+            <Option value="feishu_excel">飞书多维表格</Option>
           <Option value="doc" disabled>文档</Option>
-          <Option value="excel" disabled>表格</Option>
+        
         </Select>
       </span> 
     </Space.Compact>
@@ -61,6 +97,42 @@ export default memo(({ node }) => {
       <span className="dr-txt"> 
         <Button type="link" onClick={onSavePathSelect}>选择文件夹</Button>
         <div> { savaPath }  </div>
+      </span> 
+    </Space.Compact>
+    <Divider></Divider>
+    <Space.Compact  block style={{ alignItems: 'center',   }}>
+      <span className="dr-left">AppToken:</span> 
+      <span className="dr-txt"> 
+        <Input 
+          placeholder="请输入AppToken" 
+          value={appToken} 
+          onChange={onAppTokenChange}
+          style={{ width: 200 }}
+        />
+      </span> 
+    </Space.Compact>
+    <Divider></Divider>
+    <Space.Compact  block style={{ alignItems: 'center',   }}>
+      <span className="dr-left">personalBaseToken:</span> 
+      <span className="dr-txt"> 
+        <Input 
+          placeholder="请输入personalBaseToken" 
+          value={personalBaseToken} 
+          onChange={onPersonalBaseTokenChange}
+          style={{ width: 200 }}
+        />
+      </span> 
+    </Space.Compact>
+    <Divider></Divider>
+    <Space.Compact  block style={{ alignItems: 'center',   }}>
+      <span className="dr-left">table_id:</span> 
+      <span className="dr-txt"> 
+        <Input 
+          placeholder="请输入多维表格table_id" 
+          value={tableId} 
+          onChange={onTableIdChange}
+          style={{ width: 200 }}
+        />
       </span> 
     </Space.Compact>
     <Divider></Divider>

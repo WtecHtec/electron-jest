@@ -65,7 +65,7 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
       <p className="wrap-txt"> 检查元素(是否存在)：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
     </>, 
-		logic_export: `导出数据到：${getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
+		logic_export: `导出数据到：${getMutliLevelProperty(data, 'logicsetting.fileType', '') === 'feishu_excel' ? "飞书多维表格": getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
     opt_hover: () => <>
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
       <p className="wrap-txt"> 鼠标悬停：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
