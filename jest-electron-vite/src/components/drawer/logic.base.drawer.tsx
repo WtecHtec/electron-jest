@@ -6,7 +6,7 @@ import { javascript } from '@codemirror/lang-javascript';
 
 import { getMutliLevelProperty } from '../../util';
 import ItemDrawer from './item.drawer';
-import { LOGIC_API_INTERCEPT_REQUEST } from './item.config';
+import { LOGIC_API_INTERCEPT_REQUEST, LOGIC_FETCH_REQUEST } from './item.config';
 const { Option } = Select;
 const BASE_DESC = {
    'logic_close': [ '关闭页面', '关闭当前页面后,自动切换最右边tab页面'],
@@ -16,7 +16,8 @@ const BASE_DESC = {
    'logic_func': ['自定义事件', '通过代码实现处理逻辑'],
    'logic_js_func': ['自定义JS函数', '通过JS代码实现处理逻辑'],
    'logic_new_page': ['获取最新页面', '获取最新页面'],
-   'logic_intercepting_response': ['拦截响应', '拦截响应']
+   'logic_intercepting_response': ['拦截响应', '拦截响应'],
+   'logic_fetch_request': ['发起请求', '发起请求'],
 }
 
 const BASE_CODE = `
@@ -45,11 +46,11 @@ const BASE_JS_CODE = `
 `
 const REQUEST_CODE = `
 /**
- * 此处为函数体】 
- *  入参： const { url , method, headers, postData } = arg
+ * 此处为函数体, 处理请求参数
+ *  入参： const { url , method, headers, postData } = arg || {};
  *  返回回一个对象  { url , method, headers, postData }
  * */
-const { url , method, headers, postData } = arg;
+const { url = '' , method = 'GET', headers = {}, postData = {} } = arg || {};
 return { url , method, headers, postData}
 `
 
@@ -57,11 +58,13 @@ return { url , method, headers, postData}
 const CODE_BY_TYPE = {
   logic_js_func: BASE_JS_CODE,
   logic_func: BASE_CODE,
-  logic_intercepting_response: REQUEST_CODE
+  logic_intercepting_response: REQUEST_CODE,
+  logic_fetch_request: REQUEST_CODE,
 }
 
 const ITEM_DATA_MAP = {
   logic_intercepting_response: LOGIC_API_INTERCEPT_REQUEST,
+  logic_fetch_request: LOGIC_FETCH_REQUEST,
 }
 
 export default memo(({ node }) => {
@@ -151,7 +154,7 @@ export default memo(({ node }) => {
       </>
     }
     {
-       (node.type === 'logic_func' || node.type === 'logic_js_func' || node.type === 'logic_intercepting_response')  && <>
+       (node.type === 'logic_func' || node.type === 'logic_js_func' || node.type === 'logic_intercepting_response' || node.type === 'logic_fetch_request')  && <>
         <Space.Compact  block style={{ alignItems: 'center',   }}>
           <span className="dr-left">处理描述:</span> 
           <span className="dr-txt"> 
@@ -172,7 +175,7 @@ export default memo(({ node }) => {
         <Divider></Divider>
       </>
     }
-    <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
+    <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type] || []}></ItemDrawer>
     <CodeModal onCode={ onCode } open={isModalOpen} code={funcCode}></CodeModal>
   </> 
 });

@@ -151,7 +151,12 @@ const getBrowser = async (headless = false) => {
   return browser
 }
 
+// 拦截接口响应
 const logic_intercepting_responseMap = {}
+
+// 主动发起请求
+const logic_requestMap = {}
+
 const runNodeStart = async (arg) => {
   const { browser, task,taskData} = arg
   const { url, optsetting } = task
@@ -170,6 +175,14 @@ const runNodeStart = async (arg) => {
             response: null
           }
         }
+        if (nodeType === 'logic'  && logicsetting  && logicsetting.test_api_url && logicsetting.logicType === 'logic_fetch_request') {
+          interceptingEnable = true
+          logic_requestMap[node_id] = {
+            logicsetting,
+            isFinish: false,
+            request_info: null
+          }
+        }
       });
     }
     const page = await browser.newPage()
@@ -182,20 +195,36 @@ const runNodeStart = async (arg) => {
         
         let url = interceptedRequest.url()
 
+        // 设置主动请求
+        for(const key in logic_requestMap) {
+          const item = logic_requestMap[key]
+          const { logicsetting } = item
+          if (logicsetting && url.indexOf(logicsetting.test_api_url) === 0 ) {
+            const interceptedRequestInfo = {
+              url: interceptedRequest.url(),
+              method: interceptedRequest.method(),
+              headers: interceptedRequest.headers(),
+              postData: interceptedRequest.postData(), // 对于 POST 请求，这里是请求体
+            };
+            item.request_info =  interceptedRequestInfo
+            item.isFinish = true
+          }
+        }
+
+        let status = false
         // 拦截获取结果
         for(const key in logic_intercepting_responseMap) {
           const item = logic_intercepting_responseMap[key]
           const { logicsetting } = item
-         
           if (logicsetting && url.indexOf(logicsetting.api_url) === 0 && logicsetting.selfFuncCode) {
-            console.log("拦截请求 modifyRequestParams----", url, logicsetting.selfFuncCode )
+            status = true
             modifyRequestParams(interceptedRequest, logicsetting.selfFuncCode)
-          } else {
-            interceptedRequest.continue()
-          }
+          } 
+        }
+        if (!status) {
+          interceptedRequest.continue()
         }
         
-       
       });
 
       page.on('response', interceptedResponse => {
@@ -1144,6 +1173,70 @@ const runLogicInterceptingResponse = async (arg) => {
   }
  
   return { response_data: data }
+  // return {}
+}
+
+const runLogicFetchRequest = async (arg) => {
+  const { logicsetting, task, page } = arg
+  const { api_url, waitTime , selfFuncCode} = logicsetting
+  const  { node_id } = task
+  logWithCallback.info(`发起请求: ${api_url}`)
+  if (logic_requestMap[node_id]) {
+    await pWaitFor( () => {
+      return  !!(logic_requestMap[node_id] && logic_requestMap[node_id].isFinish === true)
+    }, 100)
+  }
+ 
+  if (waitTime > 0) {
+    await sleep(waitTime * 1000)
+  }
+
+  let selfFunc = null
+  if (selfFuncCode) {
+    try {
+      selfFunc = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
+    } catch (error) {
+      logWithCallback.error(`发起请求自定义事件: 解析错误: ${error}`)
+    }
+  }
+
+
+
+  let request_info =  logic_requestMap[node_id] ? logic_requestMap[node_id].request_info : {
+    url:  api_url,
+  }
+  console.log("request_info", request_info, typeof selfFunc === 'function')
+  let interceptedRequestInfo = typeof selfFunc === 'function' ? await selfFunc(request_info) || request_info : request_info;
+  console.log("interceptedRequestInfo", interceptedRequestInfo)
+
+
+  const data = await page.evaluate(async (requestInfo) => {
+    const { url, method, headers, postData } = requestInfo;
+    const options = {
+        method,
+        headers,
+       
+      };
+      if (postData && method === 'POST') {
+        options.body = JSON.stringify(postData);
+      }
+
+      // 使用 fetch 发送请求
+      const response = await window.fetch(url, options);
+      const data = await response.json();
+      return data;
+
+  },   interceptedRequestInfo);
+  
+
+  try {
+    logWithCallback.info(`处理发送接口响应结果: ${JSON.stringify(data) ||  data}`)
+  } catch (error) {
+    logWithCallback.info(`处理发送接口响应结果: ${ data}`)
+  }
+ 
+  return { response_data: data }
+  // return {}
 }
 
 const RUN_LOGIC = {
@@ -1159,7 +1252,8 @@ const RUN_LOGIC = {
   'logic_condition': runLogicCondition,
   'logic_list': runLogicList,
   'logic_listitem': runLogicListItem,
-  'logic_intercepting_response': runLogicInterceptingResponse
+  'logic_intercepting_response': runLogicInterceptingResponse,
+  'logic_fetch_request': runLogicFetchRequest
 }
 
 
@@ -1196,7 +1290,6 @@ async function runTask(arg) {
   let resultData = {}
   // console.log('maxStep---', maxStep)
   while (step < maxStep && taskData[step]) {
-    // console.log(step)
     const { nodeType } = taskData[step]
       const params = {
           ...arg,

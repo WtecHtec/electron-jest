@@ -478,3 +478,29 @@ export const LOGIC_API_INTERCEPT_REQUEST = [
 	},
 ]
 
+
+export const LOGIC_FETCH_REQUEST = [
+	{
+		label: '发起接口请求链接:',
+			sublabel: true,
+			edit: true,
+			valType: 'text',
+			valChange: (e, node) => {
+			node.data.logicsetting.api_url = e.target.value
+			},
+				subformat: (node) => {
+					return getMutliLevelProperty(node, 'data.logicsetting.api_url', '')
+				}},
+		{
+	label: '获取请求参数连接检测:',
+		sublabel: true,
+	edit: true,
+	valType: 'text',
+	valChange: (e, node) => {
+	node.data.logicsetting.test_api_url = e.target.value
+	},
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.logicsetting.test_api_url', '')
+		}
+}
+]

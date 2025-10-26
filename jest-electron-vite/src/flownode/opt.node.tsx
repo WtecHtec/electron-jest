@@ -21,6 +21,7 @@ import ExistsSvg from '../assets/exists.svg'
 import KeySvg from '../assets/keyboard.svg'
 import MouseSvg from '../assets/mouse.svg'
 import ApiSvg from '../assets/api.svg'
+import ApiFetchSvg from '../assets/api_fetch.svg'
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -41,7 +42,8 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_new_page: NewSvg,
     opt_keyboard: KeySvg,
 	opt_mouse: MouseSvg,
-	logic_intercepting_response: ApiSvg
+	logic_intercepting_response: ApiSvg,
+	logic_fetch_request: ApiFetchSvg
 	}
 
 	const showLabel = {
@@ -98,6 +100,10 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
 		<p className="wrap-txt"> 拦截响应：{getMutliLevelProperty(data, 'logicsetting.api_url', '')}</p>
 	</>,
+	logic_fetch_request:() => <>
+		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
+		<p className="wrap-txt"> 拦截响应：{getMutliLevelProperty(data, 'logicsetting.api_url', '')}</p>
+	</>
 	}
 
 	return (

@@ -49,7 +49,8 @@ const FLOW_TASK_MAP = {
   opt_mouse: 'opt',
   start: 'start',
   end: 'end',
-  logic_intercepting_response: 'logic'
+  logic_intercepting_response: 'logic',
+  logic_fetch_request: 'logic'
 }
 
 const getId = () => Math.random().toString(36).slice(2)
@@ -222,6 +223,7 @@ const TaskFlow = (porps) => {
     opt_keyboard: (porps) => <OptNode imgType="opt_keyboard" {...porps} />,
     opt_mouse: (porps) => <OptNode imgType="opt_mouse" {...porps} />,
     logic_intercepting_response: (porps) => <OptNode imgType="logic_intercepting_response" {...porps} />,
+    logic_fetch_request: (porps) => <OptNode imgType="logic_fetch_request" {...porps} />,
     end: EndNode
   }), []);
 

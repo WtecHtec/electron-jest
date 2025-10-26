@@ -24,6 +24,7 @@ import ListSvg from '../assets/list.svg'
 import KeySvg from '../assets/keyboard.svg'
 import MouseSvg from '../assets/mouse.svg'
 import ApiSvg from '../assets/api.svg'
+import ApiFetchSvg from '../assets/api_fetch.svg'
 const NODE_DATAS = [
   {
     label: '常规',
@@ -350,6 +351,24 @@ const NODE_DATAS = [
               selfFuncCode: '', // 修改参数
               waitTime: 1,
               api_url: 'https://****'
+            }
+          }
+        }
+      },
+      {
+        imgSrc: ApiFetchSvg,
+        disable: false,
+        txt: '发起接口',
+        nodeType: 'logic_fetch_request',
+        data: {
+          type: 'logic_fetch_request',
+          data: {
+            logicsetting: {
+              logicType: 'logic_fetch_request',
+              selfFuncCode: '', // 修改参数
+              waitTime: 1,
+              test_api_url: '',
+              api_url: 'https://****',
             }
           }
         }
