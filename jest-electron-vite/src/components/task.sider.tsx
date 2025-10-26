@@ -23,6 +23,7 @@ import ListItemSvg from '../assets/list-item.svg'
 import ListSvg from '../assets/list.svg'
 import KeySvg from '../assets/keyboard.svg'
 import MouseSvg from '../assets/mouse.svg'
+import ApiSvg from '../assets/api.svg'
 const NODE_DATAS = [
   {
     label: '常规',
@@ -332,6 +333,23 @@ const NODE_DATAS = [
             logicsetting: {
               logicType: 'logic_close',
               waitTime: 1,
+            }
+          }
+        }
+      },
+      {
+        imgSrc: ApiSvg,
+        disable: false,
+        txt: '拦截接口',
+        nodeType: 'logic_intercepting_response',
+        data: {
+          type: 'logic_intercepting_response',
+          data: {
+            logicsetting: {
+              logicType: 'logic_intercepting_response',
+              selfFuncCode: '', // 修改参数
+              waitTime: 1,
+              api_url: 'https://****'
             }
           }
         }

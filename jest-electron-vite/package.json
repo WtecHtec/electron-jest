@@ -13,7 +13,7 @@
     "@uiw/react-codemirror": "^4.21.21",
     "antd": "^5.12.8",
     "express": "^4.18.2",
-    "flowauto": "^0.1.5",
+    "flowauto": "file:../jest-electron-stage",
     "puppeteer": "^24.16.2",
     "puppeteer-core": "^21.6.1",
     "react": "^18.2.0",

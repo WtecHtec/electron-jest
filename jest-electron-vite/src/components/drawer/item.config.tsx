@@ -460,3 +460,21 @@ export const OPT_MOUSE_DATAS = [
 		},
 	},
 ]
+
+
+export const LOGIC_API_INTERCEPT_REQUEST = [
+
+	{
+		label: '接口链接:',
+		sublabel: true,
+    edit: true,
+    valType: 'text',
+    valChange: (e, node) => {
+      node.data.logicsetting.api_url = e.target.value
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.logicsetting.api_url', '')
+		}
+	},
+]
+

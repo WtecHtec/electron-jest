@@ -20,6 +20,7 @@ import NewSvg from '../assets/new.svg'
 import ExistsSvg from '../assets/exists.svg'
 import KeySvg from '../assets/keyboard.svg'
 import MouseSvg from '../assets/mouse.svg'
+import ApiSvg from '../assets/api.svg'
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -39,7 +40,8 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     logic_js_func: SelfdiySvg,
     logic_new_page: NewSvg,
     opt_keyboard: KeySvg,
-	opt_mouse: MouseSvg
+	opt_mouse: MouseSvg,
+	logic_intercepting_response: ApiSvg
 	}
 
 	const showLabel = {
@@ -92,6 +94,10 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
 	</>,
 	
     logic_new_page: '获取最新页面',
+	logic_intercepting_response: () => <>
+		<p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'logicsetting.rename', '')}</p>
+		<p className="wrap-txt"> 拦截响应：{getMutliLevelProperty(data, 'logicsetting.api_url', '')}</p>
+	</>,
 	}
 
 	return (

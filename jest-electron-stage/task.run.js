@@ -4,11 +4,13 @@ const path = require('path')
 const fs = require('fs');
 const { exec } = require('child_process');
 const FeishuBaseTable = require('./feishu.base.table')
+const pWaitFor = require('./p-wait-for')
 const os = process.platform;
 console.log('os---', os)
 // const clipboardy = require('clipboardy');
 const { keyboard, Key, sleep, mouse, Button, Point } = require('@nut-tree-fork/nut-js');
 // const  Clipboard  = require('@nut-tree-fork/default-clipboard-provider');
+
 
 const version = '0.1.1'
 const waitForTimeout = (waitTime) => {
@@ -149,16 +151,73 @@ const getBrowser = async (headless = false) => {
   return browser
 }
 
+const logic_intercepting_responseMap = {}
 const runNodeStart = async (arg) => {
-  const { browser, task } = arg
+  const { browser, task,taskData} = arg
   const { url, optsetting } = task
   const { handleType = 'web', command = '', waitTime = 0 } = optsetting || {}
+  
   if (handleType === 'web') {
+    let interceptingEnable = false
+    if (taskData.length) {
+      taskData.forEach((element, index) => {
+        const {nodeType , logicsetting, node_id } = element
+        if (nodeType === 'logic' && logicsetting && logicsetting.logicType === 'logic_intercepting_response') {
+          interceptingEnable = true
+          logic_intercepting_responseMap[node_id] = {
+            logicsetting,
+            isFinish: false,
+            response: null
+          }
+        }
+      });
+    }
     const page = await browser.newPage()
+  
+ 
+    if (interceptingEnable) {
+      console.log("开启请求拦截")
+      await page.setRequestInterception(true);
+      page.on('request', interceptedRequest => {
+        
+        let url = interceptedRequest.url()
+
+        // 拦截获取结果
+        for(const key in logic_intercepting_responseMap) {
+          const item = logic_intercepting_responseMap[key]
+          const { logicsetting } = item
+         
+          if (logicsetting && url.indexOf(logicsetting.api_url) === 0 && logicsetting.selfFuncCode) {
+            console.log("拦截请求 modifyRequestParams----", url, logicsetting.selfFuncCode )
+            modifyRequestParams(interceptedRequest, logicsetting.selfFuncCode)
+          } else {
+            interceptedRequest.continue()
+          }
+        }
+        
+       
+      });
+
+      page.on('response', interceptedResponse => {
+       
+        let url = interceptedResponse.url()
+        if (interceptedResponse.status() === 200) {
+         
+           // 拦截获取响应结果结果
+          for(const item in logic_intercepting_responseMap) {
+            const { logicsetting } = logic_intercepting_responseMap[item]
+            if (logicsetting && url.indexOf(logicsetting.api_url) === 0) {
+             
+              logic_intercepting_responseMap[item].response = interceptedResponse
+              logic_intercepting_responseMap[item].isFinish = true
+            }
+          }
+        }
+       
+      })
+    }
     logWithCallback.info(`打开页面：${url}`)
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-    });
+    await page.goto(url);
     return { page }
   } else {
     await executeCommand(command)
@@ -1033,6 +1092,60 @@ const RUN_OPT_TYPE = {
 }
 
 
+async function modifyRequestParams(request, selfFuncCode) {
+  // const method = request.method();
+  // const url = request.url();
+
+  let selfFunc = null
+  if (selfFuncCode) {
+    try {
+      selfFunc = AsyncFunction('arg', decodeURIComponent(selfFuncCode))
+    } catch (error) {
+      logWithCallback.error(`拦截自定义事件: 解析错误: ${error}`)
+    }
+  }
+
+  const interceptedRequestInfo = {
+      url: request.url(),
+      method: request.method(),
+      headers: request.headers(),
+      postData: request.postData(), // 对于 POST 请求，这里是请求体
+    };
+    const { url, postData, method, headers} = typeof selfFunc === 'function' ? ( await selfFunc(interceptedRequestInfo) || interceptedRequestInfo) :  interceptedRequestInfo
+    console.log("modifyRequestParams---", url, postData, method, headers)
+    // 继续请求，保持请求方法不变，修改请求体
+    request.continue({
+      url: url,
+      method: method, // 保持请求方法不变
+      postData: JSON.stringify(postData),
+      headers: {
+        ...headers,
+      }});
+}
+const runLogicInterceptingResponse = async (arg) => {
+  const { logicsetting, task } = arg
+  const { api_url, waitTime } = logicsetting
+  const  { node_id } = task
+  logWithCallback.info(`处理拦截响应: ${api_url}`)
+  await pWaitFor( () => {
+    return  !!(logic_intercepting_responseMap[node_id] && logic_intercepting_responseMap[node_id].isFinish === true)
+  }, 100)
+  if (waitTime > 0) {
+    await sleep(waitTime * 1000)
+  }
+  let data = ''
+  if (logic_intercepting_responseMap[node_id] && logic_intercepting_responseMap[node_id].response) {
+    data = await logic_intercepting_responseMap[node_id].response.json()
+  }
+  try {
+    logWithCallback.info(`处理拦截响应结果: ${JSON.stringify(data) ||  data}`)
+  } catch (error) {
+    logWithCallback.info(`处理拦截响应结果: ${ data}`)
+  }
+ 
+  return { response_data: data }
+}
+
 const RUN_LOGIC = {
   'logic_loop': runLogicLoop,
   'logic_export': runLogicExport,
@@ -1046,8 +1159,9 @@ const RUN_LOGIC = {
   'logic_condition': runLogicCondition,
   'logic_list': runLogicList,
   'logic_listitem': runLogicListItem,
-
+  'logic_intercepting_response': runLogicInterceptingResponse
 }
+
 
 
 const RUN_PICK_TYPE = {

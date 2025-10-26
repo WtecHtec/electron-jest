@@ -5,6 +5,8 @@ import CodeModal from '../code.modal';
 import { javascript } from '@codemirror/lang-javascript';
 
 import { getMutliLevelProperty } from '../../util';
+import ItemDrawer from './item.drawer';
+import { LOGIC_API_INTERCEPT_REQUEST } from './item.config';
 const { Option } = Select;
 const BASE_DESC = {
    'logic_close': [ '关闭页面', '关闭当前页面后,自动切换最右边tab页面'],
@@ -13,7 +15,8 @@ const BASE_DESC = {
    'logic_pdf': [ '导出PDF', '将当前页面导出为PDF'],
    'logic_func': ['自定义事件', '通过代码实现处理逻辑'],
    'logic_js_func': ['自定义JS函数', '通过JS代码实现处理逻辑'],
-   'logic_new_page': ['获取最新页面', '获取最新页面']
+   'logic_new_page': ['获取最新页面', '获取最新页面'],
+   'logic_intercepting_response': ['拦截响应', '拦截响应']
 }
 
 const BASE_CODE = `
@@ -40,12 +43,33 @@ const BASE_JS_CODE = `
  const { ...other } = arg
  return {}
 `
+const REQUEST_CODE = `
+/**
+ * 此处为函数体】 
+ *  入参： const { url , method, headers, postData } = arg
+ *  返回回一个对象  { url , method, headers, postData }
+ * */
+const { url , method, headers, postData } = arg;
+return { url , method, headers, postData}
+`
+
+
+const CODE_BY_TYPE = {
+  logic_js_func: BASE_JS_CODE,
+  logic_func: BASE_CODE,
+  logic_intercepting_response: REQUEST_CODE
+}
+
+const ITEM_DATA_MAP = {
+  logic_intercepting_response: LOGIC_API_INTERCEPT_REQUEST,
+}
+
 export default memo(({ node }) => {
   // console.log('node===', node)
   const [savaPath, setSavePath] = useState(getMutliLevelProperty(node, 'data.logicsetting.savaPath', ''))
   const [waitTime, setWaitTime] = useState(getMutliLevelProperty(node, 'data.logicsetting.waitTime', ''))
   const [rename, setReName] = useState(getMutliLevelProperty(node, 'data.logicsetting.rename', ''))
-  const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode',  node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE) || (node.type === 'logic_js_func' ? BASE_JS_CODE : BASE_CODE))) 
+  const [funcCode, setFuncCode] = useState(decodeURIComponent(getMutliLevelProperty(node, 'data.logicsetting.selfFuncCode',  CODE_BY_TYPE[node.type] ||  BASE_CODE ) || (CODE_BY_TYPE[node.type] ||  BASE_CODE))) 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onWaitTimeChange = (value) => {
@@ -127,7 +151,7 @@ export default memo(({ node }) => {
       </>
     }
     {
-       (node.type === 'logic_func' || node.type === 'logic_js_func')  && <>
+       (node.type === 'logic_func' || node.type === 'logic_js_func' || node.type === 'logic_intercepting_response')  && <>
         <Space.Compact  block style={{ alignItems: 'center',   }}>
           <span className="dr-left">处理描述:</span> 
           <span className="dr-txt"> 
@@ -148,6 +172,7 @@ export default memo(({ node }) => {
         <Divider></Divider>
       </>
     }
+    <ItemDrawer node={node} datas={ITEM_DATA_MAP[node.type]}></ItemDrawer>
     <CodeModal onCode={ onCode } open={isModalOpen} code={funcCode}></CodeModal>
   </> 
 });
