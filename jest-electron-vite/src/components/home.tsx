@@ -27,6 +27,7 @@ export default memo((props) => {
 					<Button type="link" onClick={ ()=> onHandleEditTaskParam(record)}>参数配置</Button>
 					<Button type="link" onClick={ ()=> onRunTask(record)}>执行任务</Button>
 					<Button type="link" onClick={() =>  onUpdateTask(record)}>修改任务</Button>
+					<Button type="link" onClick={() =>  onOpenTaskFolder(record)}>打开目录</Button>
           {/* <Button type="link" onClick={() =>  onDelTask(record)}>删除任务</Button> */}
           <Popconfirm title="是否确定删除?" onConfirm={() => onDelTask(record)}>
             <a>删除任务</a>
@@ -153,6 +154,24 @@ export default memo((props) => {
 		setIsEditTaskParamOpen(true)
 		console.log('record---', record)
 		setEditTaskParam(record.taskparam)
+	  }
+
+	  const onOpenTaskFolder = async (record) => {
+		try {
+			const success = await window.ipcRenderer.invoke('open-file-folder', record.filepath);
+			if (!success) {
+				messageApi.open({
+					type: 'error',
+					content: '打开目录失败，文件可能不存在',
+				});
+			}
+		} catch (error) {
+			console.error(error);
+			messageApi.open({
+				type: 'error',
+				content: '调用打开目录接口出错',
+			});
+		}
 	  }
 
 	const showConfig = async () => {

@@ -158,15 +158,15 @@ const logic_intercepting_responseMap = {}
 const logic_requestMap = {}
 
 const runNodeStart = async (arg) => {
-  const { browser, task,taskData} = arg
+  const { browser, task, taskData } = arg
   const { url, optsetting } = task
   const { handleType = 'web', command = '', waitTime = 0 } = optsetting || {}
-  
+
   if (handleType === 'web') {
     let interceptingEnable = false
     if (taskData.length) {
       taskData.forEach((element, index) => {
-        const {nodeType , logicsetting, node_id } = element
+        const { nodeType, logicsetting, node_id } = element
         if (nodeType === 'logic' && logicsetting && logicsetting.logicType === 'logic_intercepting_response') {
           interceptingEnable = true
           logic_intercepting_responseMap[node_id] = {
@@ -175,7 +175,7 @@ const runNodeStart = async (arg) => {
             response: null
           }
         }
-        if (nodeType === 'logic'  && logicsetting  && logicsetting.test_api_url && logicsetting.logicType === 'logic_fetch_request') {
+        if (nodeType === 'logic' && logicsetting && logicsetting.test_api_url && logicsetting.logicType === 'logic_fetch_request') {
           interceptingEnable = true
           logic_requestMap[node_id] = {
             logicsetting,
@@ -186,67 +186,68 @@ const runNodeStart = async (arg) => {
       });
     }
     const page = await browser.newPage()
-  
- 
+
+
     if (interceptingEnable) {
       console.log("开启请求拦截")
       await page.setRequestInterception(true);
       page.on('request', interceptedRequest => {
-        
+
         let url = interceptedRequest.url()
 
         // 设置主动请求
-        for(const key in logic_requestMap) {
+        for (const key in logic_requestMap) {
           const item = logic_requestMap[key]
           const { logicsetting } = item
-          if (logicsetting && url.indexOf(logicsetting.test_api_url) === 0 ) {
+          if (logicsetting && url.indexOf(logicsetting.test_api_url) === 0) {
             const interceptedRequestInfo = {
               url: interceptedRequest.url(),
               method: interceptedRequest.method(),
               headers: interceptedRequest.headers(),
               postData: interceptedRequest.postData(), // 对于 POST 请求，这里是请求体
             };
-            item.request_info =  interceptedRequestInfo
+            item.request_info = interceptedRequestInfo
             item.isFinish = true
           }
         }
 
         let status = false
         // 拦截获取结果
-        for(const key in logic_intercepting_responseMap) {
+        for (const key in logic_intercepting_responseMap) {
           const item = logic_intercepting_responseMap[key]
           const { logicsetting } = item
           if (logicsetting && url.indexOf(logicsetting.api_url) === 0 && logicsetting.selfFuncCode) {
             status = true
             modifyRequestParams(interceptedRequest, logicsetting.selfFuncCode)
-          } 
+          }
         }
         if (!status) {
           interceptedRequest.continue()
         }
-        
+
       });
 
       page.on('response', interceptedResponse => {
-       
+
         let url = interceptedResponse.url()
         if (interceptedResponse.status() === 200) {
-         
-           // 拦截获取响应结果结果
-          for(const item in logic_intercepting_responseMap) {
+
+          // 拦截获取响应结果结果
+          for (const item in logic_intercepting_responseMap) {
             const { logicsetting } = logic_intercepting_responseMap[item]
             if (logicsetting && url.indexOf(logicsetting.api_url) === 0) {
-             
+
               logic_intercepting_responseMap[item].response = interceptedResponse
               logic_intercepting_responseMap[item].isFinish = true
             }
           }
         }
-       
+
       })
     }
     logWithCallback.info(`打开页面：${url}`)
     await page.goto(url);
+    await sleep(1000 * waitTime)
     return { page }
   } else {
     await executeCommand(command)
@@ -323,7 +324,11 @@ const runOptInput = async (arg) => {
   const { browser, optsetting, page, env } = arg
   const { xpath, waitTime, inputData } = optsetting
   const clickElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
-  await clickElement.focus()
+  if (clickElement) {
+    await clickElement.focus()
+  } else {
+    logWithCallback.error(`未找到元素： ${xpath} `)
+  }
   if (waitTime > 0) {
     await waitForTimeout(waitTime * 1000)
   }
@@ -331,7 +336,7 @@ const runOptInput = async (arg) => {
   if (inputType === 'paramType') {
     inputValue = env.get(inputValue) || inputValue
   }
-  await clickElement.type(String(inputValue), { delay: 500 })
+  await clickElement.type(String(inputValue), { delay: 100 })
   logWithCallback.info(`输入： ${inputValue} `)
   return {}
 }
@@ -406,7 +411,7 @@ const runOptExists = async (arg) => {
 const runOptUpload = async (arg) => {
   const { browser, optsetting, page, env } = arg
   const { xpath, waitTime, uploadData } = optsetting
-  
+
   let { inputValue: filePath, inputType } = uploadData || {}
   if (inputType === 'paramType') {
     filePath = env.get(filePath) || filePath
@@ -436,13 +441,13 @@ const runOptUpload = async (arg) => {
         }
       }, xpath)
     ]);
-    
+
     await fileChooser.accept([filePath]);
     logWithCallback.info(`成功通过文件选择器(FileChooser)拦截并上传文件`);
   } catch (error) {
     // 方案 B: 如果没有触发 fileChooser (例如该 xpath 就是个隐藏的 input 节点，或者超时了)，尝试直接寻找 input 注入
     logWithCallback.warn(`未检测到文件选择器弹窗，尝试直接向 input 注入。原因: ${error.message}`);
-    
+
     let inputElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 3000 });
     if (inputElement) {
       const tagName = await page.evaluate(el => el.tagName.toLowerCase(), inputElement);
@@ -754,14 +759,14 @@ const runLogicFunc = async (arg) => {
       logWithCallback.error(`自定义事件: ${rename}解析错误: ${error}`)
     }
     if (typeof selfFunc === 'function') {
-       const res = await selfFunc({...arg, logWithCallback})
-       try {
-         logWithCallback.info(`自定义事件: ${rename} 执行结果: ${ JSON.stringify(res) }`)
-       } catch (error) {
-         logWithCallback.error(`自定义事件: ${rename} 执行结果解析错误: ${error}`)
-       }
-      
-       return res
+      const res = await selfFunc({ ...arg, logWithCallback })
+      try {
+        logWithCallback.info(`自定义事件: ${rename} 执行结果: ${JSON.stringify(res)}`)
+      } catch (error) {
+        logWithCallback.error(`自定义事件: ${rename} 执行结果解析错误: ${error}`)
+      }
+
+      return res
     }
   }
   return {}
@@ -769,24 +774,24 @@ const runLogicFunc = async (arg) => {
 
 const runLogicJSFunc = async (arg) => {
   const { logicsetting, page, env } = arg
-  const { selfFuncCode, rename , waitTime } = logicsetting
-    
+  const { selfFuncCode, rename, waitTime } = logicsetting
 
-    logWithCallback.info(`自定义js事件: ${rename}`)
-     if (waitTime > 0) {
-      await waitForTimeout(waitTime * 1000)
+
+  logWithCallback.info(`自定义js事件: ${rename}`)
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
+  if (selfFuncCode) {
+    await page.addScriptTag({ content: `;var  JEST_JS_FUNC = (arg) => { ${decodeURIComponent(selfFuncCode)} }; ` })
+    const res = await page.evaluate((arg) => {
+      return JEST_JS_FUNC({ ...arg })
+    }, { ...arg });
+    try {
+      logWithCallback.info(`自定义js事件: ${rename} 执行结果: ${JSON.stringify(res)}`)
+    } catch (error) {
+      logWithCallback.error(`自定义js事件: ${rename} 执行结果解析错误: ${error}`)
     }
-    if (selfFuncCode) {
-      await page.addScriptTag({ content: `;var  JEST_JS_FUNC = (arg) => { ${decodeURIComponent(selfFuncCode)} }; ` })
-      const res = await page.evaluate((arg) => {
-        return JEST_JS_FUNC({...arg})
-      }, { ...arg });
-      try {
-        logWithCallback.info(`自定义js事件: ${rename} 执行结果: ${ JSON.stringify(res) }`)
-      } catch (error) {
-        logWithCallback.error(`自定义js事件: ${rename} 执行结果解析错误: ${error}`)
-      }
-     return res || {}
+    return res || {}
   }
   return {}
 }
@@ -863,7 +868,7 @@ async function runExportToFeishuExcel(arg) {
   const feishuBaseTable = new FeishuBaseTable(appToken, personalBaseToken, tableId)
   await feishuBaseTable.initTable()
   let datas = export_data || env.getPickData()
-  if (!!export_data === false &&  Array.isArray(datas) && datas.length) {
+  if (!!export_data === false && Array.isArray(datas) && datas.length) {
     datas = handleDefault(datas)
   }
   if (!Array.isArray(datas)) {
@@ -876,41 +881,41 @@ async function runExportToFeishuExcel(arg) {
     await feishuBaseTable.createTableFields(fields)
     await waitForTimeout(2000)
     try {
-       let records = datas.map(item => {
+      let records = datas.map(item => {
         return {
           fields: {
             ...item
-          } ,
+          },
         }
-       })
-       await feishuBaseTable.batchCreateRecord(records)
+      })
+      await feishuBaseTable.batchCreateRecord(records)
     } catch (error) {
       logWithCallback.error(`导出飞书多维表格失败: ${error}`)
     }
-   
+
   } else {
     logWithCallback.error(`导出飞书多维表格字段失败`)
   }
-  
+
 
 }
 
 function handleDefault(datas) {
-    let data = []
-    let item = {}
-    for (let i = 0; i < datas.length; i++) {
-        let key = datas[i].key
-        let value = datas[i].value
-        item [key] = value
-     }
-     data.push(item)
-     return data
+  let data = []
+  let item = {}
+  for (let i = 0; i < datas.length; i++) {
+    let key = datas[i].key
+    let value = datas[i].value
+    item[key] = value
+  }
+  data.push(item)
+  return data
 }
 
 function createFields(data) {
   // [ { "" : ""}]
   if (Array.isArray(data) && data.length) {
-  
+
     return Object.keys(data[0]).map(item => {
       return item
     })
@@ -995,7 +1000,7 @@ const onRunLoopSelfFunc = async (arg) => {
     }
     if (typeof loopCondition === 'function') {
       let loopEnv = null
-      let loopStatus = await loopCondition({...arg, logWithCallback})
+      let loopStatus = await loopCondition({ ...arg, logWithCallback })
       if (typeof loopStatus !== 'boolean') {
         logWithCallback.log('解析循环自定义事件返回类型不是Boolean')
         return {}
@@ -1200,29 +1205,30 @@ async function modifyRequestParams(request, selfFuncCode) {
   }
 
   const interceptedRequestInfo = {
-      url: request.url(),
-      method: request.method(),
-      headers: request.headers(),
-      postData: request.postData(), // 对于 POST 请求，这里是请求体
-    };
-    const { url, postData, method, headers} = typeof selfFunc === 'function' ? ( await selfFunc(interceptedRequestInfo) || interceptedRequestInfo) :  interceptedRequestInfo
-    console.log("modifyRequestParams---", url, postData, method, headers)
-    // 继续请求，保持请求方法不变，修改请求体
-    request.continue({
-      url: url,
-      method: method, // 保持请求方法不变
-      postData: JSON.stringify(postData),
-      headers: {
-        ...headers,
-      }});
+    url: request.url(),
+    method: request.method(),
+    headers: request.headers(),
+    postData: request.postData(), // 对于 POST 请求，这里是请求体
+  };
+  const { url, postData, method, headers } = typeof selfFunc === 'function' ? (await selfFunc(interceptedRequestInfo) || interceptedRequestInfo) : interceptedRequestInfo
+  console.log("modifyRequestParams---", url, postData, method, headers)
+  // 继续请求，保持请求方法不变，修改请求体
+  request.continue({
+    url: url,
+    method: method, // 保持请求方法不变
+    postData: JSON.stringify(postData),
+    headers: {
+      ...headers,
+    }
+  });
 }
 const runLogicInterceptingResponse = async (arg) => {
   const { logicsetting, task } = arg
   const { api_url, waitTime } = logicsetting
-  const  { node_id } = task
+  const { node_id } = task
   logWithCallback.info(`处理拦截响应: ${api_url}`)
-  await pWaitFor( () => {
-    return  !!(logic_intercepting_responseMap[node_id] && logic_intercepting_responseMap[node_id].isFinish === true)
+  await pWaitFor(() => {
+    return !!(logic_intercepting_responseMap[node_id] && logic_intercepting_responseMap[node_id].isFinish === true)
   }, 100)
   if (waitTime > 0) {
     await sleep(waitTime * 1000)
@@ -1232,26 +1238,26 @@ const runLogicInterceptingResponse = async (arg) => {
     data = await logic_intercepting_responseMap[node_id].response.json()
   }
   try {
-    logWithCallback.info(`处理拦截响应结果: ${JSON.stringify(data) ||  data}`)
+    logWithCallback.info(`处理拦截响应结果: ${JSON.stringify(data) || data}`)
   } catch (error) {
-    logWithCallback.info(`处理拦截响应结果: ${ data}`)
+    logWithCallback.info(`处理拦截响应结果: ${data}`)
   }
- 
+
   return { response_data: data }
   // return {}
 }
 
 const runLogicFetchRequest = async (arg) => {
   const { logicsetting, task, page } = arg
-  const { api_url, waitTime , selfFuncCode} = logicsetting
-  const  { node_id } = task
+  const { api_url, waitTime, selfFuncCode } = logicsetting
+  const { node_id } = task
   logWithCallback.info(`发起请求: ${api_url}`)
   if (logic_requestMap[node_id]) {
-    await pWaitFor( () => {
-      return  !!(logic_requestMap[node_id] && logic_requestMap[node_id].isFinish === true)
+    await pWaitFor(() => {
+      return !!(logic_requestMap[node_id] && logic_requestMap[node_id].isFinish === true)
     }, 100)
   }
- 
+
   if (waitTime > 0) {
     await sleep(waitTime * 1000)
   }
@@ -1267,8 +1273,8 @@ const runLogicFetchRequest = async (arg) => {
 
 
 
-  let request_info =  logic_requestMap[node_id] ? logic_requestMap[node_id].request_info : {
-    url:  api_url,
+  let request_info = logic_requestMap[node_id] ? logic_requestMap[node_id].request_info : {
+    url: api_url,
   }
   console.log("request_info", request_info, typeof selfFunc === 'function')
   let interceptedRequestInfo = typeof selfFunc === 'function' ? await selfFunc(request_info) || request_info : request_info;
@@ -1278,28 +1284,28 @@ const runLogicFetchRequest = async (arg) => {
   const data = await page.evaluate(async (requestInfo) => {
     const { url, method, headers, postData } = requestInfo;
     const options = {
-        method,
-        headers,
-       
-      };
-      if (postData && method === 'POST') {
-        options.body = JSON.stringify(postData);
-      }
+      method,
+      headers,
 
-      // 使用 fetch 发送请求
-      const response = await window.fetch(url, options);
-      const data = await response.json();
-      return data;
+    };
+    if (postData && method === 'POST') {
+      options.body = JSON.stringify(postData);
+    }
 
-  },   interceptedRequestInfo);
-  
+    // 使用 fetch 发送请求
+    const response = await window.fetch(url, options);
+    const data = await response.json();
+    return data;
+
+  }, interceptedRequestInfo);
+
 
   try {
-    logWithCallback.info(`处理发送接口响应结果: ${JSON.stringify(data) ||  data}`)
+    logWithCallback.info(`处理发送接口响应结果: ${JSON.stringify(data) || data}`)
   } catch (error) {
-    logWithCallback.info(`处理发送接口响应结果: ${ data}`)
+    logWithCallback.info(`处理发送接口响应结果: ${data}`)
   }
- 
+
   return { response_data: data }
   // return {}
 }
@@ -1356,24 +1362,24 @@ async function runTask(arg) {
   // console.log('maxStep---', maxStep)
   while (step < maxStep && taskData[step]) {
     const { nodeType } = taskData[step]
-      const params = {
-          ...arg,
-          ...resultData,
-          browser,
-          task: taskData[step],
-      }
-     const currentTask = {
-          ...taskData[step],
-          TASK_RUN_ENV: env.toSerializable(),
-          TASK_RUN_PARAMS: RunEnv.serialize(params),
-       } 
+    const params = {
+      ...arg,
+      ...resultData,
+      browser,
+      task: taskData[step],
+    }
+    const currentTask = {
+      ...taskData[step],
+      TASK_RUN_ENV: env.toSerializable(),
+      TASK_RUN_PARAMS: RunEnv.serialize(params),
+    }
 
     try {
-    
+
       if (typeof RUN_NODE_TYPE[nodeType] === 'function') {
         // 触发步骤开始回调
         callback.onStepStart(step, currentTask)
-     
+
         if (currentPage) params.page = currentPage;
         resultData = await RUN_NODE_TYPE[nodeType](params);
         if (typeof resultData === 'object' && Object.keys(resultData).length) {
@@ -1383,7 +1389,7 @@ async function runTask(arg) {
         // 触发步骤成功回调
         callback.onStepSuccess(step, currentTask, resultData)
       } else {
-       callback.onStepError(step, currentTask, `${nodeType} 不存在 事件`)
+        callback.onStepError(step, currentTask, `${nodeType} 不存在 事件`)
       }
     } catch (error) {
       // 触发步骤错误回调
@@ -1429,8 +1435,8 @@ async function main() {
   try {
     const data = fs.readFileSync(argv.filepath, 'utf-8');
     const dataconfig = JSON.parse(data);
-    taskData = JSON.parse(dataconfig.task)
 
+    taskData = JSON.parse(dataconfig.task)
 
     try {
       if (argv.taskparamfile) {
@@ -1458,8 +1464,8 @@ async function main() {
     }
     let headless = false
     try {
-       headless = Boolean(argv.headless)  || false
-    } catch{}
+      headless = Boolean(argv.headless) || false
+    } catch { }
 
     if (Array.isArray(taskData)) {
       callback.onStart(taskData)

@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from 'electron'
+import { ipcMain, dialog, shell } from 'electron'
 import { globalLogger } from './logger'
 import WsServer from './ws.server'
 import TaslPuppeteer from './task.puppeteer'
@@ -252,6 +252,21 @@ function handleGetTaskDetail() {
   })
 }
 
+function handleOpenFolder() {
+  ipcMain.handle('open-file-folder', async (event, filepath) => {
+    try {
+      if (fs.existsSync(filepath)) {
+        shell.showItemInFolder(filepath);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('打开文件目录出错:', err);
+      return false;
+    }
+  })
+}
+
 function IpcManagement(win) {
   handelCloseTaskSetting()
   handelSelectFolder()
@@ -260,6 +275,7 @@ function IpcManagement(win) {
   handleSaveTask()
   handleGetTask()
   handleGetTaskDetail()
+  handleOpenFolder()
   hendleDelTask()
   hendleSaveTaskParam()
   handleGetConfig()
