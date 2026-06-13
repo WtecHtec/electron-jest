@@ -249,6 +249,30 @@ export const OPT_EXISTS_DATAS = [
 			return getMutliLevelProperty(node, 'data.optsetting.existsData.pickMethod', '')
 		}
 	},
+  {
+		label: '重试次数:',
+		sublabel: true,
+    edit: true,
+    valType: 'number',
+    valChange: (e, node) => {
+      node.data.optsetting.existsData.retryCount = e
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.existsData.retryCount', 1)
+		}
+	},
+  {
+		label: '重试间隔(秒):',
+		sublabel: true,
+    edit: true,
+    valType: 'number',
+    valChange: (e, node) => {
+      node.data.optsetting.existsData.retryInterval = e
+    },
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.existsData.retryInterval', 1)
+		}
+	},
 ]
 
 export const LOGIC_CONDITION = [

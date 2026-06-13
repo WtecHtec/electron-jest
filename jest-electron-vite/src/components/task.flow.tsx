@@ -74,9 +74,9 @@ const TaskFlow = (porps) => {
   const [isEditTaskParamOpen, setIsEditTaskParamOpen] = useState(false)
   const [executionPanelVisible, setExecutionPanelVisible] = useState(false);
 
-    // 添加无头模式状态
+  // 添加无头模式状态
   const [headlessMode, setHeadlessMode] = useState(false);
-  
+
   useEffect(() => {
     setNodes(porps.nodes)
     setEdges(porps.edges)
@@ -328,7 +328,7 @@ const TaskFlow = (porps) => {
   const checkExport = (nodes) => {
     const fd = nodes.find(item => {
       const fileType = getMutliLevelProperty(item, 'data.logicsetting.fileType', '')
-      if (item.type === 'logic_export' ) {
+      if (item.type === 'logic_export') {
         if (fileType === 'feishu_excel') {
           const appToken = getMutliLevelProperty(item, 'data.logicsetting.appToken', '')
           const personalBaseToken = getMutliLevelProperty(item, 'data.logicsetting.personalBaseToken', '')
@@ -374,16 +374,16 @@ const TaskFlow = (porps) => {
     if (!current) return result
     let currentEdgeId = edgeId
     while (current) {
-     
+
       const edge = edges.find(edg => {
         if (['logic_loop', 'logic_list', 'logic_listitem'].includes(current.type)) {
           return edg.source === current.id && edg.sourceHandle === 'next'
         }
         return edg.source === current.id
       })
-      
+
       let { id, source, target, sourceHandle, targetHandle, } = edge || {}
-      
+
       current.data['edgeId'] = currentEdgeId
       currentEdgeId = id
       const item = {
@@ -391,15 +391,17 @@ const TaskFlow = (porps) => {
         node_id: current.id,
         ...current.data
       }
-      result.push(item)
-      if (!edge) {
-        return result
-      }
+      console.log('item---', item, result)
+
       cacheKey = `${id}-${source}-${target}-${sourceHandle}-${targetHandle}`
       if (cache[cacheKey]) {
         console.log(' 有环 ')
         current = null
-        return []
+        return [...result]
+      }
+      result.push(item)
+      if (!edge) {
+        return result
       }
       cache[cacheKey] = 1
       if (current.type !== 'logic_condition') {
@@ -436,6 +438,7 @@ const TaskFlow = (porps) => {
         if (loopcondition) {
           const node = nodes.find(item => item.id === loopcondition.target)
           if (node) {
+            console.log('node---condition', node)
             const tasks = getTask(nodes, edges, node, '', loopcondition.id)
             current.data.logicsetting['condition'] = tasks.length ? [tasks[0]] : ''
           }
@@ -444,23 +447,25 @@ const TaskFlow = (porps) => {
         // 假 流程 nobody 
         const nobody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'nobody')
         if (nobody) {
+          console.log('nobody--', nobody)
           const node = nodes.find(item => item.id === nobody.target)
           if (node) {
             const tasks = getTask(nodes, edges, node, '', nobody.id)
             current.data.logicsetting['noBody'] = [...tasks]
           }
         }
- 
+
         // 真 流程 yesbody 
         const yesbody = edges.find(edg => edg.source === current.id && edg.sourceHandle === 'yesbody')
         if (yesbody) {
+          console.log('yesbody--', yesbody)
           const node = nodes.find(item => item.id === yesbody.target)
           if (node) {
             const tasks = getTask(nodes, edges, node, '', yesbody.id)
             current.data.logicsetting['yesBody'] = [...tasks]
           }
         }
-        current = null
+        // current = null
 
       } else if (current && current.type === 'logic_list') {
         // 任务队列 listBody
@@ -595,9 +600,9 @@ const TaskFlow = (porps) => {
     console.log('nodes---', nodes)
     const result = {}
     nodes.forEach(element => {
-      if (element.type === 'opt_input' 
-          || (element.type === 'opt_keyboard' && element.data.optsetting.keyType !== 'shortcut')
-          || element.type === 'opt_upload') {
+      if (element.type === 'opt_input'
+        || (element.type === 'opt_keyboard' && element.data.optsetting.keyType !== 'shortcut')
+        || element.type === 'opt_upload') {
         console.log('element---', element)
         let inputType, inputValue;
         if (element.type === 'opt_upload') {
@@ -655,7 +660,7 @@ const TaskFlow = (porps) => {
     }
   }
 
-   // 任务操作菜单
+  // 任务操作菜单
   const taskActionMenu = {
     items: [
       {
@@ -707,13 +712,13 @@ const TaskFlow = (porps) => {
       {contextHolder}
       <div className="reactflow-wrapper" ref={reactFlowWrapper}>
         <div className="tools">
-             {/* 任务操作下拉菜单 */}
+          {/* 任务操作下拉菜单 */}
           <Dropdown menu={taskActionMenu} placement="bottomLeft">
             <Button className="tools-btn">
               任务操作  <DownOutlined />
             </Button>
           </Dropdown>
-          
+
           {/* 执行操作下拉菜单 */}
           <Dropdown menu={executionMenu} placement="bottomLeft">
             <Button className="tools-btn">
@@ -724,8 +729,8 @@ const TaskFlow = (porps) => {
           {/* 无头模式开关 */}
           <div className="tools-btn" style={{ display: 'flex', alignItems: 'center', padding: '4px 15px', background: '#fff', border: '1px solid #d9d9d9', borderRadius: '6px', marginLeft: '8px' }}>
             <span style={{ marginRight: '8px' }}>无头模式:</span>
-            <Switch 
-              checked={headlessMode} 
+            <Switch
+              checked={headlessMode}
               onChange={setHeadlessMode}
               size="small"
             />
@@ -771,7 +776,7 @@ const TaskFlow = (porps) => {
         </Modal>
       </div>
       {/* 执行状态面板组件 */}
-      <ExecutionStatusPanel 
+      <ExecutionStatusPanel
         visible={executionPanelVisible}
         onClose={() => setExecutionPanelVisible(false)}
         setEdges={setEdges}

@@ -336,7 +336,7 @@ const runOptInput = async (arg) => {
   if (inputType === 'paramType') {
     inputValue = env.get(inputValue) || inputValue
   }
-  await clickElement.type(String(inputValue), { delay: 100 })
+  await clickElement.type(String(inputValue), { delay: 300 })
   logWithCallback.info(`输入： ${inputValue} `)
   return {}
 }
@@ -390,22 +390,41 @@ const runOptHover = async (arg) => {
 const runOptExists = async (arg) => {
   const { optsetting, page, logicType, frequency } = arg
   let { xpath, waitTime, existsData } = optsetting
-  const { rename, pickMethod, levelXpath, fixXpath } = existsData
+  const { rename, pickMethod, levelXpath, fixXpath, retryCount = 1, retryInterval = 1 } = existsData
   if (logicType === 'loop' && levelXpath && pickMethod === 'list' && frequency !== undefined && frequency !== null) {
     xpath = `${levelXpath.replace('$index', frequency)}${fixXpath}`
     console.log('xpath---', xpath)
   }
-  try {
-    await page.$(`::-p-xpath(${xpath})`, { timeout: 0 })
-    logWithCallback.log(`${rename}元素存在`)
-  } catch (error) {
+
+  let element = null
+  const count = Number(retryCount) || 1
+  const interval = Number(retryInterval) || 1
+
+  for (let i = 0; i < count; i++) {
+    try {
+      element = await page.$(`::-p-xpath(${xpath})`)
+      if (element) {
+        break
+      }
+    } catch (error) {
+      // Ignore selector errors during retries
+    }
+    if (i < count - 1) {
+      logWithCallback.log(`第 ${i + 1} 次检查元素不存在，等待 ${interval} 秒后重试...`)
+      await waitForTimeout(interval * 1000)
+    }
+  }
+
+  if (element) {
+    logWithCallback.log(`${rename || "检查"}元素存在`)
+    if (waitTime > 0) {
+      await waitForTimeout(waitTime * 1000)
+    }
+    return true
+  } else {
     logWithCallback.log(`${rename}元素不存在`)
     return false
   }
-  if (waitTime > 0) {
-    await waitForTimeout(waitTime * 1000)
-  }
-  return true
 }
 
 const runOptUpload = async (arg) => {
@@ -811,6 +830,7 @@ const runLogicNewPage = async (arg) => {
 const runLogicCondition = async (arg) => {
   const { page, logicsetting, } = arg
   const { condition, noBody, yesBody } = logicsetting
+  logWithCallback.log('开始处理解析条件节点')
   if (Array.isArray(condition) && condition.length) {
     let condStatus = await runTask({ ...arg, taskData: condition, currentPage: page, })
     if (typeof condStatus !== 'boolean') {

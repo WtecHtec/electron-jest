@@ -16,7 +16,7 @@ const PICK_TYPE = {
   'pick_href': (el)=> el.attr('href'),
 }
 const OptExistsItem  = forwardRef((props, ref) => {
-	const [pickData, setPickData] = useState({ pickType: 'pick_text', pickMethod: 'itself', pickLevel: 0 })
+	const [pickData, setPickData] = useState({ pickType: 'pick_text', pickMethod: 'itself', pickLevel: 0, retryCount: 1, retryInterval: 1 })
   const [checkResult, setCheckResult] = useState([])
   const { xpath } = props
 	useImperativeHandle(ref, () => {
@@ -112,6 +112,20 @@ const OptExistsItem  = forwardRef((props, ref) => {
 				{/* <Option value="pick_html">html</Option> */}
 				<Option value="list">列表</Option>
 			</Select>
+		</Space.Compact>
+    <Divider dashed></Divider>
+		<Space.Compact block style={{ alignItems: 'center' }}>
+			<Tooltip placement="top" title={<span>元素未出现时最大重试次数</span>}>
+				<span style={{ flexShrink: 0 }}>重试次数：</span>
+			</Tooltip>
+			<InputNumber style={{ flex: 1 }} min={1} defaultValue={1} value={pickData.retryCount} onChange={(val) => setPickData({...pickData, retryCount: val})} />
+		</Space.Compact>
+    <Divider dashed></Divider>
+		<Space.Compact block style={{ alignItems: 'center' }}>
+			<Tooltip placement="top" title={<span>每次检查的间隔时间（秒）</span>}>
+				<span style={{ flexShrink: 0 }}>重试间隔：</span>
+			</Tooltip>
+			<InputNumber style={{ flex: 1 }} min={1} defaultValue={1} value={pickData.retryInterval} onChange={(val) => setPickData({...pickData, retryInterval: val})} />
 		</Space.Compact>
     {
       pickData.pickMethod === 'list' && <>
