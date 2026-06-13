@@ -12,7 +12,8 @@ import LogicBaseDrawer from './logic.base.drawer';
 import { END_DATAS, START_DATAS, CLICK_DATAS, PICK_DATAS, INPUT_DATAS, 
   VERIFY_DATAS, HOVER_DATAS, OPT_EXISTS_DATAS, LOGIC_CONDITION, LOGIC_LIST, LOGIC_LIST_ITEM, OPT_KEYBOARD_DATAS, 
   OPT_MOUSE_DATAS,
-  LOGIC_API_INTERCEPT_REQUEST} from './item.config';
+  LOGIC_API_INTERCEPT_REQUEST,
+  OPT_UPLOAD_DATAS} from './item.config';
 
 
 import './index.css'
@@ -33,6 +34,7 @@ const ITEM_DATA_MAP = {
   logic_listitem: LOGIC_LIST_ITEM,
   opt_keyboard: OPT_KEYBOARD_DATAS,
   opt_mouse: OPT_MOUSE_DATAS,
+  opt_upload: OPT_UPLOAD_DATAS,
 //   logic_intercepting_response: LOGIC_API_INTERCEPT_REQUEST,
 }
 export default memo((porps) => {

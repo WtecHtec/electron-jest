@@ -402,6 +402,70 @@ const runOptExists = async (arg) => {
   }
   return true
 }
+
+const runOptUpload = async (arg) => {
+  const { browser, optsetting, page, env } = arg
+  const { xpath, waitTime, uploadData } = optsetting
+  
+  let { inputValue: filePath, inputType } = uploadData || {}
+  if (inputType === 'paramType') {
+    filePath = env.get(filePath) || filePath
+  }
+
+  if (!filePath) {
+    throw new Error('未配置有效的文件路径')
+  }
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`本地上传文件不存在: ${filePath}`)
+  }
+
+  logWithCallback.info(`准备上传媒体文件: ${filePath}`)
+
+  try {
+    // 方案 A: 拦截点击产生的文件选择器
+    const [fileChooser] = await Promise.all([
+      page.waitForFileChooser({ timeout: 4000 }), // 设置4秒超时
+      page.evaluate((xpathStr) => {
+        const heading = document.evaluate(xpathStr, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        const element = heading.singleNodeValue;
+        if (element) {
+          element.click();
+        } else {
+          throw new Error('未找到触发上传的页面元素');
+        }
+      }, xpath)
+    ]);
+    
+    await fileChooser.accept([filePath]);
+    logWithCallback.info(`成功通过文件选择器(FileChooser)拦截并上传文件`);
+  } catch (error) {
+    // 方案 B: 如果没有触发 fileChooser (例如该 xpath 就是个隐藏的 input 节点，或者超时了)，尝试直接寻找 input 注入
+    logWithCallback.warn(`未检测到文件选择器弹窗，尝试直接向 input 注入。原因: ${error.message}`);
+    
+    let inputElement = await page.$(`::-p-xpath(${xpath})`, { timeout: 3000 });
+    if (inputElement) {
+      const tagName = await page.evaluate(el => el.tagName.toLowerCase(), inputElement);
+      if (tagName !== 'input') {
+        // 如果当前录制的元素不是 input，尝试查找它子节点下的 input[type="file"]
+        inputElement = await page.$(`::-p-xpath(${xpath}//input[@type="file"])`);
+      }
+    }
+
+    if (inputElement) {
+      await inputElement.uploadFile(filePath);
+      logWithCallback.info(`直接向 input[type=file] 写入文件成功`);
+    } else {
+      throw new Error(`无法完成上传：未找到可用的上传元素或 input 节点`);
+    }
+  }
+
+  if (waitTime > 0) {
+    await waitForTimeout(waitTime * 1000)
+  }
+  return {}
+}
+
 const runPick = async (arg) => {
   const { browser, optsetting, page, logicType, frequency, env, } = arg
   let { xpath, waitTime, pickData, rename: renamept } = optsetting
@@ -1118,6 +1182,7 @@ const RUN_OPT_TYPE = {
   'opt_exists': runOptExists,
   'opt_keyboard': runLogicKeyboard,
   'opt_mouse': runLogicMouse,
+  'opt_upload': runOptUpload,
 }
 
 

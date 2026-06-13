@@ -47,6 +47,7 @@ const FLOW_TASK_MAP = {
   opt_exists: 'opt',
   opt_keyboard: 'opt',
   opt_mouse: 'opt',
+  opt_upload: 'opt',
   start: 'start',
   end: 'end',
   logic_intercepting_response: 'logic',
@@ -222,6 +223,7 @@ const TaskFlow = (porps) => {
     logic_new_page: (porps) => <OptNode imgType="logic_new_page" {...porps} />,
     opt_keyboard: (porps) => <OptNode imgType="opt_keyboard" {...porps} />,
     opt_mouse: (porps) => <OptNode imgType="opt_mouse" {...porps} />,
+    opt_upload: (porps) => <OptNode imgType="opt_upload" {...porps} />,
     logic_intercepting_response: (porps) => <OptNode imgType="logic_intercepting_response" {...porps} />,
     logic_fetch_request: (porps) => <OptNode imgType="logic_fetch_request" {...porps} />,
     end: EndNode
@@ -593,10 +595,18 @@ const TaskFlow = (porps) => {
     console.log('nodes---', nodes)
     const result = {}
     nodes.forEach(element => {
-      if (element.type === 'opt_input' || (element.type === 'opt_keyboard' && element.data.optsetting.keyType !== 'shortcut')) {
+      if (element.type === 'opt_input' 
+          || (element.type === 'opt_keyboard' && element.data.optsetting.keyType !== 'shortcut')
+          || element.type === 'opt_upload') {
         console.log('element---', element)
-        const inputType = getMutliLevelProperty(element, 'data.optsetting.inputData.inputType', '')
-        const inputValue = getMutliLevelProperty(element, 'data.optsetting.inputData.inputValue', '')
+        let inputType, inputValue;
+        if (element.type === 'opt_upload') {
+          inputType = getMutliLevelProperty(element, 'data.optsetting.uploadData.inputType', '')
+          inputValue = getMutliLevelProperty(element, 'data.optsetting.uploadData.inputValue', '')
+        } else {
+          inputType = getMutliLevelProperty(element, 'data.optsetting.inputData.inputType', '')
+          inputValue = getMutliLevelProperty(element, 'data.optsetting.inputData.inputValue', '')
+        }
         if (inputType === "paramType") {
           result[inputValue] = ""
         }

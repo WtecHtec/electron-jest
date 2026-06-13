@@ -10,6 +10,7 @@ import OptInputItem from './optInputItem'
 import OptVerifyItem from './optVerifyItem'
 import OptPickItem from './optPickItem'
 import OptExistsItem from './optExistsItem'
+import OptUploadItem from './optUploadItem'
 
 
 const { Option } = Select;
@@ -84,6 +85,7 @@ function TaskDrawer({ onClose, open, xpath }) {
 					<Option value="opt_pick">采集</Option>
           <Option value="opt_hover">悬停</Option>
           <Option value="opt_exists">是否存在</Option>
+          <Option value="opt_upload">文件上传</Option>
 				</Select>
 			</Space.Compact>
 			<Divider dashed></Divider>
@@ -107,6 +109,9 @@ function TaskDrawer({ onClose, open, xpath }) {
 			}
       {
 				optType === 'opt_exists' && <OptExistsItem ref={optRef} xpath={xpath}></OptExistsItem>
+			}
+      {
+				optType === 'opt_upload' && <OptUploadItem ref={optRef} xpath={xpath}></OptUploadItem>
 			}
 			<Divider dashed></Divider>
 			<Space.Compact block style={{ justifyContent: 'center' }}>

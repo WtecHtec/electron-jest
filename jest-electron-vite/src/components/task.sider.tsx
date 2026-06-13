@@ -12,6 +12,7 @@ import EndSvg from '../assets/end.svg'
 import LoopSvg from '../assets/loop.svg'
 import ExportSvg from '../assets/export.svg'
 import HoverSvg from '../assets/hover.svg'
+import UploadSvg from '../assets/upload.svg'
 import BackSvg from '../assets/back.svg'
 import CloseSvg from '../assets/close.svg'
 import PdfSvg from '../assets/pdf.svg'
@@ -170,6 +171,12 @@ const NODE_DATAS = [
         disable: true,
         txt: '鼠标悬停',
         nodeType: 'opt_hover',
+      },
+      {
+        imgSrc: UploadSvg,
+        disable: true,
+        txt: '文件上传',
+        nodeType: 'opt_upload',
       },
     ]
   },

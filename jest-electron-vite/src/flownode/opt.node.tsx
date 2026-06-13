@@ -22,6 +22,7 @@ import KeySvg from '../assets/keyboard.svg'
 import MouseSvg from '../assets/mouse.svg'
 import ApiSvg from '../assets/api.svg'
 import ApiFetchSvg from '../assets/api_fetch.svg'
+import UploadSvg from '../assets/upload.svg'
 
 import './flow.node.css'
 export default memo(({ isConnectable = true, imgType = 'opt_click', selected, data }) => {
@@ -43,7 +44,8 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     opt_keyboard: KeySvg,
 	opt_mouse: MouseSvg,
 	logic_intercepting_response: ApiSvg,
-	logic_fetch_request: ApiFetchSvg
+	logic_fetch_request: ApiFetchSvg,
+	opt_upload: UploadSvg
 	}
 
 	const showLabel = {
@@ -68,6 +70,11 @@ export default memo(({ isConnectable = true, imgType = 'opt_click', selected, da
     opt_exists:  () => <>
       <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
       <p className="wrap-txt"> 检查元素(是否存在)：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
+    </>, 
+    opt_upload: () => <>
+      <p className="wrap-txt"> 操作描述：{getMutliLevelProperty(data, 'optsetting.rename', '')}</p>
+      <p className="wrap-txt"> 上传至元素：{getMutliLevelProperty(data, 'optsetting.xpath', '')}</p>
+      <p className="wrap-txt"> 文件：{getMutliLevelProperty(data, 'optsetting.uploadData.inputValue', '')}</p>
     </>, 
 		logic_export: `导出数据到：${getMutliLevelProperty(data, 'logicsetting.fileType', '') === 'feishu_excel' ? "飞书多维表格": getMutliLevelProperty(data, 'logicsetting.savaPath', '')}`,
     opt_hover: () => <>

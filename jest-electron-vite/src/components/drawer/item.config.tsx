@@ -504,3 +504,45 @@ export const LOGIC_FETCH_REQUEST = [
 		}
 }
 ]
+
+export const OPT_UPLOAD_DATAS = [
+	{
+		label: '处理事件:',
+		sublabel: '文件上传',
+	},
+	...BASE_CONFIG,
+	{
+		label: '路径类型:',
+		sublabel: true,
+		edit: true,
+		valType: 'select',
+		selectOptions: [
+			{
+				label: '赋值 (直接上传路径)',
+				value: 'valueType'
+			},
+			{
+				label: '参数 (变量提取)',
+				value: 'paramType'
+			}
+		],
+		valChange: (e, node) => {
+			node.data.optsetting.uploadData.inputType = e
+		},
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.uploadData.inputType', 'valueType')
+		}
+	},
+	{
+		label: '文件路径/变量:',
+		sublabel: true,
+		edit: true,
+		valType: 'text',
+		valChange: (e, node) => {
+			node.data.optsetting.uploadData.inputValue = e.target.value
+		},
+		subformat: (node) => {
+			return getMutliLevelProperty(node, 'data.optsetting.uploadData.inputValue', '')
+		},
+	},
+]
